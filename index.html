@@ -98,21 +98,72 @@
     gap:8px;
     margin-top:18px;
   }
-  .header-names{
+
+  .modal-overlay{
     display:none;
-    flex-direction:row;
+    position:fixed;
+    inset:0;
+    background:rgba(40,20,55,0.45);
+    backdrop-filter: blur(4px);
+    align-items:center;
     justify-content:center;
-    align-items:flex-start;
-    gap:16px;
-    margin-top:18px;
+    padding:20px;
+    z-index:100;
   }
-  .header-names .name-field{
+  .modal-overlay.open{ display:flex; }
+  .modal-card{
+    width:100%;
+    max-width:340px;
+    text-align:center;
+    background:rgba(255,255,255,0.25);
+    padding:32px 28px;
+    border-radius:28px;
+    box-shadow:0 35px 70px rgba(0,0,0,0.4);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border:2px solid rgba(255,255,255,0.35);
+  }
+  .modal-card .eyebrow{ margin-bottom:6px; }
+  .modal-card h2{
+    margin:0 0 22px;
+    font-size:1.4rem;
+    font-weight:800;
+    color:#ffffff;
+    text-shadow:0 2px 6px rgba(0,0,0,0.3);
+  }
+  .modal-field{
     display:flex;
     flex-direction:column;
     align-items:center;
     gap:8px;
-    flex:1;
-    min-width:0;
+    margin-bottom:16px;
+  }
+  .result-icon{
+    font-size:3rem;
+    margin-bottom:8px;
+  }
+  .result-sub{
+    margin:0 0 20px;
+    font-size:13px;
+    color:rgba(255,255,255,0.85);
+  }
+  .modal-close-btn{
+    width:100%;
+    margin-top:10px;
+    background:transparent;
+    border:1.5px solid rgba(255,255,255,0.5);
+    color:#ffffff;
+    font-family:inherit;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.04em;
+    padding:12px;
+    border-radius:40px;
+    cursor:pointer;
+    transition:background 0.15s ease;
+  }
+  .modal-close-btn:hover{
+    background:rgba(255,255,255,0.15);
   }
 
   .status-row{
@@ -364,16 +415,6 @@
       <button class="seg-btn active" data-mode="computer">vs Computer</button>
       <button class="seg-btn" data-mode="friend">vs Friend</button>
     </div>
-    <div class="header-names" id="names-row">
-      <div class="name-field">
-        <span class="label">Player 1 (X)</span>
-        <input type="text" id="player1-input" class="name-input" placeholder="Player 1" maxlength="14">
-      </div>
-      <div class="name-field">
-        <span class="label">Player 2 (O)</span>
-        <input type="text" id="player2-input" class="name-input" placeholder="Player 2" maxlength="14">
-      </div>
-    </div>
   </div>
 
   <div class="status-row">
@@ -413,6 +454,32 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="names-modal">
+  <div class="modal-card">
+    <div class="eyebrow">Before you begin</div>
+    <h2>Who's playing?</h2>
+    <div class="modal-field">
+      <span class="label">Player 1 (X)</span>
+      <input type="text" id="player1-input" class="name-input" placeholder="Player 1" maxlength="14">
+    </div>
+    <div class="modal-field">
+      <span class="label">Player 2 (O)</span>
+      <input type="text" id="player2-input" class="name-input" placeholder="Player 2" maxlength="14">
+    </div>
+    <button class="reset-btn" id="names-start-btn">Start Game</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="result-modal">
+  <div class="modal-card">
+    <div class="result-icon" id="result-icon">🎉</div>
+    <h2 id="result-title">You Win!</h2>
+    <p class="result-sub" id="result-sub">Nice moves.</p>
+    <button class="reset-btn" id="result-play-again-btn">Play Again</button>
+    <button class="modal-close-btn" id="result-close-btn">Close</button>
+  </div>
+</div>
+
 <script>
 (function(){
   const boardEl = document.getElementById('board');
@@ -422,9 +489,16 @@
   const modeGroup = document.getElementById('mode-group');
   const difficultyGroup = document.getElementById('difficulty-group');
   const difficultyRow = document.getElementById('difficulty-row');
-  const namesRow = document.getElementById('names-row');
+  const namesModal = document.getElementById('names-modal');
+  const resultModal = document.getElementById('result-modal');
+  const resultIcon = document.getElementById('result-icon');
+  const resultTitle = document.getElementById('result-title');
+  const resultSub = document.getElementById('result-sub');
+  const resultPlayAgainBtn = document.getElementById('result-play-again-btn');
+  const resultCloseBtn = document.getElementById('result-close-btn');
   const player1Input = document.getElementById('player1-input');
   const player2Input = document.getElementById('player2-input');
+  const namesStartBtn = document.getElementById('names-start-btn');
   const scoreXEl = document.getElementById('score-x');
   const scoreOEl = document.getElementById('score-o');
   const scoreDrawEl = document.getElementById('score-draw');
@@ -636,24 +710,42 @@
     gameOver = true;
     setDisabled(true);
     statusPill.classList.remove('thinking');
+    let icon = '🎉', title = '', sub = '';
+
     if(result.mark === 'draw'){
       statusText.textContent = "It's a draw";
       scores.draw++;
+      icon = '🤝';
+      title = "It's a Draw!";
+      sub = 'Evenly matched — go again?';
     } else {
       if(result.line){
         result.line.forEach(i=> boardEl.children[i].classList.add('win'));
         drawWinLine(result.line);
       }
       if(mode === 'friend'){
-        statusText.textContent = (result.mark === 'X' ? player1Name : player2Name) + ' wins';
+        const winnerName = result.mark === 'X' ? player1Name : player2Name;
+        statusText.textContent = winnerName + ' wins';
+        title = winnerName + ' Wins!';
+        sub = 'Three in a row — well played.';
       } else if(result.mark === humanMark){
         statusText.textContent = 'You win';
+        title = 'You Win!';
+        sub = 'You outsmarted the machine.';
       } else {
         statusText.textContent = 'Machine wins';
+        title = 'Machine Wins';
+        icon = '🤖';
+        sub = 'Better luck next round.';
       }
       scores[result.mark]++;
     }
     updateScoreboard();
+
+    resultIcon.textContent = icon;
+    resultTitle.textContent = title;
+    resultSub.textContent = sub;
+    setTimeout(()=>{ resultModal.classList.add('open'); }, 500);
   }
 
   function updateScoreboard(){
@@ -706,18 +798,37 @@
     mode = btn.dataset.mode;
     Array.from(modeGroup.children).forEach(b=>b.classList.toggle('active', b===btn));
     difficultyRow.style.display = mode === 'friend' ? 'none' : 'flex';
-    namesRow.style.display = mode === 'friend' ? 'flex' : 'none';
-    newGame();
+    if(mode === 'friend'){
+      openNamesModal();
+    } else {
+      newGame();
+    }
   });
 
-  player1Input.addEventListener('input', ()=>{
+  function openNamesModal(){
+    resultModal.classList.remove('open');
+    player1Input.value = player1Name === 'Player 1' ? '' : player1Name;
+    player2Input.value = player2Name === 'Player 2' ? '' : player2Name;
+    namesModal.classList.add('open');
+    setDisabled(true);
+    setTimeout(()=> player1Input.focus(), 50);
+  }
+
+  function closeNamesModal(){
+    namesModal.classList.remove('open');
+  }
+
+  function confirmNames(){
     player1Name = player1Input.value.trim() || 'Player 1';
-    updateLabels();
-  });
-  player2Input.addEventListener('input', ()=>{
     player2Name = player2Input.value.trim() || 'Player 2';
     updateLabels();
-  });
+    closeNamesModal();
+    newGame();
+  }
+
+  namesStartBtn.addEventListener('click', confirmNames);
+  player1Input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') confirmNames(); });
+  player2Input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') confirmNames(); });
 
   difficultyGroup.addEventListener('click', (e)=>{
     const btn = e.target.closest('.seg-btn');
@@ -727,6 +838,14 @@
   });
 
   resetBtn.addEventListener('click', newGame);
+
+  resultPlayAgainBtn.addEventListener('click', ()=>{
+    resultModal.classList.remove('open');
+    newGame();
+  });
+  resultCloseBtn.addEventListener('click', ()=>{
+    resultModal.classList.remove('open');
+  });
 
   buildBoard();
   newGame();
