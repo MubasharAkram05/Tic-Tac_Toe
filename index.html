@@ -4,87 +4,115 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tic-Tac-Toe — vs. the Machine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --body-bg-1:#f4d9e4;
-    --body-bg-2:#dccdf0;
-    --body-bg-3:#c8dff2;
-    --surface:#fffaf3;
-    --surface-hi:#fff2e2;
-    --line:#ecdcc8;
-    --ink:#3f3548;
-    --muted:#9c8ea6;
-    --gold:#e8879f;
-    --gold-dim:#c96a83;
-    --teal:#3fb6a8;
-    --teal-dim:#2c9186;
-    --shadow: 0 30px 60px -20px rgba(80,55,105,0.3), 0 10px 24px -10px rgba(80,55,105,0.2);
+    --pink:#FFB6C1;
+    --orange:#FFA07A;
+    --teal:#20B2AA;
+    --purple:#9370DB;
+    --ink:#ffffff;
+    --muted:rgba(255,255,255,0.75);
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
-  body{
-    margin:0;
-    min-height:100vh;
-    background:
-      radial-gradient(circle at 15% 0%, rgba(255,255,255,0.4), transparent 50%),
-      radial-gradient(circle at 100% 100%, rgba(255,255,255,0.3), transparent 55%),
-      linear-gradient(150deg, var(--body-bg-1), var(--body-bg-2) 55%, var(--body-bg-3));
-    color:var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    display:flex;
-    align-items:flex-start;
-    justify-content:center;
-    padding:48px 20px;
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FFB6C1, #FFA07A, #20B2AA, #9370DB);
+    background-size: 400% 400%;
+    animation: gradientBackground 10s ease infinite;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 30px 16px;
+    color: var(--ink);
+  }
+  @keyframes gradientBackground {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 
-  .card{
+  .card {
     width:100%;
-    max-width:460px;
-    background:linear-gradient(180deg, var(--surface), var(--surface-hi) 100%);
-    border:1px solid var(--line);
-    border-radius:28px;
-    padding:38px 34px 30px;
-    box-shadow:var(--shadow);
-    position:relative;
-    overflow:hidden;
-  }
-  .card::before{
-    content:"";
-    position:absolute;
-    top:0; left:0; right:0;
-    height:5px;
-    background:linear-gradient(90deg, var(--gold), var(--teal));
+    max-width:440px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 42px 32px 34px;
+    border-radius: 35px;
+    box-shadow: 0 35px 70px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
   }
 
-  .masthead{
-    text-align:center;
-    margin-bottom:30px;
-  }
+  .masthead{ margin-bottom:26px; }
   .eyebrow{
     font-size:11px;
     letter-spacing:0.32em;
     text-transform:uppercase;
-    color:var(--gold);
+    color:rgba(255,255,255,0.85);
     font-weight:600;
-    margin-bottom:10px;
+    margin-bottom:12px;
   }
-  h1{
-    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
-    font-size:34px;
-    font-weight:500;
-    letter-spacing:-0.01em;
-    margin:0;
-    color:var(--ink);
+  h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 2.6rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
   }
   h1 em{
     font-style:normal;
-    color:var(--gold);
+    background: linear-gradient(135deg, #ffffff, #FFE29A);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
   }
   .tagline{
-    margin:8px 0 0;
+    margin:10px 0 0;
     font-size:13px;
-    color:var(--muted);
+    color:rgba(255,255,255,0.85);
     font-weight:500;
+  }
+  .mode-seg{
+    display:inline-flex;
+    margin:20px auto 0;
+  }
+  .label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:rgba(255,255,255,0.8);
+    white-space:nowrap;
+  }
+  .header-option{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    margin-top:18px;
+  }
+  .header-names{
+    display:none;
+    flex-direction:row;
+    justify-content:center;
+    align-items:flex-start;
+    gap:16px;
+    margin-top:18px;
+  }
+  .header-names .name-field{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    flex:1;
+    min-width:0;
   }
 
   .status-row{
@@ -92,24 +120,25 @@
     align-items:center;
     justify-content:center;
     gap:10px;
-    margin-bottom:26px;
+    margin-bottom:24px;
   }
   .pill{
     display:inline-flex;
     align-items:center;
-    gap:6px;
+    gap:8px;
     font-size:12px;
     letter-spacing:0.04em;
-    padding:7px 14px;
+    padding:8px 16px;
     border-radius:100px;
-    background:#f3e9f7;
-    border:1px solid var(--line);
-    color:var(--muted);
+    background:rgba(255,255,255,0.22);
+    border:1px solid rgba(255,255,255,0.35);
+    color:#ffffff;
+    backdrop-filter: blur(6px);
   }
   .pill .dot{
     width:6px; height:6px;
     border-radius:50%;
-    background:var(--gold);
+    background:#ffffff;
   }
   .pill.thinking .dot{
     animation:pulse 1s infinite ease-in-out;
@@ -118,77 +147,79 @@
     0%,100%{opacity:0.35; transform:scale(0.85);}
     50%{opacity:1; transform:scale(1.15);}
   }
-  #status-text{ color:var(--ink); font-weight:600; }
+  #status-text{ color:#ffffff; font-weight:700; }
 
   .board-wrap{
     position:relative;
     width:min(100%, 340px);
-    aspect-ratio:1/1;
     margin:0 auto;
-    background:linear-gradient(160deg, #f7e6ee, #e4ecf7);
-    border-radius:20px;
-    padding:10px;
-    border:1px solid var(--line);
   }
   .board{
     position:relative;
     width:100%;
-    height:100%;
     display:grid;
     grid-template-columns:repeat(3, 1fr);
     grid-template-rows:repeat(3, 1fr);
-    gap:8px;
+    gap:16px;
   }
-  .cell{
-    background:#ffffff;
-    border:1px solid var(--line);
-    border-radius:14px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    transition:background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+  .cell {
+    aspect-ratio: 1/1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #FFA07A, #20B2AA);
+    border-radius: 22px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 16px 28px rgba(0, 0, 0, 0.28), inset 0 -8px 16px rgba(255, 255, 255, 0.35), inset 0 8px 16px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
   }
-  .cell:hover:not(.taken):not(.disabled){
-    background:#fff9ef;
-    border-color:var(--gold);
+  .cell:hover:not(.taken):not(.disabled) {
+    background: linear-gradient(135deg, #20B2AA, #FFB6C1);
+    transform: scale(1.08) rotate(3deg);
+    box-shadow: 0 20px 36px rgba(0, 0, 0, 0.32), inset 0 -10px 20px rgba(255, 255, 255, 0.4), inset 0 10px 20px rgba(0, 0, 0, 0.15);
   }
-  .cell:active:not(.taken):not(.disabled){
-    transform:scale(0.97);
+  .cell:active:not(.taken):not(.disabled) {
+    transform: scale(0.92) rotate(-3deg);
   }
   .cell.taken, .cell.disabled{ cursor:default; }
   .cell svg{
-    width:52%;
-    height:52%;
+    width:50%;
+    height:50%;
     overflow:visible;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));
   }
   .cell .stroke{
     fill:none;
-    stroke-width:9;
+    stroke-width:10;
     stroke-linecap:round;
     animation:draw 0.32s ease forwards;
   }
   .cell.x .stroke{
-    stroke:var(--gold);
+    stroke:#ffffff;
     stroke-dasharray:180;
     stroke-dashoffset:180;
   }
   .cell.o .stroke{
-    stroke:var(--teal);
+    stroke:#FFE29A;
     stroke-dasharray:216;
     stroke-dashoffset:216;
   }
   @keyframes draw{
     to{ stroke-dashoffset:0; }
   }
-  .cell.win{ background:#fff0da; border-color:var(--gold); }
+  .cell.win{
+    background: linear-gradient(135deg, #9370DB, #FFB6C1);
+    border-color: #ffffff;
+  }
 
   .win-line{
     position:absolute;
-    height:3px;
-    border-radius:3px;
-    background:var(--gold);
-    box-shadow:0 0 12px rgba(201,162,75,0.7);
+    height:4px;
+    border-radius:4px;
+    background:#ffffff;
+    box-shadow:0 0 16px rgba(255,255,255,0.9);
     transform-origin:left center;
     left:0; top:0;
     width:0;
@@ -197,7 +228,7 @@
   }
 
   .controls{
-    margin-top:28px;
+    margin-top:26px;
   }
   .control-row{
     display:flex;
@@ -205,91 +236,121 @@
     justify-content:space-between;
     gap:12px;
     padding:14px 0;
-    border-top:1px solid var(--line);
+    border-top:1px solid rgba(255,255,255,0.25);
   }
-  .control-row .label{
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:0.1em;
-    color:var(--muted);
-    white-space:nowrap;
+  .name-input{
+    width:100%;
+    max-width:100%;
+    background:rgba(255,255,255,0.25);
+    border:1px solid rgba(255,255,255,0.4);
+    border-radius:100px;
+    padding:9px 16px;
+    font-family:inherit;
+    font-size:13px;
+    color:#ffffff;
+    outline:none;
+    text-align:center;
+    backdrop-filter: blur(6px);
+    transition:border-color 0.15s ease, background 0.15s ease;
+  }
+  .name-input:focus{
+    border-color:#ffffff;
+    background:rgba(255,255,255,0.32);
+  }
+  .name-input::placeholder{
+    color:rgba(255,255,255,0.7);
   }
   .seg{
     display:flex;
-    background:#f3e9f7;
-    border:1px solid var(--line);
+    background:rgba(255,255,255,0.2);
+    border:1px solid rgba(255,255,255,0.35);
     border-radius:100px;
     padding:3px;
     gap:2px;
+    backdrop-filter: blur(6px);
   }
   .seg-btn{
     background:transparent;
     border:none;
-    color:var(--muted);
+    color:rgba(255,255,255,0.85);
     font-family:inherit;
     font-size:12px;
     font-weight:600;
     padding:7px 14px;
     border-radius:100px;
     cursor:pointer;
+    text-align:center;
+    flex:1;
     transition:background 0.15s ease, color 0.15s ease;
   }
   .seg-btn.active{
-    background:var(--gold);
-    color:var(--bg-0);
+    background:linear-gradient(135deg, #9370DB, #FFB6C1);
+    color:#ffffff;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
   }
   .seg-btn:hover:not(.active){
-    color:var(--ink);
-  }
-
-  .reset-btn{
-    width:100%;
-    margin-top:22px;
-    background:transparent;
-    border:1.5px solid var(--gold);
-    color:var(--gold-dim);
-    font-family:inherit;
-    font-size:13px;
-    font-weight:700;
-    letter-spacing:0.06em;
-    text-transform:uppercase;
-    padding:13px;
-    border-radius:14px;
-    cursor:pointer;
-    transition:background 0.15s ease, color 0.15s ease;
-  }
-  .reset-btn:hover{
-    background:var(--gold);
     color:#ffffff;
   }
 
+  #restartButton, .reset-btn {
+    width:100%;
+    margin-top:22px;
+    padding: 16px 40px;
+    font-size: 1rem;
+    font-weight:700;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color: #fff;
+    background: linear-gradient(135deg, #9370DB, #FFB6C1, #20B2AA, #FFA07A);
+    background-size: 200% 200%;
+    animation: gradientButton 5s ease infinite;
+    border: none;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.3);
+    font-family:inherit;
+  }
+  @keyframes gradientButton {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .reset-btn:hover{
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 20px 38px rgba(0, 0, 0, 0.35);
+  }
+  .reset-btn:active{
+    transform: translateY(0) scale(1);
+    box-shadow: 0 12px 22px rgba(0, 0, 0, 0.25);
+  }
+
   .scoreboard{
-    margin-top:26px;
+    margin-top:24px;
     display:grid;
     grid-template-columns:repeat(3, 1fr);
     gap:10px;
   }
   .score-item{
     text-align:center;
-    background:#f3e9f7;
-    border:1px solid var(--line);
-    border-radius:14px;
+    background:rgba(255,255,255,0.18);
+    border:1px solid rgba(255,255,255,0.3);
+    border-radius:16px;
     padding:14px 4px;
+    backdrop-filter: blur(6px);
   }
   .score-item .num{
     font-size:24px;
-    font-weight:700;
-    font-family: Georgia, serif;
+    font-weight:800;
+    color:#ffffff;
   }
   .score-item .lbl{
     font-size:10px;
     text-transform:uppercase;
     letter-spacing:0.1em;
-    color:var(--muted);
+    color:rgba(255,255,255,0.8);
     margin-top:4px;
   }
-  .score-item.x .num{ color:var(--gold); }
-  .score-item.o .num{ color:var(--teal); }
 </style>
 </head>
 <body>
@@ -299,6 +360,20 @@
     <div class="eyebrow">You vs. an unbeaten mind</div>
     <h1>Tic-Tac-<em>Toe</em></h1>
     <p class="tagline">Outsmart the machine, one square at a time</p>
+    <div class="seg mode-seg" id="mode-group">
+      <button class="seg-btn active" data-mode="computer">vs Computer</button>
+      <button class="seg-btn" data-mode="friend">vs Friend</button>
+    </div>
+    <div class="header-names" id="names-row">
+      <div class="name-field">
+        <span class="label">Player 1 (X)</span>
+        <input type="text" id="player1-input" class="name-input" placeholder="Player 1" maxlength="14">
+      </div>
+      <div class="name-field">
+        <span class="label">Player 2 (O)</span>
+        <input type="text" id="player2-input" class="name-input" placeholder="Player 2" maxlength="14">
+      </div>
+    </div>
   </div>
 
   <div class="status-row">
@@ -311,19 +386,12 @@
   </div>
 
   <div class="controls">
-    <div class="control-row">
+    <div class="control-row" id="difficulty-row">
       <span class="label">Difficulty</span>
       <div class="seg" id="difficulty-group">
         <button class="seg-btn" data-level="easy">Easy</button>
         <button class="seg-btn active" data-level="medium">Medium</button>
         <button class="seg-btn" data-level="hard">Hard</button>
-      </div>
-    </div>
-    <div class="control-row">
-      <span class="label">Play as</span>
-      <div class="seg" id="mark-group">
-        <button class="seg-btn active" data-mark="X">X · first</button>
-        <button class="seg-btn" data-mark="O">O · second</button>
       </div>
     </div>
     <button class="reset-btn" id="reset-btn">New Game</button>
@@ -332,7 +400,7 @@
   <div class="scoreboard">
     <div class="score-item x">
       <div class="num" id="score-x">0</div>
-      <div class="lbl">You</div>
+      <div class="lbl" id="label-x">You</div>
     </div>
     <div class="score-item">
       <div class="num" id="score-draw">0</div>
@@ -340,7 +408,7 @@
     </div>
     <div class="score-item o">
       <div class="num" id="score-o">0</div>
-      <div class="lbl">Machine</div>
+      <div class="lbl" id="label-o">Machine</div>
     </div>
   </div>
 </div>
@@ -351,11 +419,17 @@
   const statusPill = document.getElementById('status-pill');
   const statusText = document.getElementById('status-text');
   const resetBtn = document.getElementById('reset-btn');
+  const modeGroup = document.getElementById('mode-group');
   const difficultyGroup = document.getElementById('difficulty-group');
-  const markGroup = document.getElementById('mark-group');
+  const difficultyRow = document.getElementById('difficulty-row');
+  const namesRow = document.getElementById('names-row');
+  const player1Input = document.getElementById('player1-input');
+  const player2Input = document.getElementById('player2-input');
   const scoreXEl = document.getElementById('score-x');
   const scoreOEl = document.getElementById('score-o');
   const scoreDrawEl = document.getElementById('score-draw');
+  const labelXEl = document.getElementById('label-x');
+  const labelOEl = document.getElementById('label-o');
   const winLineEl = document.getElementById('win-line');
   const boardWrap = document.querySelector('.board-wrap');
 
@@ -363,6 +437,9 @@
   let humanMark = 'X';
   let aiMark = 'O';
   let difficulty = 'medium';
+  let mode = 'computer';
+  let player1Name = 'Player 1';
+  let player2Name = 'Player 2';
   let gameOver = false;
   let scores = { X: 0, O: 0, draw: 0 };
 
@@ -418,6 +495,18 @@
     if(gameOver) return;
     const idx = parseInt(e.currentTarget.dataset.index);
     if(board[idx]) return;
+
+    if(mode === 'friend'){
+      const turn = currentTurn();
+      board[idx] = turn;
+      render();
+      const result = checkWinner(board);
+      if(result){ endGame(result); return; }
+      const next = turn === 'X' ? 'O' : 'X';
+      statusText.textContent = (next === 'X' ? player1Name : player2Name) + "'s move";
+      return;
+    }
+
     if(currentTurn() !== humanMark) return;
 
     board[idx] = humanMark;
@@ -555,13 +644,14 @@
         result.line.forEach(i=> boardEl.children[i].classList.add('win'));
         drawWinLine(result.line);
       }
-      if(result.mark === humanMark){
+      if(mode === 'friend'){
+        statusText.textContent = (result.mark === 'X' ? player1Name : player2Name) + ' wins';
+      } else if(result.mark === humanMark){
         statusText.textContent = 'You win';
-        scores[humanMark]++;
       } else {
         statusText.textContent = 'Machine wins';
-        scores[aiMark]++;
       }
+      scores[result.mark]++;
     }
     updateScoreboard();
   }
@@ -572,6 +662,16 @@
     scoreDrawEl.textContent = scores.draw;
   }
 
+  function updateLabels(){
+    if(mode === 'friend'){
+      labelXEl.textContent = player1Name;
+      labelOEl.textContent = player2Name;
+    } else {
+      labelXEl.textContent = humanMark === 'X' ? 'You' : 'Machine';
+      labelOEl.textContent = humanMark === 'O' ? 'You' : 'Machine';
+    }
+  }
+
   function newGame(){
     board = Array(9).fill(null);
     gameOver = false;
@@ -579,6 +679,13 @@
     buildBoard();
     render();
     setDisabled(false);
+    updateLabels();
+
+    if(mode === 'friend'){
+      statusText.textContent = player1Name + "'s move";
+      return;
+    }
+
     if(humanMark === 'O'){
       statusText.textContent = 'Machine opens';
       setThinking(true);
@@ -593,20 +700,30 @@
     }
   }
 
+  modeGroup.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.seg-btn');
+    if(!btn) return;
+    mode = btn.dataset.mode;
+    Array.from(modeGroup.children).forEach(b=>b.classList.toggle('active', b===btn));
+    difficultyRow.style.display = mode === 'friend' ? 'none' : 'flex';
+    namesRow.style.display = mode === 'friend' ? 'flex' : 'none';
+    newGame();
+  });
+
+  player1Input.addEventListener('input', ()=>{
+    player1Name = player1Input.value.trim() || 'Player 1';
+    updateLabels();
+  });
+  player2Input.addEventListener('input', ()=>{
+    player2Name = player2Input.value.trim() || 'Player 2';
+    updateLabels();
+  });
+
   difficultyGroup.addEventListener('click', (e)=>{
     const btn = e.target.closest('.seg-btn');
     if(!btn) return;
     difficulty = btn.dataset.level;
     Array.from(difficultyGroup.children).forEach(b=>b.classList.toggle('active', b===btn));
-  });
-
-  markGroup.addEventListener('click', (e)=>{
-    const btn = e.target.closest('.seg-btn');
-    if(!btn) return;
-    humanMark = btn.dataset.mark;
-    aiMark = humanMark === 'X' ? 'O' : 'X';
-    Array.from(markGroup.children).forEach(b=>b.classList.toggle('active', b===btn));
-    newGame();
   });
 
   resetBtn.addEventListener('click', newGame);
