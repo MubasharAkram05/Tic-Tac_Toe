@@ -122,6 +122,7 @@
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     border:2px solid rgba(255,255,255,0.35);
+    position:relative;
   }
   .modal-card .eyebrow{ margin-bottom:6px; }
   .modal-card h2{
@@ -376,6 +377,59 @@
     box-shadow: 0 12px 22px rgba(0, 0, 0, 0.25);
   }
 
+  .btn-row{
+    display:flex;
+    gap:10px;
+    margin-top:22px;
+  }
+  .btn-row .reset-btn{
+    margin-top:0;
+    flex:2;
+  }
+  .reset-scores-btn{
+    flex:1;
+    background:rgba(255,255,255,0.18);
+    border:1.5px solid rgba(255,255,255,0.5);
+    color:#ffffff;
+    font-family:inherit;
+    font-size:0.85rem;
+    font-weight:700;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    border-radius:40px;
+    cursor:pointer;
+    transition:background 0.2s ease, transform 0.2s ease;
+  }
+  .reset-scores-btn:hover{
+    background:rgba(255,255,255,0.3);
+    transform: translateY(-2px);
+  }
+  .reset-scores-btn:active{
+    transform: translateY(0);
+  }
+
+  .modal-x-btn{
+    position:absolute;
+    top:14px;
+    right:14px;
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,0.4);
+    background:rgba(255,255,255,0.15);
+    color:#ffffff;
+    font-size:14px;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:background 0.15s ease;
+  }
+  .modal-x-btn:hover{
+    background:rgba(255,255,255,0.3);
+  }
+
   .scoreboard{
     margin-top:24px;
     display:grid;
@@ -435,7 +489,10 @@
         <button class="seg-btn" data-level="hard">Hard</button>
       </div>
     </div>
-    <button class="reset-btn" id="reset-btn">New Game</button>
+    <div class="btn-row">
+      <button class="reset-btn" id="reset-btn">New Game</button>
+      <button class="reset-scores-btn" id="reset-scores-btn">Reset</button>
+    </div>
   </div>
 
   <div class="scoreboard">
@@ -456,6 +513,7 @@
 
 <div class="modal-overlay" id="names-modal">
   <div class="modal-card">
+    <button class="modal-x-btn" id="names-x-btn" aria-label="Close">✕</button>
     <div class="eyebrow">Before you begin</div>
     <h2>Who's playing?</h2>
     <div class="modal-field">
@@ -467,6 +525,7 @@
       <input type="text" id="player2-input" class="name-input" placeholder="Player 2" maxlength="14">
     </div>
     <button class="reset-btn" id="names-start-btn">Start Game</button>
+    <button class="modal-close-btn" id="names-cancel-btn">Close</button>
   </div>
 </div>
 
@@ -499,6 +558,9 @@
   const player1Input = document.getElementById('player1-input');
   const player2Input = document.getElementById('player2-input');
   const namesStartBtn = document.getElementById('names-start-btn');
+  const namesXBtn = document.getElementById('names-x-btn');
+  const namesCancelBtn = document.getElementById('names-cancel-btn');
+  const resetScoresBtn = document.getElementById('reset-scores-btn');
   const scoreXEl = document.getElementById('score-x');
   const scoreOEl = document.getElementById('score-o');
   const scoreDrawEl = document.getElementById('score-draw');
@@ -514,6 +576,7 @@
   let mode = 'computer';
   let player1Name = 'Player 1';
   let player2Name = 'Player 2';
+  let pendingReset = false;
   let gameOver = false;
   let scores = { X: 0, O: 0, draw: 0 };
 
@@ -818,15 +881,38 @@
     namesModal.classList.remove('open');
   }
 
+  function cancelNamesModal(){
+    closeNamesModal();
+    if(pendingReset){
+      pendingReset = false;
+      if(!gameOver) setDisabled(false);
+      return;
+    }
+    mode = 'computer';
+    Array.from(modeGroup.children).forEach(b=>b.classList.toggle('active', b.dataset.mode === 'computer'));
+    difficultyRow.style.display = 'flex';
+    if(!gameOver) setDisabled(false);
+  }
+
   function confirmNames(){
-    player1Name = player1Input.value.trim() || 'Player 1';
-    player2Name = player2Input.value.trim() || 'Player 2';
+    const newP1 = player1Input.value.trim() || 'Player 1';
+    const newP2 = player2Input.value.trim() || 'Player 2';
+    const namesChanged = (newP1 !== player1Name) || (newP2 !== player2Name);
+    player1Name = newP1;
+    player2Name = newP2;
     updateLabels();
     closeNamesModal();
+    if(namesChanged || pendingReset){
+      scores = { X: 0, O: 0, draw: 0 };
+      updateScoreboard();
+    }
+    pendingReset = false;
     newGame();
   }
 
   namesStartBtn.addEventListener('click', confirmNames);
+  namesXBtn.addEventListener('click', cancelNamesModal);
+  namesCancelBtn.addEventListener('click', cancelNamesModal);
   player1Input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') confirmNames(); });
   player2Input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') confirmNames(); });
 
@@ -838,6 +924,17 @@
   });
 
   resetBtn.addEventListener('click', newGame);
+
+  resetScoresBtn.addEventListener('click', ()=>{
+    if(mode === 'friend'){
+      pendingReset = true;
+      openNamesModal();
+    } else {
+      scores = { X: 0, O: 0, draw: 0 };
+      updateScoreboard();
+      newGame();
+    }
+  });
 
   resultPlayAgainBtn.addEventListener('click', ()=>{
     resultModal.classList.remove('open');
