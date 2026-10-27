@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#120f33">
+<meta name="theme-color" content="#1b1838">
 <title>Tic Tac Toe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,52 +28,52 @@
   --danger: #f43f5e;
 }
 
-/* Dark theme (default) */
+/* Dark theme: deep versions of peach, coral, teal, mint, lavender */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg-1: #0d0b26;
-  --bg-2: #1a1446;
-  --bg-3: #2b1352;
-  --blob-1: rgba(34, 211, 238, .22);
-  --blob-2: rgba(244, 114, 182, .22);
+  --base: #15132e;
+  --g1: #3b2440; --g2: #47222f; --g3: #0f3944; --g4: #123b32; --g5: #2a2258;
+  --veil: rgba(10, 9, 30, .35);
   --text: #f4f4ff;
-  --muted: #a7aad6;
-  --glass: rgba(255, 255, 255, .07);
-  --glass-strong: rgba(255, 255, 255, .11);
-  --glass-border: rgba(255, 255, 255, .14);
-  --cell: rgba(255, 255, 255, .06);
-  --cell-border: rgba(255, 255, 255, .12);
-  --cell-active: rgba(255, 255, 255, .14);
-  --shadow: 0 10px 30px rgba(0, 0, 0, .35);
-  --edge: rgba(0, 0, 0, .45);
-  --track: rgba(255, 255, 255, .18);
-  --sheet: rgba(24, 20, 60, .92);
+  --muted: #b3b5dc;
+  --glass: rgba(255, 255, 255, .09);
+  --glass-strong: rgba(255, 255, 255, .15);
+  --glass-border: rgba(255, 255, 255, .16);
+  --cell-a: rgba(255, 255, 255, .13);
+  --cell-b: rgba(255, 255, 255, .04);
+  --cell-border: rgba(255, 255, 255, .14);
+  --cell-active: rgba(255, 255, 255, .2);
+  --shadow: 0 10px 30px rgba(0, 0, 0, .3);
+  --edge: rgba(0, 0, 0, .4);
+  --track: rgba(255, 255, 255, .2);
+  --sheet: rgba(30, 26, 66, .97);
+  --input: rgba(255, 255, 255, .08);
   --x: #22d3ee;
   --x-glow: rgba(34, 211, 238, .75);
   --o: #f472b6;
   --o-glow: rgba(244, 114, 182, .75);
 }
 
-/* Light theme */
+/* Light theme: soft pastel peach, coral, teal, mint, lavender */
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg-1: #eef2ff;
-  --bg-2: #fdf2f8;
-  --bg-3: #e0f2fe;
-  --blob-1: rgba(34, 211, 238, .30);
-  --blob-2: rgba(244, 114, 182, .28);
+  --base: #fde8dc;
+  --g1: #ffd8be; --g2: #ffaea6; --g3: #94dcd6; --g4: #c6f0d8; --g5: #d9c8f7;
+  --veil: rgba(255, 255, 255, .18);
   --text: #1e1b4b;
-  --muted: #545a85;
+  --muted: #4c5180;
   --glass: rgba(255, 255, 255, .55);
-  --glass-strong: rgba(255, 255, 255, .75);
-  --glass-border: rgba(255, 255, 255, .85);
-  --cell: rgba(255, 255, 255, .55);
+  --glass-strong: rgba(255, 255, 255, .78);
+  --glass-border: rgba(255, 255, 255, .9);
+  --cell-a: rgba(255, 255, 255, .85);
+  --cell-b: rgba(255, 255, 255, .5);
   --cell-border: rgba(255, 255, 255, .95);
-  --cell-active: rgba(255, 255, 255, .9);
-  --shadow: 0 10px 30px rgba(76, 64, 160, .16);
-  --edge: rgba(91, 80, 170, .28);
-  --track: rgba(30, 27, 75, .18);
-  --sheet: rgba(255, 255, 255, .94);
+  --cell-active: rgba(255, 255, 255, .98);
+  --shadow: 0 10px 28px rgba(120, 70, 110, .16);
+  --edge: rgba(120, 80, 140, .28);
+  --track: rgba(30, 27, 75, .2);
+  --sheet: rgba(255, 255, 255, .97);
+  --input: rgba(255, 255, 255, .85);
   --x: #0891b2;
   --x-glow: rgba(8, 145, 178, .45);
   --o: #db2777;
@@ -81,7 +81,7 @@
 }
 
 /* =========================================================
-   2. BASE
+   2. BASE + ANIMATED BACKGROUND
    ========================================================= */
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
@@ -90,33 +90,34 @@ body {
   font-size: 16px;
   line-height: 1.4;
   color: var(--text);
-  background: linear-gradient(160deg, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-3) 100%);
-  background-attachment: fixed;
+  background: var(--base);
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
   touch-action: manipulation;
-  transition: background-color var(--med) ease, color var(--med) ease;
 }
 button {
-  font: inherit;
-  color: inherit;
-  border: 0;
-  background: none;
-  cursor: pointer;
+  font: inherit; color: inherit; border: 0; background: none; cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
+[hidden] { display: none !important; }
 
-/* Soft background blobs (static, cheap to render) */
-.bg-blob {
-  position: fixed; border-radius: 50%; filter: blur(60px);
-  pointer-events: none; z-index: 0;
+/* Big gradient layer that drifts with transform only (GPU composited, no repaint per frame) */
+.bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--base); }
+.bg::before {
+  content: ''; position: absolute; left: -30%; top: -30%; width: 160%; height: 160%;
+  background: linear-gradient(135deg, var(--g1) 0%, var(--g2) 25%, var(--g3) 50%, var(--g4) 72%, var(--g5) 100%);
+  animation: drift 18s ease-in-out infinite alternate;
 }
-.bg-blob.b1 { width: 280px; height: 280px; background: var(--blob-1); top: -80px; left: -90px; }
-.bg-blob.b2 { width: 320px; height: 320px; background: var(--blob-2); bottom: -110px; right: -110px; }
+.bg::after { content: ''; position: absolute; inset: 0; background: var(--veil); }
+@keyframes drift {
+  0%   { transform: translate3d(-15%, -12%, 0); }
+  50%  { transform: translate3d(14%, 6%, 0); }
+  100% { transform: translate3d(-4%, 15%, 0); }
+}
 
 /* =========================================================
    3. APP SHELL + SCREEN TRANSITIONS
@@ -131,44 +132,26 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   padding: calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 8px);
-  opacity: 0;
-  transform: translateX(32px);
-  visibility: hidden;
-  pointer-events: none;
+  opacity: 0; transform: translateX(32px); visibility: hidden; pointer-events: none;
   transition: opacity var(--med) var(--ease), transform var(--med) var(--ease), visibility 0s linear var(--med);
 }
 .screen.past { transform: translateX(-32px); }
-.screen.active {
-  opacity: 1; transform: none; visibility: visible; pointer-events: auto;
-  transition-delay: 0s;
-}
+.screen.active { opacity: 1; transform: none; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 
 /* =========================================================
    4. SHARED COMPONENTS
    ========================================================= */
-.glass {
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-}
+.glass { background: var(--glass); border: 1px solid var(--glass-border); box-shadow: var(--shadow); }
 
-/* Top bar */
-.topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: var(--s2); min-height: 52px; flex-shrink: 0;
-}
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); min-height: 52px; flex-shrink: 0; }
 .icon-btn {
-  width: 46px; height: 46px; border-radius: 15px;
+  width: 46px; height: 46px; border-radius: 15px; flex-shrink: 0;
   display: grid; place-items: center;
-  background: var(--glass); border: 1px solid var(--glass-border);
+  background: var(--glass-strong); border: 1px solid var(--glass-border);
   box-shadow: 0 4px 0 var(--edge);
   transition: transform var(--fast) ease, box-shadow var(--fast) ease, background var(--fast) ease;
 }
-.icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--edge); background: var(--glass-strong); }
-
-/* Theme toggle shows sun or moon depending on theme */
+.icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--edge); }
 .theme-toggle .i-sun, :root[data-theme="light"] .theme-toggle .i-moon { display: none; }
 :root[data-theme="light"] .theme-toggle .i-sun { display: block; }
 
@@ -176,60 +159,52 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 .btn3d {
   --c1: #8f73ff; --c2: var(--primary-2); --bedge: var(--primary-edge);
   display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
-  min-height: 52px; padding: 0 var(--s5);
-  border-radius: var(--radius);
+  min-height: 52px; padding: 0 var(--s5); border-radius: var(--radius);
   font-weight: 600; font-size: 17px; color: #fff;
   background: linear-gradient(180deg, var(--c1), var(--c2));
-  box-shadow: 0 6px 0 var(--bedge), 0 12px 22px rgba(60, 30, 180, .3);
-  transition: transform var(--fast) ease, box-shadow var(--fast) ease, filter var(--fast) ease, opacity var(--fast) ease;
+  box-shadow: 0 6px 0 var(--bedge), 0 12px 22px rgba(60, 30, 180, .25);
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease, opacity var(--fast) ease, filter var(--fast) ease;
 }
-.btn3d:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--bedge), 0 4px 10px rgba(60, 30, 180, .25); }
-.btn3d.ghost {
-  --c1: var(--glass-strong); --c2: var(--glass); --bedge: var(--edge);
-  color: var(--text); border: 1px solid var(--glass-border);
-  box-shadow: 0 6px 0 var(--bedge);
-}
+.btn3d:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--bedge), 0 4px 10px rgba(60, 30, 180, .2); }
+.btn3d.ghost { --c1: var(--glass-strong); --c2: var(--glass); --bedge: var(--edge); color: var(--text); border: 1px solid var(--glass-border); box-shadow: 0 6px 0 var(--bedge); }
 .btn3d.ghost:active { box-shadow: 0 1px 0 var(--bedge); }
 .btn3d.danger { --c1: #fb7185; --c2: #e11d48; --bedge: #9f1239; box-shadow: 0 6px 0 var(--bedge); }
 .btn3d.danger:active { box-shadow: 0 1px 0 var(--bedge); }
 .btn3d:disabled { opacity: .45; filter: grayscale(.4); pointer-events: none; }
-.btn3d.big { min-height: 62px; font-size: 21px; border-radius: 22px; width: 100%; letter-spacing: .3px; }
+.btn3d.big { min-height: 62px; font-size: 21px; border-radius: 22px; width: 100%; }
 .btn3d.big svg.lucide { width: 26px; height: 26px; fill: currentColor; }
 
 /* Segmented control with sliding thumb */
 .seg {
   --count: 3; --idx: 0;
-  position: relative;
-  display: grid; grid-template-columns: repeat(var(--count), 1fr);
+  position: relative; display: grid; grid-template-columns: repeat(var(--count), 1fr);
   padding: 4px; border-radius: 16px;
   background: var(--glass); border: 1px solid var(--glass-border);
 }
 .seg-thumb {
   position: absolute; top: 4px; bottom: 4px; left: 4px;
-  width: calc((100% - 8px) / var(--count));
-  border-radius: 12px;
+  width: calc((100% - 8px) / var(--count)); border-radius: 12px;
   background: linear-gradient(180deg, #8f73ff, var(--primary-2));
-  box-shadow: 0 3px 0 var(--primary-edge), 0 6px 14px rgba(91, 61, 245, .35);
+  box-shadow: 0 3px 0 var(--primary-edge), 0 6px 14px rgba(91, 61, 245, .3);
   transform: translateX(calc(var(--idx) * 100%));
   transition: transform var(--med) var(--ease);
 }
 .seg button {
-  position: relative; z-index: 1;
-  min-height: 46px; padding: 4px 6px; border-radius: 12px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative; z-index: 1; min-height: 46px; min-width: 0; padding: 4px 6px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
   font-weight: 600; font-size: 16px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   transition: color var(--med) ease, transform var(--fast) ease;
 }
 .seg button:active { transform: scale(.95); }
 .seg button[aria-checked="true"] { color: #fff; }
-.seg button small { font-size: 12px; font-weight: 500; opacity: .85; line-height: 1.1; }
-.seg .mini-mark { width: 22px; height: 22px; }
 
-/* Small X / O marks used in pills, cards and buttons */
-.mini-mark { width: 18px; height: 18px; display: block; }
+/* Small X / O marks (pills, cards, buttons) */
+.mini-mark { width: 18px; height: 18px; display: block; flex-shrink: 0; }
 .mini-mark path, .mini-mark circle { fill: none; stroke-width: 15; stroke-linecap: round; }
 .mini-mark.x path { stroke: var(--x); }
 .mini-mark.o circle { stroke: var(--o); }
+.seg .mini-mark { width: 22px; height: 22px; }
 .seg button[aria-checked="true"] .mini-mark path,
 .seg button[aria-checked="true"] .mini-mark circle { stroke: #fff; }
 
@@ -239,19 +214,15 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
   color: var(--muted); margin: 0 0 6px 2px;
 }
 .section-label svg.lucide { width: 16px; height: 16px; }
-
-.footer {
-  text-align: center; font-size: 13px; color: var(--muted);
-  padding-top: 6px; flex-shrink: 0;
-}
+.footer { text-align: center; font-size: 13px; color: var(--muted); padding-top: 6px; flex-shrink: 0; }
 .footer b { color: var(--text); font-weight: 600; }
 
 /* =========================================================
-   5. SPLASH SCREEN
+   5. SPLASH
    ========================================================= */
 #splash { align-items: center; justify-content: center; gap: var(--s4); text-align: center; }
 .logo { width: 120px; height: 120px; overflow: visible; }
-.logo .grid-line { stroke: var(--muted); stroke-width: 6; stroke-linecap: round; opacity: .55; }
+.logo .grid-line { stroke: var(--muted); stroke-width: 6; stroke-linecap: round; opacity: .55; fill: none; }
 .logo .lx { stroke: var(--x); stroke-width: 11; stroke-linecap: round; fill: none; filter: drop-shadow(0 0 6px var(--x-glow)); }
 .logo .lo { stroke: var(--o); stroke-width: 11; stroke-linecap: round; fill: none; filter: drop-shadow(0 0 6px var(--o-glow)); }
 .logo .draw { stroke-dasharray: 100; stroke-dashoffset: 100; }
@@ -276,14 +247,13 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 @keyframes rise { to { opacity: 1; transform: none; } }
 
 /* =========================================================
-   6. HOME SCREEN
+   6. HOME
    ========================================================= */
 .home-scroll {
-  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
   padding: 2px 2px var(--s3);
   display: flex; flex-direction: column; gap: 14px;
   scrollbar-width: none;
-  /* soft fade at the bottom edge hints that the list scrolls */
   -webkit-mask-image: linear-gradient(#000 calc(100% - 18px), transparent);
   mask-image: linear-gradient(#000 calc(100% - 18px), transparent);
 }
@@ -297,197 +267,246 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 
 .mode-cards { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); }
 .mode-card {
-  position: relative; text-align: left;
-  padding: 14px; border-radius: var(--radius-lg);
-  min-height: 0;
-  display: flex; flex-direction: column; gap: 3px;
+  position: relative; text-align: left; padding: 14px; border-radius: var(--radius-lg);
+  display: flex; flex-direction: column; gap: 3px; min-width: 0;
   transition: transform var(--fast) ease, border-color var(--med) ease, box-shadow var(--med) ease;
 }
 .mode-card:active { transform: scale(.97); }
 .mode-card .mc-icon {
-  width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center;
-  margin-bottom: 3px; background: var(--glass-strong); color: var(--muted);
+  width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; margin-bottom: 3px;
+  background: var(--glass-strong); color: var(--muted);
   transition: background var(--med) ease, color var(--med) ease;
 }
 .mode-card b { font-size: 18px; font-weight: 600; }
 .mode-card span { font-size: 14px; color: var(--muted); }
-.mode-card[aria-checked="true"] {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary), 0 12px 26px rgba(124, 92, 255, .3);
-}
+.mode-card[aria-checked="true"] { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary), 0 12px 26px rgba(124, 92, 255, .28); }
 .mode-card[aria-checked="true"] .mc-icon { background: linear-gradient(180deg, #8f73ff, var(--primary-2)); color: #fff; }
-.mode-card .check {
-  position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%;
-  border: 2px solid var(--glass-border); transition: all var(--med) ease;
-}
+.mode-card .check { position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--glass-border); transition: all var(--med) ease; }
 .mode-card[aria-checked="true"] .check { border-color: var(--primary); background: var(--primary); box-shadow: inset 0 0 0 4px var(--glass-strong); }
 
-/* Smooth collapse for the difficulty row */
-.collapsible { display: grid; grid-template-rows: 1fr; opacity: 1; transition: grid-template-rows var(--med) var(--ease), opacity var(--med) ease; }
-.collapsible > div { overflow: hidden; min-height: 0; }
-.collapsible.closed { grid-template-rows: 0fr; opacity: 0; margin-top: calc(var(--s4) * -1); }
+/* Board size chips: horizontal snap scroll */
+.chips {
+  position: relative;
+  display: flex; gap: 10px; overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  padding: 4px 4px 10px;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: 0 0 auto; scroll-snap-align: center;
+  min-width: 82px; min-height: 62px; padding: 6px 10px; border-radius: 18px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 0 var(--edge);
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease, background var(--med) ease, color var(--med) ease;
+}
+.chip b { font-size: 18px; font-weight: 600; line-height: 1.1; }
+.chip small { font-size: 12px; color: var(--muted); white-space: nowrap; transition: color var(--med) ease; }
+.chip:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--edge); }
+.chip[aria-checked="true"] {
+  color: #fff; border-color: transparent;
+  background: linear-gradient(180deg, #8f73ff, var(--primary-2));
+  box-shadow: 0 4px 0 var(--primary-edge), 0 8px 18px rgba(91, 61, 245, .3);
+}
+.chip[aria-checked="true"] small { color: rgba(255, 255, 255, .88); }
 
-.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s4) var(--s3); }
+.collapsible { display: grid; grid-template-rows: 1fr; opacity: 1; transition: grid-template-rows var(--med) var(--ease), opacity var(--med) ease, margin var(--med) var(--ease); }
+.collapsible > div { overflow: hidden; min-height: 0; }
+.collapsible.closed { grid-template-rows: 0fr; opacity: 0; margin-top: -14px; }
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px var(--s3); }
 .home-bottom { flex-shrink: 0; padding-top: var(--s2); }
 
 /* =========================================================
    7. GAME SCREEN
    ========================================================= */
 .turn-pill {
-  flex: 1; max-width: 220px; margin: 0 auto;
+  flex: 1; min-width: 0; max-width: 240px; margin: 0 auto;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 44px; padding: 0 14px; border-radius: 99px;
-  font-weight: 600; font-size: 16px;
-  white-space: nowrap; overflow: hidden;
+  font-weight: 600; font-size: 16px; white-space: nowrap;
 }
 .turn-pill .mini-mark { width: 20px; height: 20px; }
-.turn-pill .label { overflow: hidden; text-overflow: ellipsis; }
+.turn-pill .label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .turn-pill.swap { animation: pop 220ms var(--ease); }
 @keyframes pop { 0% { transform: scale(.92); opacity: .5; } 100% { transform: none; opacity: 1; } }
 
+/* Player cards: fixed grid so long names truncate instead of breaking the layout */
 .players {
-  display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--s2);
-  align-items: stretch; margin-top: var(--s3); flex-shrink: 0;
+  display: grid; grid-template-columns: minmax(0, 1fr) 50px minmax(0, 1fr); gap: var(--s2);
+  margin-top: var(--s3); flex-shrink: 0;
 }
 .player-card {
   --mc: var(--x); --mg: var(--x-glow);
-  position: relative;
-  display: flex; align-items: center; gap: var(--s2);
-  padding: 10px; border-radius: var(--radius);
-  min-width: 0;
+  position: relative; min-width: 0;
+  display: grid; grid-template-columns: 36px minmax(0, 1fr); align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: var(--radius);
   transition: transform var(--med) var(--ease);
 }
 .player-card.mark-o { --mc: var(--o); --mg: var(--o-glow); }
-.player-card.right { flex-direction: row-reverse; text-align: right; }
+.player-card.right { grid-template-columns: minmax(0, 1fr) 36px; text-align: right; }
+.player-card.right .avatar { order: 2; }
 .player-card::after {
   content: ''; position: absolute; inset: -1px; border-radius: inherit;
-  border: 2px solid var(--mc); box-shadow: 0 0 18px var(--mg), inset 0 0 12px var(--mg);
+  border: 2px solid var(--mc); box-shadow: 0 0 16px var(--mg), inset 0 0 10px var(--mg);
   opacity: 0; transition: opacity var(--med) ease; pointer-events: none;
 }
 .player-card.active { transform: translateY(-2px) scale(1.03); }
-.player-card.active::after { opacity: 1; animation: pulse 1.6s ease-in-out infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+.player-card.active::after { opacity: 1; animation: pulse 1.8s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 .avatar {
-  position: relative; width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0;
-  display: grid; place-items: center; color: #fff;
+  position: relative; width: 36px; height: 36px; border-radius: 12px;
+  display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 18px;
   background: linear-gradient(160deg, var(--mc), var(--primary-2));
 }
+.avatar svg.lucide { width: 20px; height: 20px; }
 .avatar .badge {
-  position: absolute; bottom: -5px; right: -5px; width: 20px; height: 20px; border-radius: 7px;
+  position: absolute; bottom: -5px; right: -5px; width: 19px; height: 19px; border-radius: 7px;
   display: grid; place-items: center; background: var(--sheet); border: 1px solid var(--glass-border);
 }
 .player-card.right .avatar .badge { right: auto; left: -5px; }
-.avatar .badge .mini-mark { width: 12px; height: 12px; }
+.avatar .badge .mini-mark { width: 11px; height: 11px; }
 .pinfo { min-width: 0; display: flex; flex-direction: column; }
 .pname { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pscore { font-size: 24px; font-weight: 700; line-height: 1.05; color: var(--mc); }
-.draws {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-width: 52px; padding: 6px; border-radius: var(--radius);
-}
-.draws span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+.pscore { font-size: 22px; font-weight: 700; line-height: 1.05; color: var(--mc); }
+.draws { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 2px; border-radius: var(--radius); }
+.draws span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 .draws b { font-size: 22px; font-weight: 700; }
 .bump { animation: bump 260ms var(--ease); }
 @keyframes bump { 50% { transform: scale(1.35); } }
 
-/* "thinking..." indicator, keeps its space so the layout does not jump */
+/* Info / "Thinking..." line */
 .status-line {
-  height: 30px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  height: 32px; display: flex; align-items: center; justify-content: center; gap: 8px;
   color: var(--muted); font-size: 16px; flex-shrink: 0;
-  opacity: 0; transition: opacity 180ms ease;
 }
-.status-line.show { opacity: 1; }
-.dots { display: inline-flex; gap: 4px; }
+.status-line .dots { display: none; gap: 4px; }
+.status-line.thinking { color: var(--text); }
+.status-line.thinking .dots { display: inline-flex; }
 .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--o); animation: blink 900ms infinite ease-in-out; }
 .dots i:nth-child(2) { animation-delay: 150ms; }
 .dots i:nth-child(3) { animation-delay: 300ms; }
 @keyframes blink { 0%, 80%, 100% { transform: scale(.6); opacity: .4; } 40% { transform: scale(1); opacity: 1; } }
 
-/* Board */
-.board-area { flex: 1; min-height: 0; display: grid; place-items: center; }
-.board-wrap { position: relative; width: 320px; height: 320px; }
+/* Board viewport: pan / pinch area for big boards */
+.board-area { position: relative; flex: 1; min-height: 0; }
+.viewport { position: absolute; inset: 0; overflow: hidden; border-radius: var(--radius-lg); touch-action: manipulation; }
+.viewport.pannable { touch-action: none; }
 .board {
-  --n: 3; --gap: 10px; --pad: 12px; --cr: 18px;
-  width: 100%; height: 100%;
-  display: grid; grid-template-columns: repeat(var(--n), 1fr); grid-template-rows: repeat(var(--n), 1fr);
+  --n: 3; --cell: 90px; --gap: 10px; --pad: 10px; --cr: 18px;
+  position: absolute; left: 0; top: 0; transform-origin: 0 0;
+  display: grid; grid-template-columns: repeat(var(--n), var(--cell)); grid-auto-rows: var(--cell);
   gap: var(--gap); padding: var(--pad);
   border-radius: calc(var(--cr) + var(--pad));
+  background: var(--glass); border: 1px solid var(--glass-border); box-shadow: var(--shadow);
 }
-.board[data-size="4"] { --gap: 8px; --pad: 10px; --cr: 14px; }
-.board[data-size="6"] { --gap: 5px; --pad: 7px; --cr: 10px; }
-.board.enter { animation: boardIn 280ms var(--ease); }
-@keyframes boardIn { from { opacity: 0; transform: scale(.94); } }
+.board.smooth { transition: transform 240ms var(--ease); }
+.board.enter { animation: fadeIn 240ms var(--ease); }
+@keyframes fadeIn { from { opacity: 0; } }
 
-/* Cells: plain frosted glass so marks stand out */
+/* Cells: light frosted glass + soft gradient so X and O stand out */
 .cell {
-  position: relative; min-width: 0; min-height: 0;
+  position: relative; width: var(--cell); height: var(--cell); padding: 0;
   border-radius: var(--cr);
-  background: var(--cell);
+  background: linear-gradient(145deg, var(--cell-a), var(--cell-b));
   border: 1px solid var(--cell-border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25);
   display: grid; place-items: center;
-  transition: background var(--fast) ease, transform var(--fast) ease, opacity var(--med) ease;
+  transition: background var(--fast) ease, transform var(--fast) ease, opacity var(--med) ease, box-shadow var(--med) ease;
 }
-.cell:active:not(.filled) { transform: scale(.94); background: var(--cell-active); }
+.cell:active:not(.filled) { transform: scale(.92); background: var(--cell-active); }
+.board.locked .cell { cursor: wait; }
+.board.locked .cell:active { transform: none; }
 .cell.filled { cursor: default; }
-.cell svg { width: 72%; height: 72%; overflow: visible; }
+.cell svg { width: 70%; height: 70%; overflow: visible; }
 .cell path, .cell circle { fill: none; stroke-width: 13; stroke-linecap: round; }
-.cell.x path { stroke: var(--x); filter: drop-shadow(0 0 5px var(--x-glow)); }
-.cell.o circle { stroke: var(--o); filter: drop-shadow(0 0 5px var(--o-glow)); }
-/* SVG stroke draw animation */
+.cell.x path { stroke: var(--x); filter: drop-shadow(0 0 4px var(--x-glow)); }
+.cell.o circle { stroke: var(--o); filter: drop-shadow(0 0 4px var(--o-glow)); transform: rotate(-90deg); transform-origin: 50% 50%; }
 .cell .stroke { stroke-dasharray: 100; stroke-dashoffset: 100; animation: draw 220ms var(--ease) forwards; }
 .cell .stroke.second { animation-delay: 90ms; }
 .cell.instant .stroke { animation: none; stroke-dashoffset: 0; }
-.cell.o circle { transform: rotate(-90deg); transform-origin: 50% 50%; }
-.cell.win { background: var(--cell-active); }
-.cell.win.x { box-shadow: 0 0 16px var(--x-glow); }
-.cell.win.o { box-shadow: 0 0 16px var(--o-glow); }
-.board.done .cell:not(.win) { opacity: .28; }
-
-/* Winning line overlay */
-.win-line { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
-.win-line line {
-  stroke-width: 9; stroke-linecap: round; stroke: #fff;
-  transition: stroke-dashoffset 280ms var(--ease);
+/* Last move ring: easy to spot on big boards */
+.cell.last::after {
+  content: ''; position: absolute; inset: 2px; border-radius: calc(var(--cr) - 2px);
+  border: 2px solid var(--accent); pointer-events: none;
+  animation: fadeIn 200ms ease;
 }
-.win-line.x line { filter: drop-shadow(0 0 8px var(--x)) drop-shadow(0 0 3px var(--x)); }
-.win-line.o line { filter: drop-shadow(0 0 8px var(--o)) drop-shadow(0 0 3px var(--o)); }
+.cell.win { background: var(--cell-active); }
+.cell.win.x { box-shadow: 0 0 14px var(--x-glow), inset 0 0 0 2px var(--x); }
+.cell.win.o { box-shadow: 0 0 14px var(--o-glow), inset 0 0 0 2px var(--o); }
+.cell.win::after { display: none; }
+.board.done .cell:not(.win) { opacity: .3; }
+
+.win-line { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.win-line line { stroke-linecap: round; stroke: #fff; transition: stroke-dashoffset 280ms var(--ease); }
+.win-line.x line { filter: drop-shadow(0 0 6px var(--x)) drop-shadow(0 0 2px var(--x)); }
+.win-line.o line { filter: drop-shadow(0 0 6px var(--o)) drop-shadow(0 0 2px var(--o)); }
+
+/* Zoom controls (9x9 and up) */
+.zoom-ctrls { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 10px; z-index: 2; }
+.zoom-ctrls .icon-btn { width: 44px; height: 44px; }
 
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); padding-top: var(--s3); flex-shrink: 0; }
 
 /* =========================================================
-   8. RESULT POPUP
+   8. POPUPS (result + names)
    ========================================================= */
 .overlay {
-  position: fixed; inset: 0; z-index: 20;
-  background: rgba(6, 5, 22, .55);
+  position: fixed; inset: 0; z-index: 20; background: rgba(8, 6, 26, .5);
   opacity: 0; pointer-events: none; visibility: hidden;
   transition: opacity var(--med) ease, visibility 0s linear var(--med);
 }
 .overlay.open { opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s; }
 .modal { display: grid; place-items: center; padding: 16px; }
 .modal-card {
-  width: min(100%, 360px); max-height: calc(100dvh - 32px); overflow-y: auto;
+  position: relative; width: min(100%, 370px); max-height: calc(100dvh - 32px); overflow-y: auto;
   padding: var(--s5) var(--s5) var(--s4); border-radius: 28px; text-align: center;
   background: var(--sheet); border: 1px solid var(--glass-border); box-shadow: var(--shadow);
   transform: scale(.9) translateY(12px); transition: transform var(--med) var(--ease);
 }
 .overlay.open .modal-card { transform: none; }
+.modal-card.shake { animation: shake 300ms ease; }
+@keyframes shake { 20% { translate: -10px 0; } 40% { translate: 9px 0; } 60% { translate: -6px 0; } 80% { translate: 3px 0; } }
 .result-icon {
   width: 84px; height: 84px; margin: 0 auto var(--s3); border-radius: 26px;
   display: grid; place-items: center; color: #fff;
   background: linear-gradient(160deg, var(--accent), #f97316);
-  box-shadow: 0 6px 0 #b45309, 0 14px 26px rgba(249, 115, 22, .35);
+  box-shadow: 0 6px 0 #b45309, 0 14px 26px rgba(249, 115, 22, .3);
 }
 .result-icon svg.lucide { width: 44px; height: 44px; }
 .result-icon.lose { background: linear-gradient(160deg, #94a3b8, #475569); box-shadow: 0 6px 0 #334155; }
-.result-icon.draw { background: linear-gradient(160deg, #a78bfa, var(--primary-2)); box-shadow: 0 6px 0 var(--primary-edge); }
-.modal-card h2 { margin: 0; font-size: 32px; font-weight: 700; }
+.result-icon.draw, .result-icon.names { background: linear-gradient(160deg, #a78bfa, var(--primary-2)); box-shadow: 0 6px 0 var(--primary-edge); }
+.result-icon.names { width: 64px; height: 64px; border-radius: 20px; }
+.result-icon.names svg.lucide { width: 32px; height: 32px; }
+.modal-card h2 { margin: 0; font-size: 30px; font-weight: 700; overflow-wrap: anywhere; }
 .modal-card p { margin: 6px 0 var(--s5); color: var(--muted); }
 .modal-actions { display: grid; gap: var(--s4); }
+.close-x { position: absolute; top: 12px; right: 12px; }
+
+/* Name fields with inline validation */
+.names-card { text-align: left; }
+.names-card h2, .names-card > p { text-align: center; }
+.field { margin-bottom: var(--s2); }
+.field label { display: flex; align-items: center; gap: 6px; font-weight: 600; margin: 0 0 6px 2px; }
+.input-wrap { position: relative; }
+.field input {
+  width: 100%; min-height: 50px; padding: 0 64px 0 14px; border-radius: 14px;
+  font: inherit; font-size: 17px; color: var(--text);
+  background: var(--input); border: 2px solid var(--glass-border);
+  -webkit-user-select: text; user-select: text;
+  transition: border-color var(--fast) ease, box-shadow var(--fast) ease;
+}
+.field input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(124, 92, 255, .2); }
+.field .count { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--muted); }
+.field .err { min-height: 20px; font-size: 14px; color: var(--danger); margin: 4px 0 0 4px; }
+.field.invalid input { border-color: var(--danger); box-shadow: 0 0 0 4px rgba(244, 63, 94, .15); }
+.field.invalid .count { color: var(--danger); }
+.names-card .btn3d { width: 100%; margin-top: var(--s2); }
 
 /* =========================================================
-   9. SETTINGS BOTTOM SHEET
+   9. SETTINGS SHEET
    ========================================================= */
 .sheet {
   position: fixed; z-index: 21; left: 0; right: 0; bottom: 0;
@@ -496,7 +515,7 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
   padding: 10px var(--s4) calc(env(safe-area-inset-bottom) + var(--s4));
   border-radius: 28px 28px 0 0;
   background: var(--sheet); border: 1px solid var(--glass-border); border-bottom: 0;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, .3);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, .25);
   transform: translateY(105%); visibility: hidden;
   transition: transform 280ms var(--ease), visibility 0s linear 280ms;
 }
@@ -512,25 +531,17 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
   transition: transform var(--fast) ease, background var(--fast) ease;
 }
 button.set-row:active { transform: scale(.98); background: var(--glass-strong); }
-.set-row .ri { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--glass-strong); color: var(--primary); }
+.set-row .ri { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--glass-strong); color: var(--primary); flex-shrink: 0; }
 .set-row .rt { flex: 1; font-weight: 500; }
 .set-row .rt small { display: block; color: var(--muted); font-size: 13px; font-weight: 400; }
 .set-theme { display: block; }
 .set-theme .seg { margin-top: 10px; }
-.switch {
-  position: relative; width: 52px; height: 32px; border-radius: 99px; flex-shrink: 0;
-  background: var(--track); transition: background var(--med) ease;
-}
-.switch::after {
-  content: ''; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%;
-  background: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
-  transition: transform var(--med) var(--ease);
-}
+.switch { position: relative; width: 52px; height: 32px; border-radius: 99px; flex-shrink: 0; background: var(--track); transition: background var(--med) ease; }
+.switch::after { content: ''; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .25); transition: transform var(--med) var(--ease); }
 [aria-checked="true"] > .switch { background: var(--primary); }
 [aria-checked="true"] > .switch::after { transform: translateX(20px); }
 #resetScores { width: 100%; margin-top: var(--s2); }
 
-/* Confetti canvas sits above everything */
 #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; }
 
 /* =========================================================
@@ -540,22 +551,16 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
   .screen { padding-left: 24px; padding-right: 24px; }
   .hero h1 { font-size: 36px; }
 }
-@media (min-width: 1024px) {
-  .app { max-width: 560px; }
-}
-@media (max-width: 350px) {
-  .player-card { padding: 8px; gap: 6px; }
-  .avatar { width: 34px; height: 34px; }
-}
+@media (min-width: 1024px) { .app { max-width: 580px; } }
 @media (prefers-reduced-motion: reduce) {
+  .bg::before { animation: none; }
   *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 }
 </style>
 </head>
 <body>
 
-<div class="bg-blob b1"></div>
-<div class="bg-blob b2"></div>
+<div class="bg" aria-hidden="true"></div>
 
 <main class="app">
 
@@ -614,12 +619,7 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
 
       <div>
         <div class="section-label"><i data-lucide="grid-3x3"></i>Board size</div>
-        <div class="seg" data-key="size" role="radiogroup" aria-label="Board size">
-          <span class="seg-thumb"></span>
-          <button role="radio" data-val="3">3×3<small>3 in a row</small></button>
-          <button role="radio" data-val="4">4×4<small>4 in a row</small></button>
-          <button role="radio" data-val="6">6×6<small>4 in a row</small></button>
-        </div>
+        <div class="chips" id="sizeChips" role="radiogroup" aria-label="Board size"></div>
       </div>
 
       <div class="collapsible" id="difficultyBlock">
@@ -670,24 +670,28 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
 
     <div class="players">
       <div class="player-card glass" id="cardP1">
-        <div class="avatar"><span class="av-icon"></span><span class="badge"></span></div>
-        <div class="pinfo"><span class="pname">You</span><span class="pscore">0</span></div>
+        <div class="avatar"><span class="av"></span><span class="badge"></span></div>
+        <div class="pinfo"><span class="pname"></span><span class="pscore">0</span></div>
       </div>
       <div class="draws glass"><span>Draw</span><b id="scoreDraw">0</b></div>
       <div class="player-card glass right" id="cardP2">
-        <div class="avatar"><span class="av-icon"></span><span class="badge"></span></div>
-        <div class="pinfo"><span class="pname">Machine</span><span class="pscore">0</span></div>
+        <div class="avatar"><span class="av"></span><span class="badge"></span></div>
+        <div class="pinfo"><span class="pname"></span><span class="pscore">0</span></div>
       </div>
     </div>
 
-    <div class="status-line" id="thinking" aria-hidden="true">
-      <span class="dots"><i></i><i></i><i></i></span><span>Machine is thinking...</span>
+    <div class="status-line" id="statusLine" aria-live="polite">
+      <span class="dots"><i></i><i></i><i></i></span><span id="statusText"></span>
     </div>
 
-    <div class="board-area" id="boardArea">
-      <div class="board-wrap" id="boardWrap">
-        <div class="board glass" id="board" role="grid" aria-label="Game board"></div>
-        <svg class="win-line" id="winLine" aria-hidden="true"><line x1="0" y1="0" x2="0" y2="0"/></svg>
+    <div class="board-area">
+      <div class="viewport" id="viewport">
+        <div class="board" id="board" role="grid" aria-label="Game board"></div>
+      </div>
+      <div class="zoom-ctrls" id="zoomCtrls" hidden>
+        <button class="icon-btn" id="zoomIn" aria-label="Zoom in"><i data-lucide="zoom-in"></i></button>
+        <button class="icon-btn" id="zoomOut" aria-label="Zoom out"><i data-lucide="zoom-out"></i></button>
+        <button class="icon-btn" id="zoomFit" aria-label="Fit board to screen"><i data-lucide="scan"></i></button>
       </div>
     </div>
 
@@ -699,9 +703,36 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
   </section>
 </main>
 
+<!-- ================= NAMES POPUP ================= -->
+<div class="overlay modal" id="namesModal" role="dialog" aria-modal="true" aria-labelledby="namesTitle">
+  <form class="modal-card names-card" id="namesForm" novalidate>
+    <button type="button" class="icon-btn close-x" id="namesClose" aria-label="Close"><i data-lucide="x"></i></button>
+    <div class="result-icon names"><i data-lucide="users"></i></div>
+    <h2 id="namesTitle">Who's playing?</h2>
+    <p id="namesSub">Max 12 characters each</p>
+    <div class="field" id="field1">
+      <label for="name1"><span class="fmark"></span><span class="flabel">Player 1</span></label>
+      <div class="input-wrap">
+        <input id="name1" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" aria-describedby="err1">
+        <span class="count"></span>
+      </div>
+      <div class="err" id="err1" aria-live="polite"></div>
+    </div>
+    <div class="field" id="field2">
+      <label for="name2"><span class="fmark"></span><span class="flabel">Player 2</span></label>
+      <div class="input-wrap">
+        <input id="name2" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="go" aria-describedby="err2">
+        <span class="count"></span>
+      </div>
+      <div class="err" id="err2" aria-live="polite"></div>
+    </div>
+    <button type="submit" class="btn3d" id="namesStart"><i data-lucide="play"></i>Start game</button>
+  </form>
+</div>
+
 <!-- ================= RESULT POPUP ================= -->
 <div class="overlay modal" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
-  <div class="modal-card">
+  <div class="modal-card" id="resultCard">
     <div class="result-icon" id="resultIcon"></div>
     <h2 id="resultTitle">You Win!</h2>
     <p id="resultSub">Great moves.</p>
@@ -743,7 +774,7 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
         <button role="radio" data-val="dark">Dark</button>
       </div>
     </div>
-    <button class="btn3d danger" id="resetScores"><i data-lucide="trash-2"></i><span>Reset scores</span></button>
+    <button class="btn3d danger" id="resetScores"><i data-lucide="trash-2"></i><span>Reset all scores</span></button>
   </div>
 </div>
 
@@ -754,270 +785,434 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
 'use strict';
 
 /* =========================================================================
-   PART A: GAME LOGIC (pure functions, no DOM)
-   Board is an array of 'X' | 'O' | null, indexed row * size + col.
+   PART A: GAME ENGINE (board rules + AI). No DOM access.
+   Written as one self-contained function so the exact same code can run on
+   the main thread AND inside a Web Worker (via createEngine.toString()).
+   Board = array of 'X' | 'O' | null, index = row * size + col.
    ========================================================================= */
-const Logic = (() => {
-  const geoCache = {};
+function createEngine() {
+  'use strict';
 
-  /** Win length: 3x3 needs 3 in a row, 4x4 and 6x6 need 4. */
-  const winLength = size => (size === 3 ? 3 : 4);
+  const SIZES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  const DIRS = [[0, 1], [1, 0], [1, 1], [1, -1]]; // horizontal, vertical, two diagonals
+
+  /** 3x3 = 3 in a row, 4x4..6x6 = 4, 7x7..12x12 = 5. */
+  const winLength = size => (size === 3 ? 3 : size <= 6 ? 4 : 5);
+
+  /* ---------------- Logic ---------------- */
 
   /**
-   * Builds (once per size) every possible winning segment.
-   * Each line is an ordered list of cell indices, so the first and last
-   * index are the two ends (used to draw the win line).
+   * Win check from the last placed cell only. Walks at most k-1 steps each
+   * way in the 4 directions, counting the same mark in a row.
+   * Time O(k), space O(k). Returns the ordered winning cells, or null.
    */
-  function geometry(size) {
-    if (geoCache[size]) return geoCache[size];
-    const k = winLength(size);
-    const n = size * size;
-    const lines = [];
-    const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]]; // right, down, diag, anti-diag
-    for (let r = 0; r < size; r++) {
-      for (let c = 0; c < size; c++) {
-        for (const [dr, dc] of dirs) {
-          const er = r + dr * (k - 1), ec = c + dc * (k - 1);
-          if (er < 0 || er >= size || ec < 0 || ec >= size) continue;
-          const line = [];
-          for (let s = 0; s < k; s++) line.push((r + dr * s) * size + (c + dc * s));
-          lines.push(line);
-        }
+  function winFrom(board, size, i) {
+    const v = board[i];
+    if (!v) return null;
+    const k = winLength(size), r0 = (i / size) | 0, c0 = i % size;
+    for (const [dr, dc] of DIRS) {
+      const cells = [i];
+      let r = r0 - dr, c = c0 - dc, steps = 0;
+      while (steps < k - 1 && r >= 0 && r < size && c >= 0 && c < size && board[r * size + c] === v) {
+        cells.unshift(r * size + c); r -= dr; c -= dc; steps++;
       }
-    }
-    // For every cell: which lines pass through it (fast local win checks)
-    const cellLines = Array.from({ length: n }, () => []);
-    lines.forEach(line => line.forEach(i => cellLines[i].push(line)));
-    // For every cell: its 8 neighbours (used to prune AI moves on 6x6)
-    const neighbors = Array.from({ length: n }, (_, i) => {
-      const r = Math.floor(i / size), c = i % size, out = [];
-      for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
-        if (!dr && !dc) continue;
-        const rr = r + dr, cc = c + dc;
-        if (rr >= 0 && rr < size && cc >= 0 && cc < size) out.push(rr * size + cc);
+      r = r0 + dr; c = c0 + dc; steps = 0;
+      while (steps < k - 1 && r >= 0 && r < size && c >= 0 && c < size && board[r * size + c] === v) {
+        cells.push(r * size + c); r += dr; c += dc; steps++;
       }
-      return out;
-    });
-    return (geoCache[size] = { size, n, k, lines, cellLines, neighbors });
-  }
-
-  /** Returns { winner, line } if someone won, { draw: true } if full, else null. */
-  function result(board, size) {
-    const { lines } = geometry(size);
-    for (const line of lines) {
-      const v = board[line[0]];
-      if (v && line.every(i => board[i] === v)) return { winner: v, line };
+      if (cells.length >= k) return cells;
     }
-    if (board.every(Boolean)) return { draw: true };
     return null;
   }
 
   const other = mark => (mark === 'X' ? 'O' : 'X');
+  const Logic = { SIZES, winLength, winFrom, other };
 
-  return { geometry, result, winLength, other };
-})();
+  /* ---------------- AI ----------------
+     Internal board: Int8Array, 0 = empty, 1 = AI, 2 = human. */
+  const AI = (() => {
+    const WIN = 1e9;
+    const DEFENSE = 1.15;     // opponent threats weigh a bit more
+    const ROOT_CAP = 18;      // best N candidate moves searched at the root
+    const NODE_CAP = 10;      // ...and deeper in the tree (beam pruning)
+    const TIME_BUDGET = 200;  // ms, hard cap for the search
+    const geoCache = {};
+
+    let g, b, k, size, score, empty, deadline, nodes, aborted;
+
+    /**
+     * Per-size geometry: neighbour lists (radius 1 and 2) for candidate moves,
+     * and the full rows / columns / diagonals ("axes") used by the heuristic.
+     * These are whole board lines, not a list of winning lines.
+     */
+    function geometry(sz) {
+      if (geoCache[sz]) return geoCache[sz];
+      const n = sz * sz, kk = winLength(sz);
+      const near1 = [], near2 = [];
+      for (let i = 0; i < n; i++) {
+        const r = (i / sz) | 0, c = i % sz, a = [], a2 = [];
+        for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+          if (!dr && !dc) continue;
+          const rr = r + dr, cc = c + dc;
+          if (rr < 0 || rr >= sz || cc < 0 || cc >= sz) continue;
+          a2.push(rr * sz + cc);
+          if (Math.abs(dr) <= 1 && Math.abs(dc) <= 1) a.push(rr * sz + cc);
+        }
+        near1.push(a); near2.push(a2);
+      }
+      const axes = [], cellAxes = Array.from({ length: n }, () => []);
+      for (const [dr, dc] of DIRS) {
+        for (let r = 0; r < sz; r++) for (let c = 0; c < sz; c++) {
+          const pr = r - dr, pc = c - dc;
+          if (pr >= 0 && pr < sz && pc >= 0 && pc < sz) continue; // not the start of an axis
+          const axis = [];
+          for (let rr = r, cc = c; rr >= 0 && rr < sz && cc >= 0 && cc < sz; rr += dr, cc += dc) axis.push(rr * sz + cc);
+          if (axis.length >= kk) {
+            axis.forEach(i => cellAxes[i].push(axes.length));
+            axes.push(axis);
+          }
+        }
+      }
+      return (geoCache[sz] = { n, near1, near2, axes, cellAxes });
+    }
+
+    /**
+     * Value of a run by how many marks it still needs and its open ends.
+     * For 5 in a row: open 4 > blocked 4 > open 3 > blocked 3 > open 2.
+     * Using "marks still needed" makes the same table work for k = 3, 4, 5.
+     */
+    function runValue(need, open) {
+      if (need <= 0) return 1e6;
+      if (open === 0) return 0;
+      if (need === 1) return open === 2 ? 50000 : 5000;
+      if (need === 2) return open === 2 ? 2000 : 300;
+      if (need === 3) return open === 2 ? 100 : 15;
+      return open === 2 ? 4 : 1;
+    }
+
+    /** Scores every run of player p along one axis. O(axis length). */
+    function axisValue(axis, p) {
+      const opp = 3 - p, len = axis.length;
+      let s = 0, segStart = 0;
+      for (let j = 0; j <= len; j++) {
+        if (j < len && b[axis[j]] !== opp) continue;
+        // [segStart, j) holds only p and empty cells; skip it if it can never fit k
+        if (j - segStart >= k) {
+          let x = segStart;
+          while (x < j) {
+            if (b[axis[x]] !== p) { x++; continue; }
+            const st = x;
+            while (x < j && b[axis[x]] === p) x++;
+            const open = (st > segStart ? 1 : 0) + (x < j ? 1 : 0);
+            s += runValue(k - (x - st), open);
+          }
+        }
+        segStart = j + 1;
+      }
+      return s;
+    }
+
+    /** Score of the (up to) 4 axes through cell i: AI minus weighted human. */
+    function cellValue(i) {
+      let s = 0;
+      for (const id of g.cellAxes[i]) {
+        const ax = g.axes[id];
+        s += axisValue(ax, 1) - DEFENSE * axisValue(ax, 2);
+      }
+      return s;
+    }
+    function totalValue() {
+      let s = 0;
+      for (const ax of g.axes) s += axisValue(ax, 1) - DEFENSE * axisValue(ax, 2);
+      return s;
+    }
+
+    /** Make / unmake a move, keeping the score up to date incrementally (only 4 axes change). */
+    function play(i, p) {
+      const before = cellValue(i);
+      b[i] = p; empty--;
+      const d = cellValue(i) - before;
+      score += d;
+      return d;
+    }
+    function unplay(i, d) { b[i] = 0; empty++; score -= d; }
+
+    /** True if p has k in a row through cell i. O(k). */
+    function isWin(i, p) {
+      const r0 = (i / size) | 0, c0 = i % size;
+      for (const [dr, dc] of DIRS) {
+        let cnt = 1;
+        for (let s = 1, r = r0 + dr, c = c0 + dc; s < k && r >= 0 && r < size && c >= 0 && c < size && b[r * size + c] === p; s++, r += dr, c += dc) cnt++;
+        for (let s = 1, r = r0 - dr, c = c0 - dc; s < k && r >= 0 && r < size && c >= 0 && c < size && b[r * size + c] === p; s++, r -= dr, c -= dc) cnt++;
+        if (cnt >= k) return true;
+      }
+      return false;
+    }
+
+    /** Candidate moves: empty cells within the neighbour radius of any mark. */
+    function candidates(near) {
+      const out = [];
+      for (let i = 0; i < g.n; i++) {
+        if (b[i]) continue;
+        const nb = near[i];
+        for (let j = 0; j < nb.length; j++) if (b[nb[j]]) { out.push(i); break; }
+      }
+      if (!out.length) out.push((size >> 1) * size + (size >> 1)); // empty board: centre
+      return out;
+    }
+
+    /**
+     * Fast move priority for side p (attack + defence). Used for move
+     * ordering, beam pruning and Medium play. O(k) per cell.
+     */
+    function quick(i, p) {
+      const r0 = (i / size) | 0, c0 = i % size;
+      let s = 0;
+      for (const [dr, dc] of DIRS) {
+        for (let v = 1; v <= 2; v++) {
+          let cnt = 0, open = 0, r = r0 + dr, c = c0 + dc, st = 0;
+          while (st < k && r >= 0 && r < size && c >= 0 && c < size && b[r * size + c] === v) { cnt++; r += dr; c += dc; st++; }
+          if (r >= 0 && r < size && c >= 0 && c < size && b[r * size + c] === 0) open++;
+          r = r0 - dr; c = c0 - dc; st = 0;
+          while (st < k && r >= 0 && r < size && c >= 0 && c < size && b[r * size + c] === v) { cnt++; r -= dr; c -= dc; st++; }
+          if (r >= 0 && r < size && c >= 0 && c < size && b[r * size + c] === 0) open++;
+          if (!cnt) continue;
+          const val = cnt + 1 >= k ? 1e6 : runValue(k - cnt - 1, open);
+          s += v === p ? val : val * 0.9;
+        }
+      }
+      const mid = (size - 1) / 2; // small pull toward the centre
+      return s + 1 - (Math.abs(r0 - mid) + Math.abs(c0 - mid)) / (size * 2);
+    }
+
+    function ordered(moves, p, cap) {
+      return moves
+        .map(m => ({ m, s: quick(m, p) }))
+        .sort((x, y) => y.s - x.s)
+        .slice(0, cap)
+        .map(o => o.m);
+    }
+
+    const randomOf = arr => arr[(Math.random() * arr.length) | 0];
+
+    /** First cell where p wins right now, or -1. A winning cell always touches p's marks. */
+    function findWin(p) {
+      for (const i of candidates(g.near1)) {
+        b[i] = p;
+        const w = isWin(i, p);
+        b[i] = 0;
+        if (w) return i;
+      }
+      return -1;
+    }
+
+    /**
+     * Leaf score from p's view, plus a cheap threat check so the search does
+     * not miss a win that is only one move past its depth ("horizon"):
+     * - p can win right now                     -> win
+     * - opponent has 2+ winning cells           -> loss (can only block one)
+     * - p can make an open four, opponent has no immediate win -> nearly won
+     * Cost: O(candidates * k).
+     */
+    function leafValue(p, ply) {
+      const opp = 3 - p;
+      let oppWins = 0, myOpenFour = false;
+      for (const i of candidates(g.near1)) {
+        const r0 = (i / size) | 0, c0 = i % size;
+        let oppWinsHere = false; // one cell counts once, even if it wins in 2 directions
+        for (const [dr, dc] of DIRS) {
+          for (let v = 1; v <= 2; v++) {
+            let cnt = 0, open = 0, r = r0 + dr, c = c0 + dc;
+            while (cnt < k && r >= 0 && r < size && c >= 0 && c < size && b[r * size + c] === v) { cnt++; r += dr; c += dc; }
+            if (r >= 0 && r < size && c >= 0 && c < size && b[r * size + c] === 0) open++;
+            r = r0 - dr; c = c0 - dc;
+            while (cnt < k && r >= 0 && r < size && c >= 0 && c < size && b[r * size + c] === v) { cnt++; r -= dr; c -= dc; }
+            if (r >= 0 && r < size && c >= 0 && c < size && b[r * size + c] === 0) open++;
+            if (cnt + 1 >= k) {
+              if (v === p) return WIN - ply - 1;
+              oppWinsHere = true;
+            } else if (v === p && cnt + 2 === k && open === 2) myOpenFour = true;
+          }
+        }
+        if (oppWinsHere) oppWins++;
+      }
+      if (oppWins >= 2) return -(WIN - ply - 2);
+      const s = p === 1 ? score : -score;
+      return myOpenFour && !oppWins && k > 3 ? s + 400000 : s;
+    }
+
+    /**
+     * Negamax + alpha-beta. `p` is the side to move, `last` the opponent's
+     * last move. Returns a score from p's point of view.
+     */
+    function negamax(depth, alpha, beta, p, last, ply) {
+      if (isWin(last, 3 - p)) return -(WIN - ply);
+      if (!empty) return 0;
+      if (!depth) return leafValue(p, ply);
+      if ((++nodes & 255) === 0 && performance.now() > deadline) { aborted = true; return 0; }
+      let best = -Infinity;
+      for (const m of ordered(candidates(g.near1), p, NODE_CAP)) {
+        const d = play(m, p);
+        const s = -negamax(depth - 1, -beta, -alpha, 3 - p, m, ply + 1);
+        unplay(m, d);
+        if (aborted) return 0;
+        if (s > best) best = s;
+        if (s > alpha) alpha = s;
+        if (alpha >= beta) break; // prune
+      }
+      return best;
+    }
+
+    /** Hard 4x4+: iterative deepening up to maxDepth; stops when the time budget runs out. */
+    function deepSearch(maxDepth) {
+      deadline = performance.now() + TIME_BUDGET;
+      aborted = false; nodes = 0;
+      score = totalValue();
+      let moves = ordered(candidates(size >= 7 ? g.near2 : g.near1), 1, ROOT_CAP);
+      let best = moves[0];
+      for (let depth = 1; depth <= maxDepth; depth++) {
+        let alpha = -Infinity, bestHere = moves[0], bestScore = -Infinity;
+        for (const m of moves) {
+          const d = play(m, 1);
+          const s = -negamax(depth - 1, -Infinity, -alpha, 2, m, 1);
+          unplay(m, d);
+          if (aborted) break;
+          if (s > bestScore) { bestScore = s; bestHere = m; }
+          if (s > alpha) alpha = s;
+        }
+        if (aborted) break;                              // keep the last complete depth
+        best = bestHere;
+        moves = [best, ...moves.filter(m => m !== best)]; // try best first next round
+        if (bestScore > WIN / 2) break;                  // forced win found
+      }
+      return best;
+    }
+
+    /** Hard 3x3: full minimax with alpha-beta. Unbeatable. */
+    function solve(p, last, ply, alpha, beta) {
+      if (isWin(last, 3 - p)) return -(10 - ply);
+      if (!empty) return 0;
+      let best = -Infinity;
+      for (let m = 0; m < 9; m++) {
+        if (b[m]) continue;
+        b[m] = p; empty--;
+        const s = -solve(3 - p, m, ply + 1, -beta, -alpha);
+        b[m] = 0; empty++;
+        if (s > best) best = s;
+        if (s > alpha) alpha = s;
+        if (alpha >= beta) break;
+      }
+      return best;
+    }
+    function perfect() {
+      let top = -Infinity, picks = [];
+      for (let m = 0; m < 9; m++) {
+        if (b[m]) continue;
+        b[m] = 1; empty--;
+        const s = -solve(2, m, 1, -Infinity, Infinity); // full window = exact value
+        b[m] = 0; empty++;
+        if (s > top) { top = s; picks = [m]; } else if (s === top) picks.push(m);
+      }
+      return randomOf(picks); // vary play among equally perfect moves
+    }
+
+    /** Public entry: returns the cell index the AI plays. */
+    function chooseMove(board, sz, aiMark, level) {
+      size = sz; k = winLength(sz); g = geometry(sz);
+      b = Int8Array.from(board, v => (v === aiMark ? 1 : v ? 2 : 0));
+      const free = [];
+      for (let i = 0; i < g.n; i++) if (!b[i]) free.push(i);
+      empty = free.length;
+      // on big boards "random" means random near the action
+      const pool = sz <= 5 ? free : candidates(g.near1);
+
+      if (level === 'easy') {
+        const block = findWin(2);
+        if (block >= 0 && Math.random() < 0.3) return block;
+        return randomOf(pool);
+      }
+
+      const win = findWin(1);
+      if (win >= 0) return win;
+      const block = findWin(2);
+      if (block >= 0) return block;
+
+      if (level === 'medium') {
+        let top = -Infinity, picks = [];
+        for (const i of pool) {
+          const s = quick(i, 1);
+          if (s > top + 1e-9) { top = s; picks = [i]; } else if (Math.abs(s - top) <= 1e-9) picks.push(i);
+        }
+        return randomOf(picks);
+      }
+
+      return sz === 3 ? perfect() : deepSearch(3);
+    }
+
+    return { chooseMove };
+  })();
+
+  return { Logic, AI };
+}
+
+const Engine = createEngine();
+const Logic = Engine.Logic;
 
 /* =========================================================================
-   PART B: AI
-   Internally uses an Int8Array: 0 = empty, 1 = AI, 2 = human.
+   PART B: AI RUNNER. Main thread for small boards, Web Worker for 9x9+.
+   Falls back to the main thread if a worker can't be created.
    ========================================================================= */
-const AI = (() => {
-  const WIN = 1e6;
-  const W3 = [0, 1, 10];          // score of an open line holding 0..2 marks (3x3)
-  const W4 = [0, 1, 12, 120];     // score of an open line holding 0..3 marks (4 in a row)
-  const DEFENSE = 1.2;            // weigh opponent threats a bit more
-  const TIME_BUDGET = 140;        // ms; plus the UI delay keeps replies under 300ms
+const AIRunner = (() => {
+  let worker = null, broken = false, seq = 0, pending = null;
 
-  let g, b, empty, deadline, nodes, aborted;
-
-  const randomOf = arr => arr[Math.floor(Math.random() * arr.length)];
-
-  /** True if `p` owns a full line through cell i. */
-  function winsAt(i, p) {
-    for (const line of g.cellLines[i]) {
-      let ok = true;
-      for (const j of line) if (b[j] !== p) { ok = false; break; }
-      if (ok) return true;
-    }
-    return false;
+  function getWorker() {
+    if (worker || broken) return worker;
+    try {
+      const src = `const Engine = (${createEngine.toString()})();
+        onmessage = e => {
+          const d = e.data;
+          postMessage({ id: d.id, move: Engine.AI.chooseMove(d.board, d.size, d.ai, d.level) });
+        };`;
+      worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+      worker.onmessage = e => {
+        if (pending && pending.id === e.data.id) { const cb = pending.cb; pending = null; cb(e.data.move); }
+      };
+      worker.onerror = () => {
+        broken = true; worker = null;
+        if (pending) { const p = pending; pending = null; p.cb(Engine.AI.chooseMove(...p.args)); }
+      };
+    } catch (err) { broken = true; worker = null; }
+    return worker;
   }
 
-  /** First empty cell that wins immediately for p, or -1. */
-  function findWinning(p, cells) {
-    for (const i of cells) {
-      b[i] = p;
-      const w = winsAt(i, p);
-      b[i] = 0;
-      if (w) return i;
+  /** Calls cb(move) once the AI has decided. */
+  function run(board, size, aiMark, level, cb) {
+    if (size >= 9 && getWorker()) {
+      const id = ++seq;
+      pending = { id, cb, args: [board.slice(), size, aiMark, level] };
+      worker.postMessage({ id, board, size, ai: aiMark, level });
+      return;
     }
-    return -1;
+    cb(Engine.AI.chooseMove(board, size, aiMark, level));
   }
-
-  /**
-   * Static evaluation from the AI's view. Only "open" lines count
-   * (lines with marks from one player only). More marks = much higher score.
-   * Cost: O(L * k) where L = number of lines.
-   */
-  function evaluate() {
-    const W = g.k === 3 ? W3 : W4;
-    let s = 0;
-    for (const line of g.lines) {
-      let a = 0, h = 0;
-      for (const i of line) { const v = b[i]; if (v === 1) a++; else if (v === 2) h++; }
-      if (a && h) continue;
-      if (a) s += W[a];
-      else if (h) s -= W[h] * DEFENSE;
-    }
-    return s;
-  }
-
-  /** How useful a cell is for both attack and defence. Used for move ordering. */
-  function cellPriority(i) {
-    const W = g.k === 3 ? W3 : W4;
-    let s = 0;
-    for (const line of g.cellLines[i]) {
-      let a = 0, h = 0;
-      for (const j of line) { const v = b[j]; if (v === 1) a++; else if (v === 2) h++; }
-      if (!h) s += W[a] + 1;
-      if (!a) s += W[h] * DEFENSE + 1;
-    }
-    return s;
-  }
-
-  /** Candidate moves. On 6x6 only cells next to existing marks (big speed win). */
-  function candidates() {
-    const out = [];
-    const prune = g.size === 6 && empty < g.n;
-    for (let i = 0; i < g.n; i++) {
-      if (b[i]) continue;
-      if (!prune || g.neighbors[i].some(j => b[j])) out.push(i);
-    }
-    if (!out.length) { // empty 6x6 board: start near the centre
-      const m = g.size / 2;
-      return [(m - 1) * g.size + m - 1, (m - 1) * g.size + m, m * g.size + m - 1, m * g.size + m];
-    }
-    return out;
-  }
-
-  function ordered(moves) {
-    return moves
-      .map(m => ({ m, p: cellPriority(m) }))
-      .sort((x, y) => y.p - x.p)
-      .map(o => o.m);
-  }
-
-  /**
-   * Negamax with alpha-beta pruning.
-   * `player` is the side to move. `last` is the move the opponent just made.
-   * Returns a score from `player`'s point of view.
-   */
-  function negamax(depth, alpha, beta, player, last, ply) {
-    if (last >= 0 && winsAt(last, 3 - player)) return -(WIN - ply); // opponent just won
-    if (empty === 0) return 0;                                       // draw
-    if (depth === 0) return player === 1 ? evaluate() : -evaluate();
-    if ((++nodes & 511) === 0 && performance.now() > deadline) { aborted = true; return 0; }
-
-    let moves = candidates();
-    if (depth > 1) moves = ordered(moves);
-    let best = -Infinity;
-    for (const m of moves) {
-      b[m] = player; empty--;
-      const s = -negamax(depth - 1, -beta, -alpha, 3 - player, m, ply + 1);
-      b[m] = 0; empty++;
-      if (aborted) return 0;
-      if (s > best) best = s;
-      if (s > alpha) alpha = s;
-      if (alpha >= beta) break; // prune
-    }
-    return best;
-  }
-
-  /** 3x3 hard: full minimax search. Unbeatable. Random choice among equal best moves. */
-  function perfect() {
-    deadline = Infinity; aborted = false; nodes = 0;
-    let bestScore = -Infinity, bestMoves = [];
-    for (const m of candidates()) {
-      b[m] = 1; empty--;
-      const s = -negamax(9, -Infinity, Infinity, 2, m, 1); // full window = exact score
-      b[m] = 0; empty++;
-      if (s > bestScore) { bestScore = s; bestMoves = [m]; }
-      else if (s === bestScore) bestMoves.push(m);
-    }
-    return randomOf(bestMoves);
-  }
-
-  /** 4x4 / 6x6 hard: iterative deepening up to depth 4, stops when time runs out. */
-  function deepSearch() {
-    deadline = performance.now() + TIME_BUDGET;
-    aborted = false; nodes = 0;
-    let moves = ordered(candidates());
-    let best = moves[0];
-    for (let depth = 1; depth <= 4; depth++) {
-      let alpha = -Infinity, bestHere = moves[0], bestScore = -Infinity;
-      for (const m of moves) {
-        b[m] = 1; empty--;
-        const s = -negamax(depth - 1, -Infinity, -alpha, 2, m, 1);
-        b[m] = 0; empty++;
-        if (aborted) break;
-        if (s > bestScore) { bestScore = s; bestHere = m; }
-        if (s > alpha) alpha = s;
-      }
-      if (aborted) break;                         // keep result of last full depth
-      best = bestHere;
-      moves = [best, ...moves.filter(m => m !== best)]; // best move first next round
-      if (bestScore > WIN - 100) break;           // forced win found
-    }
-    return best;
-  }
-
-  /** Public entry. Returns the cell index the AI wants to play. */
-  function chooseMove(board, size, aiMark, level) {
-    g = Logic.geometry(size);
-    b = Int8Array.from(board, v => (v === aiMark ? 1 : v ? 2 : 0));
-    empty = b.reduce((n, v) => n + (v === 0), 0);
-    const free = [];
-    for (let i = 0; i < g.n; i++) if (!b[i]) free.push(i);
-
-    if (level === 'easy') return randomOf(free);
-
-    // Always take a win, then always block an immediate loss
-    const win = findWinning(1, free);
-    if (win >= 0) return win;
-    const block = findWinning(2, free);
-    if (block >= 0) return block;
-
-    if (level === 'medium') {
-      if (Math.random() < 0.35) return randomOf(free);
-      let top = -Infinity, picks = [];
-      for (const i of free) {
-        const p = cellPriority(i);
-        if (p > top) { top = p; picks = [i]; } else if (p === top) picks.push(i);
-      }
-      return randomOf(picks);
-    }
-
-    return size === 3 ? perfect() : deepSearch();
-  }
-
-  return { chooseMove };
+  const cancel = () => { pending = null; };
+  const usingWorker = () => !!worker;
+  return { run, cancel, usingWorker };
 })();
 
 /* =========================================================================
    PART C: STORAGE (localStorage wrapped in try/catch)
    ========================================================================= */
 const Store = (() => {
-  const KEY = 'ttt.v2';
-  function load() {
-    try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
-  }
-  function save(data) {
-    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* storage blocked */ }
-  }
-  return { load, save };
+  const KEY = 'ttt.v3';
+  return {
+    load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } },
+    save(data) { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* blocked */ } },
+  };
 })();
 
 /* =========================================================================
-   PART D: SOUND (Web Audio API, no files) + HAPTICS
+   PART D: SOUND (Web Audio API) + HAPTICS
    ========================================================================= */
 const Sound = (() => {
   let ctx = null;
@@ -1030,7 +1225,7 @@ const Sound = (() => {
     if (ctx.state === 'suspended') ctx.resume();
     return ctx;
   }
-  /** Plays one short tone with a quick fade out (no clicks). */
+  /** One short tone with a fast fade so there are no clicks. */
   function tone(freq, at, dur, type = 'sine', vol = 0.14, slideTo) {
     const c = audio();
     if (!c) return;
@@ -1052,6 +1247,7 @@ const Sound = (() => {
     win() { if (on()) [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.09, 0.18, 'triangle', 0.16)); },
     lose() { if (on()) [392, 330, 262].forEach((f, i) => tone(f, i * 0.12, 0.22, 'triangle', 0.14)); },
     draw() { if (on()) { tone(440, 0, 0.14, 'sine', 0.12); tone(440, 0.16, 0.18, 'sine', 0.12); } },
+    error() { if (on()) tone(220, 0, 0.12, 'square', 0.05); },
   };
 })();
 
@@ -1061,25 +1257,22 @@ function haptic(pattern) {
 }
 
 /* =========================================================================
-   PART E: CONFETTI (canvas, short burst)
+   PART E: CONFETTI
    ========================================================================= */
 const Confetti = (() => {
   const cv = document.getElementById('confetti');
   const ctx = cv.getContext('2d');
-  let parts = [], raf = 0, end = 0;
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-
+  let parts = [], raf = 0, end = 0;
   function fire() {
     if (reduce.matches) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const colors = ['#22d3ee', '#f472b6', '#fbbf24', '#7c5cff', '#34d399'];
+    const colors = ['#22d3ee', '#f472b6', '#fbbf24', '#7c5cff', '#34d399', '#ff8b7b'];
     parts = Array.from({ length: 90 }, () => ({
-      x: innerWidth / 2 + (Math.random() - 0.5) * 120,
-      y: innerHeight * 0.38,
-      vx: (Math.random() - 0.5) * 11,
-      vy: -Math.random() * 10 - 4,
+      x: innerWidth / 2 + (Math.random() - 0.5) * 120, y: innerHeight * 0.38,
+      vx: (Math.random() - 0.5) * 11, vy: -Math.random() * 10 - 4,
       w: 6 + Math.random() * 5, h: 4 + Math.random() * 4,
       rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3,
       c: colors[(Math.random() * colors.length) | 0],
@@ -1090,8 +1283,7 @@ const Confetti = (() => {
   }
   function tick(t) {
     ctx.clearRect(0, 0, innerWidth, innerHeight);
-    const fade = Math.max(0, Math.min(1, (end - t) / 400));
-    ctx.globalAlpha = fade;
+    ctx.globalAlpha = Math.max(0, Math.min(1, (end - t) / 400));
     for (const p of parts) {
       p.vy += 0.28; p.vx *= 0.985; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
       ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
@@ -1105,52 +1297,60 @@ const Confetti = (() => {
 })();
 
 /* =========================================================================
-   PART F: UI / APP CONTROLLER
+   PART F: APP STATE
    ========================================================================= */
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
 const renderIcons = () => { if (window.lucide) window.lucide.createIcons(); };
+const NAME_MAX = 12;
+const DEFAULT_NAMES = { p1: 'Player 1', p2: 'Player 2', solo: 'You' };
 
-/** SVG for an X or O. `cls` adds the stroke-animation classes for board cells. */
+const App = {
+  settings: { sound: true, vibration: true, theme: 'auto' },
+  prefs: { mode: 'computer', size: 3, difficulty: 'medium', p1Mark: 'X', starter: 'p1' },
+  names: { ...DEFAULT_NAMES },
+  scores: { computer: {}, friend: {} },   // scores[mode][size] = { p1, p2, draw }
+  board: [], history: [], over: false, thinking: false, aiToken: 0, lastWin: null,
+  screen: 'splash',
+};
+(() => {
+  const saved = Store.load();
+  Object.assign(App.settings, saved.settings);
+  Object.assign(App.prefs, saved.prefs);
+  Object.assign(App.names, saved.names);
+  if (saved.scores) App.scores = { computer: saved.scores.computer || {}, friend: saved.scores.friend || {} };
+  if (!Logic.SIZES.includes(App.prefs.size)) App.prefs.size = 3;
+})();
+const persist = () => Store.save({ settings: App.settings, prefs: App.prefs, names: App.names, scores: App.scores });
+
+/* ---------- Derived helpers ---------- */
+const vsAI = () => App.prefs.mode === 'computer';
+const p2Mark = () => Logic.other(App.prefs.p1Mark);
+const startMark = () => (App.prefs.starter === 'p1' ? App.prefs.p1Mark : p2Mark());
+const markForMove = n => (n % 2 === 0 ? startMark() : Logic.other(startMark()));
+const currentMark = () => markForMove(App.history.length);
+const ownerOf = mark => (mark === App.prefs.p1Mark ? 'p1' : 'p2');
+const isAITurn = () => vsAI() && ownerOf(currentMark()) === 'p2';
+const nameOf = who => (vsAI() ? (who === 'p1' ? App.names.solo : 'Machine') : App.names[who]);
+const isDefaultYou = () => vsAI() && App.names.solo === 'You';
+/** Scores are kept per mode AND per board size. */
+function scoreBook() {
+  const book = App.scores[App.prefs.mode];
+  return (book[App.prefs.size] = book[App.prefs.size] || { p1: 0, p2: 0, draw: 0 });
+}
+
+/** SVG for an X or O. Board cells get the stroke-draw animation from CSS. */
 function markSVG(mark, cls = '') {
   return mark === 'X'
     ? `<svg viewBox="0 0 100 100" class="${cls} x" aria-hidden="true"><path class="stroke" pathLength="100" d="M24 24 L76 76"/><path class="stroke second" pathLength="100" d="M76 24 L24 76"/></svg>`
     : `<svg viewBox="0 0 100 100" class="${cls} o" aria-hidden="true"><circle class="stroke" pathLength="100" cx="50" cy="50" r="28"/></svg>`;
 }
 const miniMark = mark => markSVG(mark, 'mini-mark');
+const escapeHTML = s => s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
-const App = {
-  saved: Store.load(),
-  settings: { sound: true, vibration: true, theme: 'auto' },
-  prefs: { mode: 'computer', size: 3, difficulty: 'medium', p1Mark: 'X', starter: 'p1' },
-  scores: { computer: { p1: 0, p2: 0, draw: 0 }, friend: { p1: 0, p2: 0, draw: 0 } },
-  // live game state
-  board: [], history: [], over: false, thinking: false, aiToken: 0,
-  screen: 'splash',
-};
-Object.assign(App.settings, App.saved.settings);
-Object.assign(App.prefs, App.saved.prefs);
-if (App.saved.scores) {
-  Object.assign(App.scores.computer, App.saved.scores.computer);
-  Object.assign(App.scores.friend, App.saved.scores.friend);
-}
-
-function persist() {
-  Store.save({ settings: App.settings, prefs: App.prefs, scores: App.scores });
-}
-
-/* ---------- Derived helpers ---------- */
-const p2Mark = () => Logic.other(App.prefs.p1Mark);
-const startMark = () => (App.prefs.starter === 'p1' ? App.prefs.p1Mark : p2Mark());
-/** Mark that plays move number `n` (0-based). */
-const markForMove = n => (n % 2 === 0 ? startMark() : Logic.other(startMark()));
-const currentMark = () => markForMove(App.history.length);
-const ownerOf = mark => (mark === App.prefs.p1Mark ? 'p1' : 'p2');
-const vsAI = () => App.prefs.mode === 'computer';
-const isAITurn = () => vsAI() && ownerOf(currentMark()) === 'p2';
-const nameOf = who => (vsAI() ? (who === 'p1' ? 'You' : 'Machine') : (who === 'p1' ? 'Player 1' : 'Player 2'));
-
-/* ---------- Theme ---------- */
+/* =========================================================================
+   PART G: THEME + SCREENS + SEGMENTED CONTROLS
+   ========================================================================= */
 function resolvedTheme() {
   if (App.settings.theme !== 'auto') return App.settings.theme;
   const h = new Date().getHours();
@@ -1159,12 +1359,11 @@ function resolvedTheme() {
 function applyTheme() {
   const t = resolvedTheme();
   document.documentElement.dataset.theme = t;
-  $('meta[name="theme-color"]').setAttribute('content', t === 'light' ? '#eef2ff' : '#120f33');
+  $('meta[name="theme-color"]').setAttribute('content', t === 'light' ? '#fde8dc' : '#1b1838');
   setSeg($('.seg[data-key="theme"]'), App.settings.theme);
 }
 setInterval(() => { if (App.settings.theme === 'auto') applyTheme(); }, 5 * 60 * 1000);
 
-/* ---------- Screens ---------- */
 const ORDER = { splash: 0, home: 1, game: 2 };
 function go(name) {
   if (name === App.screen) return;
@@ -1177,116 +1376,339 @@ function go(name) {
   App.screen = name;
 }
 
-/* ---------- Segmented controls ---------- */
 function setSeg(seg, val) {
-  const btns = $$(`.seg[data-key="${seg.dataset.key}"] button`).filter(b => b.parentElement === seg);
+  const btns = Array.from(seg.querySelectorAll(':scope > button'));
   const idx = Math.max(0, btns.findIndex(b => b.dataset.val === String(val)));
   seg.style.setProperty('--count', btns.length);
   seg.style.setProperty('--idx', idx);
   btns.forEach((b, i) => b.setAttribute('aria-checked', String(i === idx)));
 }
 
-/* ---------- Home screen ---------- */
+/* =========================================================================
+   PART H: HOME SCREEN
+   ========================================================================= */
+const chipsEl = $('#sizeChips');
+function buildChips() {
+  chipsEl.innerHTML = Logic.SIZES.map(s =>
+    `<button class="chip" role="radio" data-size="${s}" aria-label="${s} by ${s}, ${Logic.winLength(s)} in a row"><b>${s}×${s}</b><small>${Logic.winLength(s)} in a row</small></button>`
+  ).join('');
+}
+function scrollChipIntoView(smooth) {
+  const chip = chipsEl.querySelector(`[data-size="${App.prefs.size}"]`);
+  if (!chip) return;
+  const left = chip.offsetLeft - (chipsEl.clientWidth - chip.offsetWidth) / 2;
+  chipsEl.scrollTo({ left, behavior: smooth ? 'smooth' : 'auto' });
+}
 function renderHome() {
   const p = App.prefs;
   $$('.mode-card').forEach(c => c.setAttribute('aria-checked', String(c.dataset.mode === p.mode)));
-  ['size', 'difficulty', 'p1Mark', 'starter'].forEach(k => setSeg($(`.seg[data-key="${k}"]`), p[k]));
+  $$('.chip').forEach(c => c.setAttribute('aria-checked', String(+c.dataset.size === p.size)));
+  ['difficulty', 'p1Mark', 'starter'].forEach(k => setSeg($(`.seg[data-key="${k}"]`), p[k]));
   $('#difficultyBlock').classList.toggle('closed', !vsAI());
   $('#markLabel').textContent = vsAI() ? 'You play as' : 'Player 1 is';
-  $('#starterP1').textContent = nameOf('p1');
-  $('#starterP2').textContent = nameOf('p2');
+  $('#starterP1').textContent = vsAI() ? 'You' : 'Player 1';
+  $('#starterP2').textContent = vsAI() ? 'Machine' : 'Player 2';
 }
 
-/* ---------- Game screen rendering ---------- */
-const boardEl = $('#board'), wrapEl = $('#boardWrap'), areaEl = $('#boardArea');
+/* =========================================================================
+   PART I: NAMES POPUP (inline validation)
+   ========================================================================= */
+const nameFields = [
+  { field: $('#field1'), input: $('#name1'), err: $('#err1') },
+  { field: $('#field2'), input: $('#name2'), err: $('#err2') },
+];
 
-/** Sizes the board to fit the free space. Cells never go below 44px unless the screen is narrower. */
-function fitBoard() {
+/** Returns an error message for field idx, or '' when it is valid. */
+function nameError(idx) {
+  const v = nameFields[idx].input.value.trim();
+  if (!v) return "Name can't be empty";
+  if (v.length > NAME_MAX) return `Max ${NAME_MAX} characters`;
+  if (!vsAI() && idx === 1 && v.toLowerCase() === nameFields[0].input.value.trim().toLowerCase()) return 'Pick a different name';
+  return '';
+}
+function validateNames() {
+  const count = vsAI() ? 1 : 2;
+  let ok = true;
+  for (let i = 0; i < count; i++) {
+    const f = nameFields[i], e = nameError(i);
+    f.field.querySelector('.count').textContent = `${f.input.value.trim().length}/${NAME_MAX}`;
+    f.field.classList.toggle('invalid', !!e);
+    f.input.setAttribute('aria-invalid', String(!!e));
+    f.err.textContent = e;
+    if (e) ok = false;
+  }
+  $('#namesStart').disabled = !ok;
+  return ok;
+}
+function openNames() {
+  const ai = vsAI();
+  $('#namesTitle').textContent = ai ? "What's your name?" : "Who's playing?";
+  $('#namesSub').textContent = `Max ${NAME_MAX} characters`;
+  $('#field2').hidden = ai;
+  nameFields[0].field.querySelector('.flabel').textContent = ai ? 'Your name' : 'Player 1';
+  nameFields[0].field.querySelector('.fmark').innerHTML = miniMark(App.prefs.p1Mark);
+  nameFields[1].field.querySelector('.fmark').innerHTML = miniMark(p2Mark());
+  nameFields[0].input.value = ai ? App.names.solo : App.names.p1;
+  nameFields[1].input.value = App.names.p2;
+  nameFields[0].input.enterKeyHint = ai ? 'go' : 'next';
+  validateNames();
+  $('#namesModal').classList.add('open');
+}
+function closeNames() {
+  $('#namesModal').classList.remove('open');
+  if (document.activeElement) document.activeElement.blur();
+}
+function submitNames(e) {
+  e.preventDefault();
+  if (!validateNames()) { Sound.error(); haptic(40); return; }
+  const n1 = nameFields[0].input.value.trim(), n2 = nameFields[1].input.value.trim();
+  if (vsAI()) App.names.solo = n1;
+  else { App.names.p1 = n1; App.names.p2 = n2; }
+  persist();
+  closeNames();
+  Sound.click(); haptic(15);
+  go('game');
+  startGame();
+}
+
+/* =========================================================================
+   PART J: BOARD VIEW (sizing, pinch-to-zoom, pan)
+   ========================================================================= */
+const vpEl = $('#viewport'), boardEl = $('#board');
+const GAPS = { 3: 10, 4: 9, 5: 8, 6: 6, 7: 5, 8: 4, 9: 4, 10: 4 }; // 11x11 and 12x12 use 3px
+const BIG_CELL = 52;     // cell size at zoom 1 on 9x9+ (comfortably over 44px tap target)
+const MIN_VISUAL = 28;   // cells never look smaller than this
+const View = { s: 1, tx: 0, ty: 0, min: 1, max: 1, cell: 0, gap: 0, pad: 0, bw: 0, zoomable: false, pannable: false };
+
+/**
+ * Sets cell size, gap and radius as CSS variables from JS.
+ * 3x3..8x8 fit the screen; 9x9+ use 52px cells scaled down to fit (pinch to zoom in).
+ * refit = true resets zoom (new game); false keeps it (resize, URL bar show/hide).
+ */
+function layoutBoard(refit) {
   const n = App.prefs.size;
-  const cs = getComputedStyle(boardEl);
-  const gap = parseFloat(cs.getPropertyValue('--gap')) || 8;
-  const pad = parseFloat(cs.getPropertyValue('--pad')) || 10;
-  const w = areaEl.clientWidth, h = areaEl.clientHeight;
-  const minSize = n * 44 + (n - 1) * gap + pad * 2;
-  let s = Math.min(w, h, 520);
-  s = Math.max(s, Math.min(minSize, w)); // allow vertical scroll rather than tiny cells
-  wrapEl.style.width = wrapEl.style.height = Math.floor(s) + 'px';
+  if (!boardEl.children.length) return;
+  const W = vpEl.clientWidth, H = vpEl.clientHeight;
+  if (!W || !H) return;
+  const gap = GAPS[n] || 3, pad = Math.max(6, gap);
+  const BORDER = 2; // board has a 1px border on each side
+  const fitCell = Math.floor((Math.min(W, H) - BORDER - 2 * pad - (n - 1) * gap) / n);
+  let cell;
+  if (n <= 8) { cell = Math.max(MIN_VISUAL, Math.min(fitCell, 120)); View.zoomable = false; }
+  else { cell = BIG_CELL; View.zoomable = true; }
+  Object.assign(View, { cell, gap, pad });
+  View.bw = n * cell + (n - 1) * gap + 2 * pad + BORDER;
+  boardEl.style.setProperty('--n', n);
+  boardEl.style.setProperty('--cell', cell + 'px');
+  boardEl.style.setProperty('--gap', gap + 'px');
+  boardEl.style.setProperty('--pad', pad + 'px');
+  boardEl.style.setProperty('--cr', Math.max(5, Math.round(cell * 0.22)) + 'px');
+
+  if (View.zoomable) {
+    const fit = Math.min(W / View.bw, H / View.bw);
+    View.min = Math.min(1, Math.max(fit, MIN_VISUAL / BIG_CELL));
+    View.max = 1.25;
+  } else {
+    View.min = View.max = 1;
+  }
+  if (refit) {
+    View.s = View.min;
+    View.tx = (W - View.bw * View.s) / 2;
+    View.ty = (H - View.bw * View.s) / 2;
+  } else {
+    View.s = Math.min(View.max, Math.max(View.min, View.s));
+  }
+  clampView();
+  View.pannable = View.zoomable || View.bw > W || View.bw > H;
+  vpEl.classList.toggle('pannable', View.pannable);
+  $('#zoomCtrls').hidden = !View.zoomable;
+  applyView(false);
   if (App.over && App.lastWin) drawWinLine(App.lastWin, false);
 }
-if (window.ResizeObserver) new ResizeObserver(fitBoard).observe(areaEl);
-else window.addEventListener('resize', fitBoard);
 
+/** Keeps the board inside the viewport, centred on any axis where it is smaller. */
+function clampView() {
+  const W = vpEl.clientWidth, H = vpEl.clientHeight, sz = View.bw * View.s;
+  View.tx = sz <= W ? (W - sz) / 2 : Math.min(0, Math.max(W - sz, View.tx));
+  View.ty = sz <= H ? (H - sz) / 2 : Math.min(0, Math.max(H - sz, View.ty));
+}
+function applyView(smooth) {
+  boardEl.classList.toggle('smooth', !!smooth);
+  boardEl.style.transform = `translate(${View.tx}px, ${View.ty}px) scale(${View.s})`;
+}
+/** Zooms to scale s while keeping viewport point (cx, cy) under the finger / cursor. */
+function zoomAt(s, cx, cy, smooth) {
+  const ns = Math.min(View.max, Math.max(View.min, s));
+  const px = (cx - View.tx) / View.s, py = (cy - View.ty) / View.s;
+  View.s = ns;
+  View.tx = cx - px * ns; View.ty = cy - py * ns;
+  clampView(); applyView(smooth);
+}
+const zoomBy = f => zoomAt(View.s * f, vpEl.clientWidth / 2, vpEl.clientHeight / 2, true);
+function fitView() {
+  View.s = View.min;
+  View.tx = (vpEl.clientWidth - View.bw * View.s) / 2;
+  View.ty = (vpEl.clientHeight - View.bw * View.s) / 2;
+  clampView(); applyView(true);
+}
+/** Pans so cell i is on screen (e.g. the AI played somewhere you are not looking). */
+function ensureVisible(i) {
+  if (!View.pannable) return;
+  const n = App.prefs.size, step = View.cell + View.gap;
+  const x = (View.pad + (i % n) * step + View.cell / 2) * View.s + View.tx;
+  const y = (View.pad + Math.floor(i / n) * step + View.cell / 2) * View.s + View.ty;
+  const W = vpEl.clientWidth, H = vpEl.clientHeight, m = View.cell * View.s;
+  if (x > m && x < W - m && y > m && y < H - m) return;
+  View.tx += W / 2 - x; View.ty += H / 2 - y;
+  clampView(); applyView(true);
+}
+
+/* Pointer gestures: 1 finger drags (pan), 2 fingers pinch (zoom). A plain tap still places a mark. */
+const Gesture = { pts: new Map(), moved: false, suppress: false, start: null };
+function gestureBase() {
+  const pts = Array.from(Gesture.pts.values());
+  const rect = vpEl.getBoundingClientRect();
+  if (pts.length >= 2) {
+    const [a, b] = pts;
+    Gesture.start = {
+      dist: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+      mx: (a.x + b.x) / 2 - rect.left, my: (a.y + b.y) / 2 - rect.top,
+      s: View.s, tx: View.tx, ty: View.ty,
+    };
+  } else if (pts.length === 1) {
+    Gesture.start = { x: pts[0].x, y: pts[0].y, tx: View.tx, ty: View.ty };
+  }
+}
+vpEl.addEventListener('pointerdown', e => {
+  if (!Gesture.pts.size) { Gesture.moved = false; Gesture.suppress = false; }
+  if (!View.pannable) return;
+  Gesture.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (Gesture.pts.size === 2) { Gesture.moved = true; Gesture.suppress = true; }
+  gestureBase();
+});
+vpEl.addEventListener('pointermove', e => {
+  if (!Gesture.pts.has(e.pointerId)) return;
+  Gesture.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  const st = Gesture.start, pts = Array.from(Gesture.pts.values());
+  if (pts.length >= 2 && View.zoomable && st.dist) {
+    const [a, b] = pts, rect = vpEl.getBoundingClientRect();
+    const ns = Math.min(View.max, Math.max(View.min, st.s * Math.hypot(a.x - b.x, a.y - b.y) / st.dist));
+    const mx = (a.x + b.x) / 2 - rect.left, my = (a.y + b.y) / 2 - rect.top;
+    const px = (st.mx - st.tx) / st.s, py = (st.my - st.ty) / st.s; // board point under the start midpoint
+    View.s = ns; View.tx = mx - px * ns; View.ty = my - py * ns;
+    clampView(); applyView(false);
+  } else if (pts.length === 1 && st.x !== undefined) {
+    const dx = pts[0].x - st.x, dy = pts[0].y - st.y;
+    if (!Gesture.moved && Math.hypot(dx, dy) > 8) {
+      Gesture.moved = true; Gesture.suppress = true;
+      vpEl.setPointerCapture(e.pointerId); // capture only once it is a drag, so taps still reach cells
+    }
+    if (Gesture.moved) { View.tx = st.tx + dx; View.ty = st.ty + dy; clampView(); applyView(false); }
+  }
+});
+function endPointer(e) {
+  if (!Gesture.pts.delete(e.pointerId)) return;
+  gestureBase(); // carry on smoothly with the remaining finger
+}
+vpEl.addEventListener('pointerup', endPointer);
+vpEl.addEventListener('pointercancel', endPointer);
+vpEl.addEventListener('wheel', e => {
+  if (!View.zoomable) return;
+  e.preventDefault();
+  const rect = vpEl.getBoundingClientRect();
+  zoomAt(View.s * Math.exp(-e.deltaY * 0.0015), e.clientX - rect.left, e.clientY - rect.top, false);
+}, { passive: false });
+if (window.ResizeObserver) new ResizeObserver(() => layoutBoard(false)).observe(vpEl);
+else window.addEventListener('resize', () => layoutBoard(false));
+
+/* =========================================================================
+   PART K: GAME RENDERING
+   ========================================================================= */
 function buildBoard() {
   const n = App.prefs.size;
-  boardEl.dataset.size = n;
-  boardEl.style.setProperty('--n', n);
-  boardEl.classList.remove('done', 'enter');
-  void boardEl.offsetWidth; // restart entry animation
-  boardEl.classList.add('enter');
   let html = '';
   for (let i = 0; i < n * n; i++) {
     html += `<button class="cell" role="gridcell" data-i="${i}" aria-label="Row ${Math.floor(i / n) + 1}, column ${(i % n) + 1}, empty"></button>`;
   }
+  html += '<svg class="win-line" id="winLine" aria-hidden="true"><line x1="0" y1="0" x2="0" y2="0"/></svg>';
   boardEl.innerHTML = html;
-  hideWinLine();
-  fitBoard();
+  boardEl.classList.remove('done', 'enter');
+  void boardEl.offsetWidth; // restart the fade-in
+  boardEl.classList.add('enter');
+  App.lastWin = null;
+  layoutBoard(true);
 }
 
 function paintCell(i, mark, animate) {
-  const cell = boardEl.children[i];
-  const n = App.prefs.size;
+  const cell = boardEl.children[i], n = App.prefs.size;
   cell.className = 'cell' + (mark ? ` filled ${mark.toLowerCase()}` : '') + (animate ? '' : ' instant');
   cell.innerHTML = mark ? markSVG(mark) : '';
   cell.setAttribute('aria-label', `Row ${Math.floor(i / n) + 1}, column ${(i % n) + 1}, ${mark || 'empty'}`);
 }
+function markLastMove() {
+  const prev = boardEl.querySelector('.cell.last');
+  if (prev) prev.classList.remove('last');
+  const last = App.history[App.history.length - 1];
+  if (last !== undefined) boardEl.children[last].classList.add('last');
+}
 
 function renderPlayers() {
-  const s = App.scores[App.prefs.mode];
+  const s = scoreBook();
   ['p1', 'p2'].forEach(who => {
     const card = $(who === 'p1' ? '#cardP1' : '#cardP2');
     const mark = who === 'p1' ? App.prefs.p1Mark : p2Mark();
+    const name = nameOf(who);
     card.classList.toggle('mark-x', mark === 'X');
     card.classList.toggle('mark-o', mark === 'O');
-    card.querySelector('.pname').textContent = nameOf(who);
+    const nameEl = card.querySelector('.pname');
+    nameEl.textContent = name;
+    nameEl.title = name;
     card.querySelector('.pscore').textContent = s[who];
     card.querySelector('.badge').innerHTML = miniMark(mark);
-    const icon = vsAI() ? (who === 'p1' ? 'user' : 'bot') : (who === 'p1' ? 'user' : 'user-round');
-    card.querySelector('.av-icon').innerHTML = `<i data-lucide="${icon}"></i>`;
+    // Avatar: bot for the machine, user icon for the default "You", else the first letter
+    const av = card.querySelector('.av');
+    if (vsAI() && who === 'p2') av.innerHTML = '<i data-lucide="bot"></i>';
+    else if (vsAI() && isDefaultYou()) av.innerHTML = '<i data-lucide="user"></i>';
+    else av.textContent = name.charAt(0).toUpperCase();
   });
   $('#scoreDraw').textContent = s.draw;
   renderIcons();
 }
 
+function turnLabel() {
+  if (App.over) return 'Game over';
+  const who = ownerOf(currentMark());
+  if (vsAI() && who === 'p2') return "Machine's turn";
+  if (isDefaultYou()) return 'Your turn';
+  return `${nameOf(who)}'s turn`;
+}
 function renderTurn() {
   const mark = currentMark(), who = ownerOf(mark);
   const pill = $('#turnPill');
-  let label;
-  if (App.over) label = 'Game over';
-  else if (vsAI()) label = who === 'p1' ? 'Your turn' : "Machine's turn";
-  else label = `${nameOf(who)}'s turn`;
-  pill.innerHTML = (App.over ? '' : miniMark(mark)) + `<span class="label">${label}</span>`;
+  pill.innerHTML = (App.over ? '' : miniMark(mark)) + `<span class="label">${escapeHTML(turnLabel())}</span>`;
   pill.classList.remove('swap'); void pill.offsetWidth; pill.classList.add('swap');
   $('#cardP1').classList.toggle('active', !App.over && who === 'p1');
   $('#cardP2').classList.toggle('active', !App.over && who === 'p2');
-  $('#thinking').classList.toggle('show', App.thinking);
+  const n = App.prefs.size;
+  $('#statusLine').classList.toggle('thinking', App.thinking);
+  $('#statusText').textContent = App.thinking ? 'Thinking...' : `${n}×${n} · ${Logic.winLength(n)} in a row`;
+  boardEl.classList.toggle('locked', App.thinking || App.over);
   $('#undoBtn').disabled = !canUndo();
 }
 
-/* ---------- Win line ---------- */
+/** Win line in board coordinates, so it pans and zooms with the board. */
 function drawWinLine(line, animate = true) {
   const svg = $('#winLine'), ln = svg.querySelector('line');
-  const wr = wrapEl.getBoundingClientRect();
   const center = i => {
-    const r = boardEl.children[i].getBoundingClientRect();
-    return [r.left - wr.left + r.width / 2, r.top - wr.top + r.height / 2];
+    const c = boardEl.children[i];
+    return [c.offsetLeft + c.offsetWidth / 2, c.offsetTop + c.offsetHeight / 2];
   };
   let [x1, y1] = center(line[0]), [x2, y2] = center(line[line.length - 1]);
-  // extend a little past the end cells
-  const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
-  const ext = boardEl.children[0].getBoundingClientRect().width * 0.32;
+  const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy), ext = View.cell * 0.3;
   x1 -= dx / len * ext; y1 -= dy / len * ext; x2 += dx / len * ext; y2 += dy / len * ext;
   const total = len + ext * 2;
   ln.setAttribute('x1', x1); ln.setAttribute('y1', y1); ln.setAttribute('x2', x2); ln.setAttribute('y2', y2);
+  ln.style.strokeWidth = Math.max(4, View.cell * 0.12);
   svg.setAttribute('class', 'win-line ' + App.board[line[0]].toLowerCase());
   ln.style.strokeDasharray = total;
   if (animate) {
@@ -1297,17 +1719,18 @@ function drawWinLine(line, animate = true) {
   }
   ln.style.strokeDashoffset = 0;
 }
-function hideWinLine() {
-  const ln = $('#winLine line');
-  ln.style.transition = 'none';
-  ln.style.strokeDasharray = 1; ln.style.strokeDashoffset = 1;
-  App.lastWin = null;
+
+/* =========================================================================
+   PART L: GAME FLOW
+   ========================================================================= */
+function cancelAI() {
+  App.aiToken++;
+  App.thinking = false;
+  AIRunner.cancel();
 }
 
-/* ---------- Game flow ---------- */
 function startGame() {
-  App.aiToken++;           // cancel any pending AI move
-  App.thinking = false;
+  cancelAI();
   App.over = false;
   App.history = [];
   App.board = Array(App.prefs.size ** 2).fill(null);
@@ -1322,29 +1745,37 @@ function place(i) {
   App.board[i] = mark;
   App.history.push(i);
   paintCell(i, mark, true);
+  markLastMove();
   Sound.tap(mark);
   haptic(12);
-  const res = Logic.result(App.board, App.prefs.size);
-  if (res) return endGame(res);
+  const line = Logic.winFrom(App.board, App.prefs.size, i); // O(k): checks from the last move only
+  if (line) return endGame(mark, line);
+  if (App.history.length === App.board.length) return endGame(null, null);
   renderTurn();
   if (isAITurn()) scheduleAI();
 }
 
-/** Runs the AI after a short delay so the last mark animates and the UI stays smooth. */
+/**
+ * Locks the board and shows "Thinking...", then asks the AI after a short
+ * delay so the last mark can finish drawing. 9x9+ runs in a Web Worker.
+ */
 function scheduleAI() {
   App.thinking = true;
   renderTurn();
   const token = ++App.aiToken;
   setTimeout(() => {
     if (token !== App.aiToken || App.over) return;
-    const move = AI.chooseMove(App.board, App.prefs.size, p2Mark(), App.prefs.difficulty);
-    if (token !== App.aiToken) return;
-    App.thinking = false;
-    place(move);
-  }, 150);
+    AIRunner.run(App.board, App.prefs.size, p2Mark(), App.prefs.difficulty, move => {
+      if (token !== App.aiToken || App.over) return;
+      App.thinking = false;
+      place(move);
+      ensureVisible(move);
+    });
+  }, 60);
 }
 
 function onCellTap(e) {
+  if (Gesture.suppress) return; // that was a drag or pinch, not a tap
   const cell = e.target.closest('.cell');
   if (!cell) return;
   const i = +cell.dataset.i;
@@ -1352,20 +1783,19 @@ function onCellTap(e) {
   place(i);
 }
 
-function endGame(res) {
+function endGame(mark, line) {
   App.over = true;
   App.thinking = false;
-  const s = App.scores[App.prefs.mode];
-  let outcome; // 'win' | 'lose' | 'draw'
-  let winnerWho = null;
-  if (res.winner) {
-    winnerWho = ownerOf(res.winner);
+  const s = scoreBook();
+  let outcome, winnerWho = null;
+  if (mark) {
+    winnerWho = ownerOf(mark);
     s[winnerWho]++;
     outcome = vsAI() && winnerWho === 'p2' ? 'lose' : 'win';
-    App.lastWin = res.line;
-    res.line.forEach(i => boardEl.children[i].classList.add('win'));
+    App.lastWin = line;
+    line.forEach(i => boardEl.children[i].classList.add('win'));
     boardEl.classList.add('done');
-    drawWinLine(res.line);
+    drawWinLine(line);
   } else {
     s.draw++;
     outcome = 'draw';
@@ -1384,10 +1814,10 @@ function endGame(res) {
   setTimeout(() => {
     if (token !== App.aiToken || !App.over || App.screen !== 'game') return;
     showResult(outcome, winnerWho);
-  }, 700);
+  }, 750);
 }
 
-/* ---------- Undo ---------- */
+/* ---------- Undo: 1 move vs friend, back to before your last move vs computer ---------- */
 function canUndo() {
   if (App.over || !App.history.length) return false;
   if (!vsAI()) return true;
@@ -1395,33 +1825,25 @@ function canUndo() {
 }
 function undo() {
   if (!canUndo()) return;
-  App.aiToken++;
-  App.thinking = false;
-  if (vsAI()) {
-    // remove back to (and including) the last human move
-    let n = App.history.length - 1;
-    while (n >= 0 && ownerOf(markForMove(n)) !== 'p1') n--;
-    App.history.length = n;
-  } else {
-    App.history.pop();
-  }
-  App.board.fill(null);
-  App.history.forEach((i, n) => { App.board[i] = markForMove(n); });
-  App.board.forEach((m, i) => paintCell(i, m, false));
-  Sound.click();
-  haptic(10);
+  cancelAI();
+  let keep = App.history.length - 1;
+  if (vsAI()) while (keep >= 0 && ownerOf(markForMove(keep)) !== 'p1') keep--;
+  App.history.splice(keep).forEach(i => { App.board[i] = null; paintCell(i, null, false); });
+  markLastMove();
+  Sound.click(); haptic(10);
   renderTurn();
 }
 
 /* ---------- Result popup ---------- */
 function showResult(outcome, winnerWho) {
-  const icon = $('#resultIcon');
+  const icon = $('#resultIcon'), card = $('#resultCard');
   let title, sub, iconName;
   if (outcome === 'draw') {
     title = 'Draw!'; sub = 'Nobody wins this round.'; iconName = 'handshake';
+  } else if (outcome === 'lose') {
+    title = isDefaultYou() ? 'You Lose' : 'Machine Wins!'; sub = 'The machine got you this time.'; iconName = 'frown';
   } else if (vsAI()) {
-    if (outcome === 'win') { title = 'You Win!'; sub = 'Great moves. You beat the machine.'; iconName = 'trophy'; }
-    else { title = 'You Lose'; sub = 'The machine got you this time.'; iconName = 'frown'; }
+    title = isDefaultYou() ? 'You Win!' : `${nameOf('p1')} Wins!`; sub = 'Great moves. You beat the machine.'; iconName = 'trophy';
   } else {
     title = `${nameOf(winnerWho)} Wins!`; sub = 'Nice game. Ready for another?'; iconName = 'trophy';
   }
@@ -1431,8 +1853,9 @@ function showResult(outcome, winnerWho) {
   $('#resultTitle').textContent = title;
   $('#resultSub').textContent = sub;
   $('#resultModal').classList.add('open');
+  card.classList.remove('shake');
   if (outcome === 'win') Confetti.fire();
-  setTimeout(() => $('#againBtn').focus({ preventScroll: true }), 50);
+  if (outcome === 'lose') setTimeout(() => { void card.offsetWidth; card.classList.add('shake'); }, 220);
 }
 const hideResult = () => $('#resultModal').classList.remove('open');
 
@@ -1442,61 +1865,64 @@ function renderSettings() {
   $('#vibeToggle').setAttribute('aria-checked', String(App.settings.vibration));
   setSeg($('.seg[data-key="theme"]'), App.settings.theme);
 }
-function openSheet() {
-  renderSettings();
-  $('#sheetBackdrop').classList.add('open');
-  $('#sheet').classList.add('open');
-}
-function closeSheet() {
-  $('#sheetBackdrop').classList.remove('open');
-  $('#sheet').classList.remove('open');
-}
+function openSheet() { renderSettings(); $('#sheetBackdrop').classList.add('open'); $('#sheet').classList.add('open'); }
+function closeSheet() { $('#sheetBackdrop').classList.remove('open'); $('#sheet').classList.remove('open'); }
 let resetArmed = null;
 function resetScores() {
   const label = $('#resetScores span');
-  if (!resetArmed) { // first tap asks for confirmation
+  if (!resetArmed) { // first tap asks to confirm
     label.textContent = 'Tap again to confirm';
-    resetArmed = setTimeout(() => { label.textContent = 'Reset scores'; resetArmed = null; }, 2500);
+    resetArmed = setTimeout(() => { label.textContent = 'Reset all scores'; resetArmed = null; }, 2500);
     haptic(15);
     return;
   }
   clearTimeout(resetArmed); resetArmed = null;
-  App.scores = { computer: { p1: 0, p2: 0, draw: 0 }, friend: { p1: 0, p2: 0, draw: 0 } };
+  App.scores = { computer: {}, friend: {} };
   persist();
   renderPlayers();
   label.textContent = 'Scores cleared';
   Sound.click(); haptic([10, 30, 10]);
-  setTimeout(() => { label.textContent = 'Reset scores'; }, 1500);
+  setTimeout(() => { label.textContent = 'Reset all scores'; }, 1500);
 }
 
 /* =========================================================================
-   PART G: EVENT WIRING
+   PART M: EVENT WIRING
    ========================================================================= */
 function init() {
-  renderIcons();
+  buildChips();
   $$('.mark-opt').forEach(b => { b.innerHTML = miniMark(b.dataset.val); });
+  renderIcons();
   applyTheme();
   renderHome();
   renderSettings();
 
-  // Splash: auto continue or tap to skip
-  const leaveSplash = () => { if (App.screen === 'splash') go('home'); };
+  const leaveSplash = () => {
+    if (App.screen !== 'splash') return;
+    go('home');
+    requestAnimationFrame(() => scrollChipIntoView(false));
+  };
   $('#splash').addEventListener('click', leaveSplash);
   setTimeout(leaveSplash, 1700);
 
-  // Mode cards
   $$('.mode-card').forEach(card => card.addEventListener('click', () => {
     App.prefs.mode = card.dataset.mode;
     persist(); renderHome(); Sound.click(); haptic(8);
   }));
 
-  // All segmented controls (home prefs + theme)
+  chipsEl.addEventListener('click', e => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    App.prefs.size = +chip.dataset.size;
+    persist(); renderHome(); scrollChipIntoView(true);
+    Sound.click(); haptic(8);
+  });
+
   $$('.seg').forEach(seg => seg.addEventListener('click', e => {
     const btn = e.target.closest('button');
     if (!btn) return;
     const key = seg.dataset.key, val = btn.dataset.val;
     if (key === 'theme') { App.settings.theme = val; applyTheme(); }
-    else { App.prefs[key] = key === 'size' ? +val : val; renderHome(); }
+    else { App.prefs[key] = val; renderHome(); }
     setSeg(seg, val);
     persist(); Sound.click(); haptic(8);
   }));
@@ -1506,21 +1932,26 @@ function init() {
     applyTheme(); persist(); Sound.click(); haptic(8);
   });
 
-  $('#playBtn').addEventListener('click', () => {
-    Sound.click(); haptic(15);
-    go('game');
-    startGame();
+  // Play opens the names popup first (two names vs friend, your name vs computer)
+  $('#playBtn').addEventListener('click', () => { Sound.click(); haptic(12); openNames(); });
+  $('#namesForm').addEventListener('submit', submitNames);
+  $('#namesClose').addEventListener('click', () => { Sound.click(); closeNames(); });
+  nameFields.forEach(f => f.input.addEventListener('input', validateNames));
+  nameFields[0].input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !vsAI()) { e.preventDefault(); nameFields[1].input.focus(); }
   });
 
   boardEl.addEventListener('click', onCellTap);
   $('#undoBtn').addEventListener('click', undo);
   $('#restartBtn').addEventListener('click', () => { Sound.click(); haptic(12); startGame(); });
   $('#backBtn').addEventListener('click', () => {
-    App.aiToken++; App.thinking = false;
+    cancelAI();
     Sound.click(); haptic(8);
-    renderHome();
-    go('home');
+    renderHome(); go('home');
   });
+  $('#zoomIn').addEventListener('click', () => { zoomBy(1.3); haptic(8); });
+  $('#zoomOut').addEventListener('click', () => { zoomBy(1 / 1.3); haptic(8); });
+  $('#zoomFit').addEventListener('click', () => { fitView(); haptic(8); });
 
   $('#againBtn').addEventListener('click', () => { hideResult(); Sound.click(); startGame(); });
   $('#homeBtn').addEventListener('click', () => { hideResult(); Sound.click(); renderHome(); go('home'); });
@@ -1528,16 +1959,14 @@ function init() {
   $$('[data-open-settings]').forEach(b => b.addEventListener('click', () => { Sound.click(); haptic(8); openSheet(); }));
   $('#closeSheet').addEventListener('click', closeSheet);
   $('#sheetBackdrop').addEventListener('click', closeSheet);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    closeSheet();
+    if ($('#namesModal').classList.contains('open')) closeNames();
+  });
 
-  $('#soundToggle').addEventListener('click', () => {
-    App.settings.sound = !App.settings.sound;
-    renderSettings(); persist(); Sound.click();
-  });
-  $('#vibeToggle').addEventListener('click', () => {
-    App.settings.vibration = !App.settings.vibration;
-    renderSettings(); persist(); haptic(20);
-  });
+  $('#soundToggle').addEventListener('click', () => { App.settings.sound = !App.settings.sound; renderSettings(); persist(); Sound.click(); });
+  $('#vibeToggle').addEventListener('click', () => { App.settings.vibration = !App.settings.vibration; renderSettings(); persist(); haptic(20); });
   $('#resetScores').addEventListener('click', resetScores);
 }
 
