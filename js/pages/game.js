@@ -7,6 +7,11 @@
  * Normal games: the player starts the first round, then the starter
  * alternates every round. Levels decide who starts from their config.
  *
+ * Level twists (campaign only): the board can start with blocked cells
+ * and preset marks (level.layout). Presets are never in the move history,
+ * so undo and "continue" can't remove them. Puzzle levels must be won
+ * within level.moveLimit of the player's moves ("Moves left" chip).
+ *
  * Move timer (when on in Settings): seconds come from config/timers.js:
  * grid x difficulty vs the computer, Medium vs a player, the level's own
  * time in the campaign. Diamonds buy +10s once per game and a "continue"
@@ -17,8 +22,8 @@ import { sizeLabel, secondsLabel } from '../utils/format.js';
 import { winLength, ZOOM_FROM, PRICES, DIAMOND_PRICES } from '../config/constants.js';
 import { getMoveTime, TIMER_FINAL_SECONDS, EXTRA_TIME_SECONDS } from '../config/timers.js';
 import { getLevel, TOTAL_LEVELS } from '../config/levels.js';
-import { createBoard } from '../core/board.js';
-import { winFrom, other } from '../core/rules.js';
+import { createBoard, isFull } from '../core/board.js';
+import { winFrom, other, isDeadBoard } from '../core/rules.js';
 import { chooseMove } from '../core/ai.js';
 import { MoveTimer } from '../core/timer.js';
 import { runAI, cancelAI } from '../services/ai-runner.js';
@@ -36,7 +41,8 @@ import { currencyBarHTML, renderCurrency, flyCurrency, showAmount } from '../com
 import { confirmSpend } from '../components/confirm-sheet.js';
 import { timerRingHTML, setRing, clearRing } from '../components/timer-ring.js';
 import { fireConfetti } from '../components/confetti.js';
-import { starSVG, campaignConfig } from '../components/level-popup.js';
+import { starSVG, campaignConfig, twistLabel } from '../components/level-popup.js';
+import { withTwistTutorial } from '../components/twist-tutorial.js';
 import { navigate } from '../router.js';
 
 export const appBar = { hidden: true };
@@ -73,6 +79,9 @@ function timerSeconds() {
 const avatarOf = who => $(`.player-card[data-who="${who}"] .avatar`, root);
 const inProgress = () => st && st.history.length > 0 && !st.over;
 const exitRoute = () => (isCampaign() ? '#/levels' : '#/home');
+/** The level's twist layout (blocked cells + preset marks), or null. */
+const layout = () => (isCampaign() && level ? level.layout : null);
+const isPuzzle = () => !!(layout() && layout().puzzleMoves);
 
 /* =========================================================================
    Mount / unmount
@@ -136,6 +145,7 @@ function template() {
         <div class="chip-row">
           <span class="rule-chip"></span>
           <span class="time-chip" hidden><i data-lucide="clock"></i><span></span></span>
+          <span class="moves-chip" hidden></span>
           <button class="time-plus" data-act="extra-time" hidden aria-label="Add ${EXTRA_TIME_SECONDS} seconds for ${DIAMOND_PRICES.extraTime} diamond">+${EXTRA_TIME_SECONDS}s<span class="gem-cost"><i data-lucide="gem"></i>${DIAMOND_PRICES.extraTime}</span></button>
         </div>
       </div>
@@ -180,12 +190,13 @@ function startRound() {
   resultModal.close();
   levelResultModal.close();
   st = {
-    round: st.round, board: createBoard(cfg.size), history: [], over: false, thinking: false, aiToken: (st.aiToken || 0) + 1,
+    round: st.round, board: createBoard(cfg.size, layout()), history: [], over: false, thinking: false, aiToken: (st.aiToken || 0) + 1,
     usedHelp: false, timedOut: false, hintCell: -1,
     extraTimeUsed: false,   // +10s, once per game
     continued: false,       // diamond continue after a lost level, once per attempt
   };
   view.build(cfg.size);
+  view.paintLayout(layout()); // blocked cells + preset marks fade in
   $('.rule-chip', root).innerHTML = `${sizeLabel(cfg.size)} · ${winLength(cfg.size)}<span class="rw"> in a row</span>`;
   $('.rule-chip', root).setAttribute('aria-label', `${cfg.size} by ${cfg.size}, ${winLength(cfg.size)} in a row`);
   renderPlayers();
@@ -211,7 +222,8 @@ function place(i) {
   haptic(12);
   const line = winFrom(st.board, cfg.size, i); // O(k): checks from the last move only
   if (line) return endGame(mark, line);
-  if (st.history.length === st.board.length) return endGame(null, null);
+  // Draw: no empty cell left; on twist boards also when nobody can make a line any more
+  if (isFull(st.board) || (layout() && isDeadBoard(st.board, cfg.size))) return endGame(null, null);
   if (outOfMoves()) return endGame(null, null, 'moves');
   renderTurn();
   if (isAITurn()) scheduleAI();
@@ -420,6 +432,16 @@ function onSheetClosed() {
   renderTimeChip();
 }
 
+/** Puzzle levels: "Moves left: 2" in the top bar. */
+function renderMovesChip() {
+  const chip = $('.moves-chip', root);
+  chip.hidden = !isPuzzle();
+  if (!isPuzzle()) return;
+  const left = Math.max(0, cfg.moveLimit - playerMoves());
+  chip.textContent = `Moves left: ${left}`;
+  chip.classList.toggle('last', left <= 1 && !st.over);
+}
+
 /** Clock chip with the per-move time, plus the "+10s" diamond button while your timer runs. */
 function renderTimeChip() {
   if (!root || !st) return;
@@ -499,6 +521,7 @@ function statusText() {
   if (st.thinking) return 'Thinking...';
   if (!isCampaign()) return '';
   const pm = playerMoves();
+  if (isPuzzle()) return `Level ${cfg.levelId} · ${twistLabel(level)}`;
   return `Level ${cfg.levelId} · ${cfg.moveLimit ? `Moves ${pm}/${cfg.moveLimit}` : `Moves ${pm}`}`;
 }
 
@@ -512,6 +535,7 @@ function renderTurn() {
   $('.status-text', root).textContent = statusText();
   view.setLocked(st.thinking || st.over);
   $('[data-act="undo"]', root).disabled = !canUndo();
+  renderMovesChip();
   syncTimer();
 }
 
@@ -571,7 +595,11 @@ function buildModals() {
     const act = b.dataset.cm, n = cfg.levelId;
     if (act === 'continue') { askContinue(); return; }
     levelResultModal.close();
-    if (act === 'next' && n < TOTAL_LEVELS) { loadConfig(campaignConfig(Math.min(n + 1, save.data.unlockedLevel))); startRound(); }
+    if (act === 'next' && n < TOTAL_LEVELS) {
+      const next = Math.min(n + 1, save.data.unlockedLevel);
+      // a new twist shows its tutorial first; the round starts after "Got it"
+      withTwistTutorial(getLevel(next).twist, () => { if (root) { loadConfig(campaignConfig(next)); startRound(); } });
+    }
     else if (act === 'retry') startRound();
     else navigate('#/levels');
   });

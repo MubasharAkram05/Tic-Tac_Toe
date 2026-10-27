@@ -35,7 +35,7 @@ export const app = {
   },
   names: { ...DEFAULT_NAMES },
   scores: { computer: {}, friend: {}, campaign: {} },   // scores[mode][size or "L<level>"] = { p1, p2, draw }
-  flags: { zoomHint: false },
+  flags: { zoomHint: false, twists: {} },   // twists: which level-twist tutorials were seen
 };
 
 function loadApp() {

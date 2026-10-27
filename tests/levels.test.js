@@ -42,22 +42,23 @@ test('AI skill rises from 40% to 90% (85% on 3x3) and is never perfect', () => {
   });
 });
 
-test('every 10th level is a boss: top skill for its chapter, AI first', () => {
+test('every 10th level is a boss: top skill for its chapter, AI first (puzzle bosses: you first)', () => {
   const bosses = all.filter(l => l.boss);
   assert.equal(bosses.length, 50);
   assert.ok(all.every(l => l.boss === (l.id % 10 === 0)));
   bosses.forEach(l => {
     assert.ok(isBoss(l.id));
     assert.equal(l.aiSkill, l.size === 3 ? 0.85 : 0.9);
-    assert.equal(l.firstMove, 'ai');
-    assert.equal(l.moveLimit, 0);
+    const puzzle = !!(l.layout && l.layout.puzzleMoves);
+    assert.equal(l.firstMove, puzzle ? 'player' : 'ai');
+    assert.equal(l.moveLimit, puzzle ? l.layout.puzzleMoves : 0);
   });
 });
 
 test('the player starts early levels; the AI starts some later ones', () => {
   CHAPTERS.forEach(c => {
     for (let n = c.from; n < c.from + 3; n++) if (!isBoss(n)) assert.equal(getLevel(n).firstMove, 'player', `level ${n}`);
-    const late = c.normal.slice(-6).map(getLevel);
+    const late = c.normal.slice(-8).map(getLevel).filter(l => !l.layout || !l.layout.puzzleMoves);
     assert.ok(late.some(l => l.firstMove === 'ai') && late.some(l => l.firstMove === 'player'), `chapter ${c.index + 1}`);
   });
 });

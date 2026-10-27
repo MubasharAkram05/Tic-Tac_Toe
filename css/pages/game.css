@@ -11,7 +11,7 @@
 .turn-pill.swap { animation: pop 220ms var(--ease); }
 @keyframes pop { 0% { transform: scale(.92); opacity: .5; } 100% { transform: none; opacity: 1; } }
 /* Board size + win rule chip (only shown here), the per-move time chip and "+10s" */
-.chip-row { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; max-width: 100%; }
+.chip-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 6px; min-width: 0; max-width: 100%; }
 .time-chip { display: inline-flex; align-items: center; gap: 3px; font-size: 13px; font-weight: 700; padding: 1px 8px; border-radius: 99px; background: var(--glass); border: 1px solid var(--glass-border); font-variant-numeric: tabular-nums; flex-shrink: 0; }
 .time-chip svg.lucide { width: 14px; height: 14px; color: var(--t-amber); }
 .time-plus {

@@ -13,7 +13,8 @@ Made by **Sussal Productions**.
 - **AI:** unbeatable minimax on 3x3; alpha-beta search with a threat-aware heuristic on
   bigger boards. 9x9 and up run in a Web Worker, so the screen never freezes
 - **Campaign:** 500 levels in 10 chapters (3x3 up to 12x12), stars, a boss every 10th level,
-  move limits. The levels map is virtualized, so only the nodes near the screen are drawn
+  move limits and level twists (blocked cells, puzzle levels, see below). The levels map is
+  virtualized, so only the nodes near the screen are drawn
 - **Move timer:** on by default in every mode (turn it off in Settings). Time per move
   depends on the board size and difficulty (see below). Countdown ring around the active
   player, green / amber / red, pulse + tick in the last 5 seconds. A timeout plays a random
@@ -48,15 +49,18 @@ css/
 js/
   main.js             entry: storage, theme, router, service worker
   router.js           hash router: #/home #/levels #/game #/profile #/shop #/settings
-  config/             constants, timers (move times), level generator (500 levels), shop items
-  core/               pure logic, no DOM: board, rules, ai, ai.worker, timer
+  config/             constants, timers (move times), level generator (500 levels), shop items,
+                      level-twists (twist rules), twist-table (generated)
+  core/               pure logic, no DOM: board, rules, ai, ai.worker, timer,
+                      layout-generator, layout-validator
   services/           storage, economy, progress, stats, achievements, audio,
                       haptics, theme, ai-runner
   components/         bottom nav, sheet, modal, toast, currency bar (coins + diamonds),
-                      confirm sheet, timer ring, board view, confetti, level popup
+                      confirm sheet, timer ring, board view, confetti, level popup, twist tutorial
   pages/              home, levels, game, profile, shop, settings (each has mount / unmount)
-  utils/              dom, format, validate, events, icons (bundled Lucide subset)
-tests/                rules, ai, levels, timers, timer and storage tests (Node test runner)
+  utils/              dom, format, validate, events, seeded-random, icons (bundled Lucide subset)
+tools/                gen-twist-table.js (npm run twists), not deployed
+tests/                rules, ai, levels, timers, timer, storage and twists tests (Node test runner)
 ```
 
 Rules the code follows:
@@ -122,6 +126,51 @@ In levels a timeout removes the 3-star chance. A diamond buys +10s once per game
 Inside a chapter the AI skill rises from 40% to 90% (85% on 3x3, never perfect). The player
 starts the early levels; later the AI starts every other level. Every 10th level is a boss
 with the chapter's top skill, AI first and x0.7 time.
+
+## Level twists
+
+Twists only exist in Levels mode. vs Computer and vs Player boards never change.
+
+| Twist | What happens |
+|---|---|
+| Blocked | Some cells are stone tiles. Nobody can play there, and they break lines |
+| Puzzle | X and O marks start on the board (with a small pin). Win within N of your moves (2-4) or the level fails |
+| Mixed | Blocked cells and puzzle marks on one board |
+
+| Chapters | Twists |
+|---|---|
+| 1-2 (3x3, 4x4) | none, the learning phase |
+| 3-5 (5x5 to 7x7) | about 30% blocked |
+| 6-10 (8x8 to 12x12) | about 30% blocked, 20% puzzle, 10% mixed |
+| Bosses from chapter 3 | always a twist, with the hardest layouts |
+
+Blocked cells by grid: 5x5 1-2, 6x6 2-3, 7x7 3-4, 8x8 3-5, 9x9 4-6, 10x10 5-7, 11x11 6-9,
+12x12 7-10. Puzzles start with 4 to 8 marks (X = O, you move first).
+
+How it works:
+
+- **Deterministic:** every layout comes from `mulberry32(level + 1000 x attempt)`
+  (`js/utils/seeded-random.js`, `js/core/layout-generator.js`). The same level is the same
+  on every device and every replay. Boss overrides in `js/config/level-twists.js` win over
+  generated layouts.
+- **Validated offline, not on the phone:** `npm run twists` runs the full checks for all 500
+  levels and writes `js/config/twist-table.js` (twist type, the first attempt that passed,
+  puzzle length). The game only rebuilds that attempt, so it stays fast.
+  `tests/twists.test.js` fails if the table is out of date.
+- **Checks** (`js/core/layout-validator.js`): at least 60% of the winning lines stay open,
+  the centre area is not blocked, neither side is cut off, no line is won at the start,
+  X = O, the machine has no instant win, and the puzzle is a forced win in exactly N moves.
+  The puzzle check is a threat search (fours and open threes) that must beat every
+  defence. A layout that fails tries the next seed, up to 50 times, then the level plays
+  normally.
+- **Engine:** a blocked cell is `'#'` on the board. The win check stops at it, the AI never
+  plays it and ignores lines through it. On twist boards a game is also a draw when nobody
+  can make a line any more. Preset marks are not in the move history, so undo and
+  "continue" never remove them.
+- **UI:** one twist badge in the level popup, a tiny icon on the map node, a "Moves left"
+  chip on puzzle levels, and a one-time tutorial per twist ("seen" is saved in `ttt.v3`).
+- **Saves:** layouts are not saved. Stars are stored per level number, so if a layout
+  changes in a later update, the player keeps the stars they earned.
 
 ## Coins and diamonds
 

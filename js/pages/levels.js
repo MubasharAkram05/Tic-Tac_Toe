@@ -7,18 +7,18 @@
  * smooth on low-end phones. Chapter header cards (10) are always rendered.
  *
  * A "Jump to current level" button shows up when the current level is
- * scrolled out of view.
+ * scrolled out of view. Levels with a twist get a tiny icon on their node.
  */
 import { $, createScope, renderIcons, replayClass } from '../utils/dom.js';
 import { sizeLabel } from '../utils/format.js';
-import { CHAPTERS, TOTAL_LEVELS, chapterOf, isBoss } from '../config/levels.js';
+import { CHAPTERS, TOTAL_LEVELS, chapterOf, isBoss, getLevel } from '../config/levels.js';
 import { save } from '../services/storage.js';
 import { totalStars, chapterStars } from '../services/progress.js';
 import { sound } from '../services/audio.js';
 import { haptic } from '../services/haptics.js';
 import { onEvent } from '../utils/events.js';
 import { showToast } from '../components/toast.js';
-import { openLevelPopup, starSVG } from '../components/level-popup.js';
+import { openLevelPopup, starSVG, TWIST_ICONS, twistLabel } from '../components/level-popup.js';
 
 export const appBar = { title: 'Levels', settings: false }; // the star pill takes the right side
 
@@ -141,11 +141,12 @@ function makeNode(n) {
   const d = save.data, st = stateOf(n), boss = isBoss(n);
   const stars = st === 'done' ? d.levels[n].stars : 0;
   const label = st === 'locked' ? 'locked' : st === 'done' ? `${stars} of 3 stars` : 'ready to play';
+  const twist = getLevel(n).twist, tw = TWIST_ICONS[twist];
   const b = document.createElement('button');
   b.className = `node ${st}${boss ? ' boss' : ''}`;
   b.dataset.level = n;
-  b.setAttribute('aria-label', `Level ${n}${boss ? ', boss' : ''}, ${label}`);
-  b.innerHTML = (boss ? CROWN_SVG : '') +
+  b.setAttribute('aria-label', `Level ${n}${boss ? ', boss' : ''}${tw ? ', ' + twistLabel(getLevel(n)) : ''}, ${label}`);
+  b.innerHTML = (boss ? CROWN_SVG : '') + (tw ? `<span class="node-twist t-${twist}"><i data-lucide="${tw}"></i></span>` : '') +
     (st === 'locked' ? LOCK_SVG : `<span>${n}</span>`) +
     (st === 'done' ? `<span class="node-stars">${[0, 1, 2].map(i => starSVG(i < stars)).join('')}</span>` : '');
   place(b, xOf(n), Y[n]);
@@ -166,6 +167,7 @@ function update(full) {
   live.forEach((el, n) => { if (n < a || n > b) { el.remove(); live.delete(n); } });
   const frag = document.createDocumentFragment();
   for (let n = a; n <= b; n++) if (!live.has(n)) { const el = makeNode(n); live.set(n, el); frag.appendChild(el); }
+  renderIcons(frag);
   nodesLayer.appendChild(frag);
   range = [a, b];
   drawPath(a, b);

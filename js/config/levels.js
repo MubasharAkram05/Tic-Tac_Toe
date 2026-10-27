@@ -4,6 +4,7 @@
  */
 import { winLength, REWARDS } from './constants.js';
 import { getLevelMoveTime } from './timers.js';
+import { generateLayout } from '../core/layout-generator.js';
 
 // [first level, last level, board size, win length, chapter name]
 const TABLE = [
@@ -49,6 +50,9 @@ const round2 = x => Math.round(x * 100) / 100;
  *   last normal level (see config/timers.js)
  * - some levels have a hard move limit
  * Boss levels (every 10th): the chapter's top skill, AI first, x0.7 time.
+ * Twists (chapter 3+, see config/level-twists.js): `twist` is 'none' |
+ * 'blocked' | 'puzzle' | 'mixed' and `layout` the cells it starts with.
+ * Puzzle levels: the player starts and must win within `puzzleMoves`.
  * Levels never show these numbers to the player; they live in config only.
  */
 export function getLevel(n) {
@@ -74,6 +78,13 @@ export function getLevel(n) {
     reward: (REWARDS.firstClearBase + Math.floor(n / REWARDS.firstClearDivisor)) * (boss ? REWARDS.bossMultiplier : 1),
   };
   level.timeLimit = getLevelMoveTime(level);               // seconds per move (when the timer is on)
+  const { type, layout } = generateLayout(n, level);
+  level.twist = type;
+  level.layout = layout;                                   // null for a normal level
+  if (layout && layout.puzzleMoves) {
+    level.firstMove = 'player';                            // puzzles: you move first...
+    level.moveLimit = layout.puzzleMoves;                  // ...and must win within N of your moves
+  }
   return (cache[n] = level);
 }
 

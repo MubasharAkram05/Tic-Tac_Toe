@@ -1,6 +1,7 @@
 /**
  * Board view: builds the cell grid, sizes it to the screen, draws marks,
- * the win line and the last-move ring. Boards 9x9 and up get pinch zoom,
+ * the win line and the last-move ring. Level twists: blocked cells (stone
+ * tiles) and preset marks (with a pin dot) via paintLayout(). Boards 9x9 and up get pinch zoom,
  * one-finger pan and double-tap reset, all snapped to whole cells.
  *
  *   const view = new BoardView({ area, onCellTap });
@@ -24,6 +25,9 @@ function pixelSVG(mark) {
   else for (let i = 2; i <= 4; i++) px.push([i, 1], [i, 5], [1, i], [5, i]);
   return `<svg viewBox="0 0 7 7" class="pixel pop" aria-hidden="true">${px.map(([x, y]) => `<rect x="${x}" y="${y}" width="1" height="1"/>`).join('')}</svg>`;
 }
+
+/** Lucide "ban" icon for blocked cells. */
+const BAN_SVG = '<svg viewBox="0 0 24 24" class="ban" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>';
 
 /** Mark drawn with a given X/O skin. */
 export function skinMark(skin, mark) {
@@ -82,6 +86,40 @@ export class BoardView {
     cell.className = 'cell' + (mark ? ` filled ${mark.toLowerCase()}` : '') + (animate ? '' : ' instant');
     cell.innerHTML = mark ? cellMark(mark) : '';
     cell.setAttribute('aria-label', `Row ${Math.floor(i / n) + 1}, column ${(i % n) + 1}, ${mark || 'empty'}`);
+  }
+
+  /**
+   * Draws a level's starting cells with a short staggered fade-in:
+   * blocked cells as stone tiles with a "ban" icon, preset marks with a pin dot.
+   */
+  paintLayout(layout) {
+    if (!layout) return;
+    const n = this.size, cells = [...layout.blocked.map(i => [i, null]), ...layout.preset.map(p => [p.i, p.m])];
+    cells.sort((a, b) => a[0] - b[0]).forEach(([i, mark], k) => {
+      const cell = this.cellEl(i);
+      if (!cell) return;
+      const where = `Row ${Math.floor(i / n) + 1}, column ${(i % n) + 1}`;
+      if (mark) {
+        this.paint(i, mark, false);
+        cell.classList.add('preset');
+        cell.setAttribute('aria-label', `${where}, ${mark}, given at the start`);
+      } else {
+        cell.className = 'cell filled blocked';
+        cell.innerHTML = BAN_SVG;
+        cell.setAttribute('aria-label', `${where}, blocked`);
+      }
+      cell.classList.add('twist-in');
+      cell.style.animationDelay = `${Math.min(k * 30, 400)}ms`;
+    });
+  }
+
+  /** Small shake on a cell (tapping a blocked cell). */
+  shakeCell(i) {
+    const cell = this.cellEl(i);
+    if (!cell) return;
+    cell.classList.remove('nope');
+    void cell.offsetWidth;
+    cell.classList.add('nope');
   }
 
   /** Ring around the last move, easy to spot on big boards. */
@@ -285,6 +323,7 @@ export class BoardView {
     this.listen(this.area, 'click', e => {
       if (G.suppress) return;
       const cell = e.target.closest('.cell');
+      if (cell && cell.classList.contains('blocked')) { this.shakeCell(+cell.dataset.i); return; } // nobody can play here
       if (cell && this.onCellTap(+cell.dataset.i)) { this.lastTap = null; return; }
       if (!v.zoomable) return;
       const now = performance.now(), lt = this.lastTap;

@@ -1,0 +1,69 @@
+/* Level twists: blocked cells, preset marks, twist badges, the tutorial card. */
+
+/* Blocked cell: dark stone / glass tile, slightly sunken, with a small "ban" icon.
+   No tap feedback and no hover / active state. */
+.cell.blocked {
+  cursor: not-allowed;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, .12), transparent 55%),
+    linear-gradient(150deg, #3b3f5c, #1c1f33);
+  border-color: rgba(0, 0, 0, .35);
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, .55), inset 0 -1px 0 rgba(255, 255, 255, .08);
+  transform: scale(.94);
+  transition: none;
+}
+.cell.blocked:active { transform: scale(.94); background: linear-gradient(150deg, #3b3f5c, #1c1f33); }
+.cell.blocked svg.ban { width: 40%; height: 40%; }
+.cell.blocked svg.ban circle, .cell.blocked svg.ban path { stroke: rgba(226, 232, 255, .55); stroke-width: 2.2; fill: none; filter: none; transform: none; }
+:root[data-theme="light"] .cell.blocked {
+  background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, .25), transparent 55%), linear-gradient(150deg, #8a8fa8, #5d627c);
+}
+.cell.blocked.nope { animation: cellNope 260ms ease; }
+@keyframes cellNope { 25% { transform: scale(.94) translateX(-3px); } 75% { transform: scale(.94) translateX(3px); } }
+
+/* Preset mark: a small pin dot in the corner shows it was given at the start */
+.cell.preset::before {
+  content: ''; position: absolute; top: 9%; right: 9%; width: max(5px, 12%); height: max(5px, 12%);
+  border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px rgba(0, 0, 0, .18), 0 0 6px var(--accent);
+}
+
+/* Starting cells fade in (a short stagger is set from JS) */
+.cell.twist-in { animation: twistIn 320ms var(--ease) both; }
+@keyframes twistIn { from { opacity: 0; transform: scale(.7); } }
+.cell.blocked.twist-in { animation-name: twistInBlocked; }
+@keyframes twistInBlocked { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: scale(.94); } }
+
+/* Game top bar: "Moves left: 2" on puzzle levels */
+.moves-chip { font-size: 13px; font-weight: 700; padding: 1px 9px; border-radius: 99px; flex-shrink: 0; color: #fff; background: linear-gradient(160deg, #a78bfa, var(--primary-2)); }
+.moves-chip.last { background: linear-gradient(160deg, #fb7185, #e11d48); animation: pulse 1.2s ease-in-out infinite; }
+
+/* Level popup: badges row (timer + one twist badge) */
+.lm-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 16px; }
+.lm-badges .lm-timer { margin-bottom: 0; }
+.lm-twist { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border-radius: 99px; font-weight: 600; background: var(--glass); border: 1px solid var(--glass-border); }
+.lm-twist svg.lucide { width: 18px; height: 18px; color: var(--primary); }
+.lm-badges [hidden] { display: none; }
+
+/* Levels map: tiny twist icon on a node */
+.node-twist {
+  position: absolute; top: -4px; left: -4px; width: 24px; height: 24px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--sheet); color: var(--text);
+  border: 1px solid var(--glass-border); box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
+}
+.node .node-twist svg.lucide { width: 14px; height: 14px; }
+.node.boss .node-twist { top: 2px; left: 2px; }
+
+/* Twist tutorial card */
+.twist-card { width: min(100%, 340px); }
+.tt-icon { width: 64px; height: 64px; margin: 0 auto 10px; border-radius: 20px; display: grid; place-items: center; color: #fff; background: linear-gradient(160deg, #8f73ff, var(--primary-2)); box-shadow: 0 6px 0 var(--primary-edge); }
+.tt-icon svg.lucide { width: 34px; height: 34px; }
+.twist-card h2 { font-size: 26px; margin-bottom: 10px; }
+.tt-demo { --cell: 56px; --cr: 14px; display: grid; grid-template-columns: repeat(3, var(--cell)); gap: 6px; justify-content: center; margin: 4px auto 12px; }
+.tt-demo .cell { pointer-events: none; }
+.tt-demo .tt-move svg { animation: ttMove 2.4s ease-in-out infinite; }
+@keyframes ttMove { 0%, 30% { opacity: 0; transform: scale(.4); } 45%, 85% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+.tt-lines { color: var(--muted); margin-bottom: 16px; display: grid; gap: 4px; }
+@media (prefers-reduced-motion: reduce) {
+  .cell.twist-in, .tt-demo .tt-move svg, .moves-chip.last { animation: none; }
+}
+.twist-card .btn3d.big svg.lucide { fill: none; }
