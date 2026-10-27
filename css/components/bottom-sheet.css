@@ -88,3 +88,17 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
 .avatar-opt { display: grid; place-items: center; height: 76px; border-radius: 20px; color: #fff; background: linear-gradient(160deg, var(--x), var(--primary-2)); border: 3px solid transparent; }
 .avatar-opt svg.lucide { width: 34px; height: 34px; }
 .avatar-opt[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 14px var(--accent); }
+
+/* Confirm sheet for diamond purchases. It sits above popups (modals use z-index 30). */
+.sheet.confirm-sheet { z-index: 32 !important; }
+.confirm-body { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 4px 0 6px; }
+.confirm-icon { width: 60px; height: 60px; border-radius: 20px; display: grid; place-items: center; color: #fff; background: linear-gradient(160deg, #38bdf8, var(--gem-2)); box-shadow: 0 0 18px var(--gem-glow); }
+.confirm-sheet.coins .confirm-icon { background: linear-gradient(160deg, var(--gold), var(--gold-2)); box-shadow: 0 0 18px var(--gold-glow); }
+.confirm-icon svg.lucide { width: 32px; height: 32px; }
+.confirm-text { color: var(--muted); max-width: 34ch; }
+.confirm-price { display: grid; grid-template-columns: auto auto; gap: 4px 18px; padding: 10px 16px; border-radius: 14px; background: var(--glass); }
+.confirm-price span { color: var(--muted); text-align: left; }
+.confirm-price b { display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; }
+.confirm-price svg.lucide { width: 18px; height: 18px; color: var(--gem); }
+.confirm-sheet.coins .confirm-price svg.lucide { color: var(--gold); }
+.confirm-msg { color: var(--danger); font-size: 15px; min-height: 20px; }

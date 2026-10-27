@@ -11,12 +11,7 @@ export const winLength = size => (size === 3 ? 3 : size <= 6 ? 4 : 5);
 export const NAME_MAX = 12;
 export const DEFAULT_NAMES = { p1: 'Player 1', p2: 'Player 2', solo: 'You' };
 
-/** Move timer choices in seconds (0 = off). */
-export const TIMER_OPTIONS = [0, 10, 20, 30];
-/** Timer ring turns amber / red below these fractions; the last N seconds pulse. */
-export const TIMER_WARN = 0.5;
-export const TIMER_DANGER = 0.25;
-export const TIMER_FINAL_SECONDS = 5;
+/* Move timer values (base times, multipliers, ring colours) live in config/timers.js. */
 
 /** Board layout: gap between cells by size (10x10 and up use 3px). */
 export const BOARD_GAPS = { 3: 10, 4: 9, 5: 8, 6: 6, 7: 5, 8: 4, 9: 4 };
@@ -28,13 +23,35 @@ export const PRICES = { hint: 20, undo: 10 };
 
 /** Coin rewards. */
 export const REWARDS = {
-  firstClearBase: 10,        // first clear = 10 + floor(level / 5)
-  firstClearDivisor: 5,
+  firstClearBase: 10,        // first clear = 10 + floor(level / 10)
+  firstClearDivisor: 10,
   bossMultiplier: 3,         // boss first clear x3
   replay: 2,                 // replaying a cleared level
   perNewStar: 5,             // only for stars not earned before
   daily: [20, 25, 30, 35, 40, 45, 50], // day 1..7 of a streak, day 7+ stays at 50
 };
+
+/** Diamonds: the rare premium currency. */
+export const DIAMOND_REWARDS = {
+  boss: 1,                   // boss level first clear
+  bossLate: 2,               // ...from chapter `bossLateFrom` onward
+  bossLateFrom: 6,           // chapter number (1-based)
+  chapterPerfect: 5,         // 3 stars on every level of a chapter
+  chapterComplete: 3,        // every level of a chapter cleared
+  levelUp: 1,                // each player level gained
+  dailyEvery: 7,             // daily reward: every 7th day in a row...
+  daily: 2,                  // ...gives this many diamonds
+};
+
+/** What diamonds buy. */
+export const DIAMOND_PRICES = {
+  extraTime: 1,              // +10s on the current move, once per game
+  continue: 2,               // after losing a level: undo the last 2 moves and keep going, once per attempt
+  skip: 5,                   // skip a level, once per chapter, gives 1 star
+};
+
+/** One-way exchange: 1 diamond = 100 coins (coins can't buy diamonds). */
+export const EXCHANGE_RATE = 100;
 
 export const XP = { win: 10, campaignBonus: 5 };
 
@@ -47,6 +64,9 @@ export const TITLES = [
   { from: 1, name: 'Beginner' },
 ];
 
-/** localStorage keys. These must not change, or saved progress is lost. */
-export const STORAGE_KEYS = { settings: 'ttt.v3', save: 'ttt_save_v1' };
-export const SAVE_VERSION = 1;
+/**
+ * localStorage keys. "settings" must not change. Progress moved to
+ * "ttt_save_v2"; the old "ttt_save_v1" key is read once and migrated.
+ */
+export const STORAGE_KEYS = { settings: 'ttt.v3', save: 'ttt_save_v2', legacySave: 'ttt_save_v1' };
+export const SAVE_VERSION = 2;

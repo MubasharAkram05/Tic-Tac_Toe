@@ -1,41 +1,54 @@
 /**
- * Campaign levels: 200 levels generated from a small chapter table.
+ * Campaign levels: 500 levels generated from a small chapter table.
  * Pure data + functions (no DOM).
  */
 import { winLength, REWARDS } from './constants.js';
+import { getLevelMoveTime } from './timers.js';
 
 // [first level, last level, board size, win length, chapter name]
 const TABLE = [
-  [1, 15, 3, 3, 'Warm Up'],
-  [16, 35, 4, 4, 'First Steps'],
-  [36, 60, 5, 4, 'Wide Open'],
-  [61, 85, 6, 4, 'Six Sense'],
-  [86, 105, 7, 5, 'High Five'],
-  [106, 125, 8, 5, 'Eight Lanes'],
-  [126, 145, 9, 5, 'Nine Lives'],
-  [146, 165, 10, 5, 'Big Ten'],
-  [166, 185, 11, 5, 'Eleventh Hour'],
-  [186, 200, 12, 5, 'Grand Master'],
+  [1, 20, 3, 3, 'Warm Up'],
+  [21, 50, 4, 4, 'First Steps'],
+  [51, 90, 5, 4, 'Getting Smart'],
+  [91, 140, 6, 4, 'Tactician'],
+  [141, 195, 7, 5, 'Big League'],
+  [196, 250, 8, 5, 'Strategist'],
+  [251, 305, 9, 5, 'Mastermind'],
+  [306, 360, 10, 5, 'Grandmaster'],
+  [361, 430, 11, 5, 'Legend'],
+  [431, 500, 12, 5, 'Ultimate'],
 ];
 
-export const TOTAL_LEVELS = 200;
+export const TOTAL_LEVELS = 500;
 
-export const CHAPTERS = TABLE.map(([from, to, size, win, name], index) => ({
-  index, from, to, size, win, name, count: to - from + 1,
-}));
+/** AI skill = chance it plays its best move. Never 1 (never perfect). */
+export const SKILL = { min: 0.4, max: 0.9, max3x3: 0.85 };
 
-export const chapterOf = n => CHAPTERS.find(c => n >= c.from && n <= c.to);
 export const isBoss = n => n % 10 === 0;
 
+export const CHAPTERS = TABLE.map(([from, to, size, win, name], index) => {
+  const normal = [];
+  for (let n = from; n <= to; n++) if (!isBoss(n)) normal.push(n);
+  return {
+    index, from, to, size, win, name, count: to - from + 1,
+    normal,                                        // non-boss levels, in order (used for the timer steps)
+    maxSkill: size === 3 ? SKILL.max3x3 : SKILL.max,
+  };
+});
+
+export const chapterOf = n => CHAPTERS.find(c => n >= c.from && n <= c.to);
+
 const cache = [];
+const round2 = x => Math.round(x * 100) / 100;
 
 /**
  * Builds level n. Inside a chapter, t goes 0 -> 1 and difficulty rises with it:
- * - AI skill 40% -> 90% (chance it plays its best move; never 100%)
- * - the AI starts first in the later part of a chapter
- * - a move timer appears in the second half of a chapter (off in early levels)
+ * - AI skill 40% -> 90% (85% on 3x3)
+ * - the player starts the early levels; later the AI starts every other level
+ * - move time goes down step by step: x1.5 on the first level -> x0.8 on the
+ *   last normal level (see config/timers.js)
  * - some levels have a hard move limit
- * Boss levels (every 10th): top skill for the chapter, AI first, move timer.
+ * Boss levels (every 10th): the chapter's top skill, AI first, x0.7 time.
  * Levels never show these numbers to the player; they live in config only.
  */
 export function getLevel(n) {
@@ -44,7 +57,9 @@ export function getLevel(n) {
   if (!ch) return null;
   const i = n - ch.from, t = ch.count > 1 ? i / (ch.count - 1) : 0;
   const boss = isBoss(n);
-  const par = ch.win + Math.floor(ch.size / 3); // your moves allowed for 2 and 3 stars
+  const step = ch.normal.indexOf(n);                        // -1 for bosses
+  const progress = boss ? 1 : ch.normal.length > 1 ? step / (ch.normal.length - 1) : 0;
+  const par = ch.win + Math.floor(ch.size / 3);             // your moves allowed for 2 and 3 stars
   const level = {
     id: n,
     chapter: ch.index,
@@ -52,12 +67,13 @@ export function getLevel(n) {
     winLength: ch.win,
     boss,
     par,
-    aiSkill: boss ? 0.9 : Math.round((0.4 + 0.5 * t) * 100) / 100,
-    firstMove: boss || t >= 0.6 ? 'ai' : 'player',
-    timeLimit: boss ? 15 : t >= 0.5 ? Math.round(25 - 15 * t) : 0, // seconds per move, 0 = off
-    moveLimit: !boss && i % 5 === 2 ? par : 0,                      // run out of moves = fail
+    progress,
+    aiSkill: boss ? ch.maxSkill : round2(SKILL.min + (ch.maxSkill - SKILL.min) * t),
+    firstMove: boss || (t >= 0.4 && n % 2 === 1) ? 'ai' : 'player',
+    moveLimit: !boss && i % 5 === 2 ? par : 0,             // run out of moves = fail
     reward: (REWARDS.firstClearBase + Math.floor(n / REWARDS.firstClearDivisor)) * (boss ? REWARDS.bossMultiplier : 1),
   };
+  level.timeLimit = getLevelMoveTime(level);               // seconds per move (when the timer is on)
   return (cache[n] = level);
 }
 

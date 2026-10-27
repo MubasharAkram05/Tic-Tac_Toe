@@ -7,7 +7,8 @@ export const sizeLabel = n => `${n}×${n}`;
 export const ruleLabel = n => `${sizeLabel(n)} · ${winLength(n)} in a row`;
 export const percent = (part, whole) => (whole ? Math.round((part / whole) * 100) : 0);
 export const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
-export const timerLabel = s => (s ? `${s}s` : 'Off');
+export const timerLabel = on => (on ? 'On' : 'Off');
+export const secondsLabel = s => `${s}s`;
 
 /** Local date as YYYY-MM-DD (used by the daily reward). */
 export const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

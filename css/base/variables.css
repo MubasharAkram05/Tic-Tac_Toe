@@ -16,6 +16,10 @@
   --gold: #f5b301;
   --gold-2: #f08c00;
   --gold-glow: rgba(245, 179, 1, .45);
+  --gem: #22d3ee;
+  --gem-2: #3b82f6;
+  --gem-edge: #1d4ed8;
+  --gem-glow: rgba(34, 211, 238, .55);
   --nav-h: 64px;
   --bar-h: 56px;
   --t-green: #22c55e;
@@ -105,6 +109,25 @@
   --cell-img: repeating-linear-gradient(100deg, rgba(255, 255, 255, .07) 0 3px, transparent 3px 9px);
   --cell-glow: inset 0 -2px 0 rgba(70, 35, 10, .25);
   --mark-x: #0e5a6e; --mark-o: #9d1b4f;
+}
+/* Diamond (premium) boards */
+[data-board="aurora"] {
+  --cell-a: rgba(16, 60, 72, .92); --cell-b: rgba(40, 18, 80, .95); --cell-border: rgba(94, 234, 212, .55); --cell-active: rgba(30, 90, 100, .95);
+  --cell-img: linear-gradient(160deg, rgba(52, 211, 153, .28), transparent 45%, rgba(167, 139, 250, .3));
+  --cell-glow: 0 0 10px rgba(94, 234, 212, .3), inset 0 0 8px rgba(167, 139, 250, .25);
+  --mark-x: #a7f3d0; --mark-o: #f0abfc;
+}
+[data-board="royal"] {
+  --cell-a: #4c1d95; --cell-b: #2e1065; --cell-border: rgba(251, 191, 36, .75); --cell-active: #5b21b6;
+  --cell-img: radial-gradient(circle at 30% 25%, rgba(253, 224, 71, .22), transparent 55%);
+  --cell-glow: 0 0 8px rgba(251, 191, 36, .35), inset 0 0 0 1px rgba(253, 224, 71, .25);
+  --mark-x: #fde047; --mark-o: #fdba74;
+}
+[data-board="crystal"] {
+  --cell-a: rgba(224, 242, 254, .9); --cell-b: rgba(186, 230, 253, .7); --cell-border: rgba(255, 255, 255, .95); --cell-active: rgba(240, 249, 255, .98);
+  --cell-img: linear-gradient(135deg, rgba(255, 255, 255, .7) 0 18%, transparent 18% 50%, rgba(255, 255, 255, .35) 50% 58%, transparent 58%);
+  --cell-glow: 0 0 10px rgba(56, 189, 248, .45);
+  --mark-x: #0369a1; --mark-o: #be185d;
 }
 [data-board="galaxy"] {
   --cell-a: rgba(64, 32, 128, .95); --cell-b: rgba(14, 10, 44, .97); --cell-border: rgba(167, 139, 250, .5); --cell-active: rgba(92, 52, 168, .97);

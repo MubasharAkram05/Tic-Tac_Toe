@@ -1,11 +1,10 @@
 /**
  * Settings: opens as a bottom sheet over the current page (route #/settings).
- * Theme, sound, vibration, default move timer, progress backup
+ * Theme, sound, vibration, move timer on / off, progress backup
  * (export / import code) and reset scores.
  */
 import { $, renderIcons, setSeg, segHTML } from '../utils/dom.js';
 import { timerLabel } from '../utils/format.js';
-import { TIMER_OPTIONS } from '../config/constants.js';
 import { app, saveApp, save } from '../services/storage.js';
 import { setTheme, applyCosmetics } from '../services/theme.js';
 import { sound } from '../services/audio.js';
@@ -33,11 +32,11 @@ function build() {
           <span class="ri"><i data-lucide="vibrate"></i></span><span class="rt">Vibration<small>Haptic feedback on supported phones</small></span><span class="switch"></span>
         </button>
         <div class="set-row set-block">
-          <div class="set-top"><span class="ri"><i data-lucide="timer"></i></span><span class="rt">Move timer<small>Default for vs Computer and vs Player</small></span></div>
-          ${segHTML({ group: 'settings', key: 'timer', label: 'Move timer', options: TIMER_OPTIONS.map(s => ({ val: s, label: timerLabel(s) })) })}
+          <div class="set-top"><span class="ri"><i data-lucide="timer"></i></span><span class="rt">Move timer<small>For every mode. Time per move depends on the board size and difficulty</small></span></div>
+          ${segHTML({ group: 'settings', key: 'timerOn', label: 'Move timer', options: [true, false].map(on => ({ val: String(on), label: timerLabel(on) })) })}
         </div>
         <div class="set-row set-block" id="backupBlock">
-          <div class="set-top"><span class="ri"><i data-lucide="hard-drive-download"></i></span><span class="rt">Progress backup<small>Save a code to restore coins, levels and items</small></span></div>
+          <div class="set-top"><span class="ri"><i data-lucide="hard-drive-download"></i></span><span class="rt">Progress backup<small>Save a code to restore coins, diamonds, levels and items</small></span></div>
           <div class="two-btns">
             <button type="button" class="btn3d ghost" data-act="export"><i data-lucide="download"></i>Export</button>
             <button type="button" class="btn3d ghost" data-act="import-open"><i data-lucide="upload"></i>Import</button>
@@ -100,7 +99,7 @@ function render() {
   sheet.el.querySelector('[data-toggle="sound"]').setAttribute('aria-checked', String(app.settings.sound));
   sheet.el.querySelector('[data-toggle="vibration"]').setAttribute('aria-checked', String(app.settings.vibration));
   setSeg(sheet.el.querySelector('.seg[data-key="theme"]'), app.settings.theme);
-  setSeg(sheet.el.querySelector('.seg[data-key="timer"]'), app.settings.timer);
+  setSeg(sheet.el.querySelector('.seg[data-key="timerOn"]'), String(app.settings.timerOn));
 }
 
 async function onClick(e) {
@@ -108,7 +107,7 @@ async function onClick(e) {
   if (segBtn) {
     const key = segBtn.parentElement.dataset.key;
     if (key === 'theme') setTheme(segBtn.dataset.val);
-    if (key === 'timer') app.settings.timer = +segBtn.dataset.val;
+    if (key === 'timerOn') app.settings.timerOn = segBtn.dataset.val === 'true';
     saveApp(); render(); sound.click(); haptic(8);
     return;
   }
@@ -142,7 +141,7 @@ async function onClick(e) {
     const res = save.decode($('#importCode').value);
     if (res.error) { msg(res.error, false); sound.error(); return; }
     pendingImport = res.data;
-    msg(`Code OK: level ${pendingImport.unlockedLevel}, ${pendingImport.coins} coins. This replaces your current progress.`, true);
+    msg(`Code OK: level ${pendingImport.unlockedLevel}, ${pendingImport.coins} coins, ${pendingImport.diamonds} diamonds. This replaces your current progress.`, true);
     showImportConfirm(true);
   }
   if (act === 'import-cancel') resetBackup();
@@ -151,6 +150,7 @@ async function onClick(e) {
     resetBackup();
     applyCosmetics();
     emit('coins', { from: save.data.coins, to: save.data.coins });
+    emit('diamonds', { from: save.data.diamonds, to: save.data.diamonds });
     emit('progress');
     msg('Progress restored.', true);
     showToast('Progress restored', 'check');

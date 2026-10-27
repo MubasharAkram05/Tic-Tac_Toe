@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#1b1838">
-  <meta name="description" content="Tic Tac Toe from 3x3 to 12x12 with a 200-level campaign, smart AI, coins, shop and offline play.">
+  <meta name="description" content="Tic Tac Toe from 3x3 to 12x12 with a 500-level campaign, smart AI, coins, diamonds, shop and offline play.">
   <title>Tic Tac Toe</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
@@ -23,7 +23,8 @@
     <header class="app-bar" id="appBar">
       <div class="app-bar-left">
         <button class="icon-btn" id="appBack" aria-label="Back" hidden><i data-lucide="arrow-left"></i></button>
-        <button class="coin-pill" data-coin-pill data-go="#/shop" aria-label="Coins, open shop"><i data-lucide="coins"></i><span class="coin-amt">0</span></button>
+        <button class="coin-pill" data-coin-pill data-go="#/shop?tab=coins" aria-label="Coins, open shop"><i data-lucide="coins"></i><span class="coin-amt">0</span></button>
+        <button class="gem-pill" data-gem-pill data-go="#/shop?tab=diamonds" aria-label="Diamonds, open shop"><i data-lucide="gem"></i><span class="gem-amt">0</span></button>
       </div>
       <h1 class="page-title" id="appTitle"></h1>
       <div class="app-bar-right">

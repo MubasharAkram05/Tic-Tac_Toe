@@ -31,6 +31,8 @@
 }
 .app-bar-left { display: flex; align-items: center; gap: var(--s2); min-width: 0; }
 .app-bar-right { display: flex; align-items: center; justify-content: flex-end; gap: var(--s2); min-width: 0; }
+/* Phones: coins + diamonds fill the top bar, so the page title gives way (the bottom nav / tabs name the page) */
+@media (max-width: 480px) { .page-title { display: none; } }
 
 /* Page host: each page is a full-size layer so pages can slide in and out */
 .page-host { position: relative; flex: 1; min-height: 0; }

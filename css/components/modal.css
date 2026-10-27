@@ -56,3 +56,13 @@
 .cm-rewards div { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 12px; background: var(--glass); font-weight: 500; }
 .cm-rewards b { display: inline-flex; align-items: center; gap: 4px; }
 .cm-rewards svg.lucide { width: 18px; height: 18px; color: var(--gold); }
+.cm-rewards .gem-row { background: rgba(34, 211, 238, .12); padding-top: 6px; padding-bottom: 6px; }
+.cm-rewards .gem-row svg.lucide { color: var(--gem); filter: drop-shadow(0 0 4px var(--gem-glow)); }
+.cm-actions .btn3d.gem { gap: 6px; }
+
+/* Skip with diamonds (level popup) */
+.lm-skip { display: flex; flex-direction: column; align-items: center; margin-top: 8px; }
+.lm-skip .link-btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--muted); }
+.lm-skip .link-btn svg.lucide { width: 18px; height: 18px; }
+.lm-skip .link-btn:disabled { opacity: .5; }
+.lm-skip-msg { color: var(--muted); font-size: 13px; min-height: 18px; }

@@ -2,7 +2,7 @@
  * Circular countdown ring drawn around a player's avatar, with the
  * seconds left in the middle. Colour: green > 50%, amber 25-50%, red < 25%.
  */
-import { TIMER_WARN, TIMER_DANGER, TIMER_FINAL_SECONDS } from '../config/constants.js';
+import { TIMER_WARN, TIMER_DANGER, TIMER_FINAL_SECONDS } from '../config/timers.js';
 
 const R = 21, CIRC = 2 * Math.PI * R;
 

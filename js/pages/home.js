@@ -3,18 +3,19 @@
  * mode buttons and the vs Computer / vs Player setup sheets.
  */
 import { $, $$, createScope, renderIcons, setSeg, segHTML, nameFieldHTML, setFieldState, reduceMotion } from '../utils/dom.js';
-import { sizeLabel, timerLabel } from '../utils/format.js';
+import { sizeLabel, timerLabel, secondsLabel } from '../utils/format.js';
 import { nameError, clamp } from '../utils/validate.js';
-import { BOARD_SIZES, NAME_MAX, TIMER_OPTIONS, winLength } from '../config/constants.js';
+import { BOARD_SIZES, NAME_MAX, winLength } from '../config/constants.js';
+import { getMoveTime } from '../config/timers.js';
 import { getLevel, chapterOf } from '../config/levels.js';
 import { app, saveApp, save } from '../services/storage.js';
-import { dailyStatus, claimDaily, addCoins } from '../services/economy.js';
+import { dailyStatus, claimDaily, addCoins, addDiamonds } from '../services/economy.js';
 import { checkAchievements } from '../services/achievements.js';
 import { campaignDone } from '../services/progress.js';
 import { sound } from '../services/audio.js';
 import { haptic } from '../services/haptics.js';
 import { createSheet } from '../components/bottom-sheet.js';
-import { flyCoins } from '../components/coin-counter.js';
+import { flyCurrency } from '../components/currency-bar.js';
 import { miniMark } from '../components/board-view.js';
 import { showToast } from '../components/toast.js';
 import { openLevelPopup } from '../components/level-popup.js';
@@ -108,17 +109,19 @@ function renderCards() {
   $('.continue-card', root).setAttribute('aria-label', done ? 'Campaign complete, open levels' : `Continue campaign, level ${u}, ${chapterOf(u).name}`);
   const st = dailyStatus();
   $('.daily-card', root).hidden = !st.available;
-  if (st.available) $('.dc-sub', root).textContent = `Day ${st.day} · ${st.amount} coins${st.day > 1 ? ' · streak!' : ''}`;
+  if (st.available) $('.dc-sub', root).textContent = `Day ${st.day} · ${st.amount} coins${st.diamonds ? ` + ${st.diamonds} diamonds` : ''}${st.day > 1 ? ' · streak!' : ''}`;
 }
 
 function claim(btn) {
   const st = claimDaily();
   if (!st) return;
   haptic([10, 30, 10]);
-  flyCoins(btn, st.amount);
+  flyCurrency('coins', btn, st.amount);
+  if (st.diamonds) setTimeout(() => flyCurrency('diamonds', btn, st.diamonds), 250);
   setTimeout(() => {
     addCoins(st.amount);
-    showToast(`Day ${st.day} reward: +${st.amount} coins`, 'gift');
+    if (st.diamonds) addDiamonds(st.diamonds);
+    showToast(`Day ${st.day} reward: +${st.amount} coins${st.diamonds ? `, +${st.diamonds} diamonds` : ''}`, 'gift');
     checkAchievements();
     if (root) renderCards();
   }, 300);
@@ -236,7 +239,13 @@ function wireSwipe() {
 
 /* ---------- Setup sheets: name(s), difficulty, mark, timer, Start ---------- */
 const markSeg = (group, label) => segHTML({ group, key: 'p1Mark', label, options: [{ val: 'X', label: miniMark('X'), aria: 'X' }, { val: 'O', label: miniMark('O'), aria: 'O' }] });
-const timerSeg = group => segHTML({ group, key: 'timer', label: 'Move timer', options: TIMER_OPTIONS.map(s => ({ val: s, label: timerLabel(s) })) });
+const timerSeg = group => segHTML({ group, key: 'timerOn', label: 'Move timer', options: [true, false].map(on => ({ val: String(on), label: timerLabel(on) })) });
+/** "15s per move" next to the timer label (vs Player always uses the Medium time). */
+function renderTimerHint(sheetId) {
+  const el = $(`#${sheetId} .timer-hint`);
+  const secs = getMoveTime(app.prefs.size, sheetId === 'pvpSheet' ? 'medium' : app.choices.cpu.difficulty);
+  el.textContent = app.settings.timerOn ? `${secondsLabel(secs)} per move` : '';
+}
 
 function buildSheets() {
   cpuSheet = createSheet({
@@ -246,7 +255,7 @@ function buildSheets() {
       <div class="form-row"><div class="lbl">Difficulty</div>
         ${segHTML({ group: 'cpu', key: 'difficulty', label: 'Difficulty', options: [{ val: 'easy', label: 'Easy' }, { val: 'medium', label: 'Medium' }, { val: 'hard', label: 'Hard' }] })}</div>
       <div class="form-row"><div class="lbl">Play as</div>${markSeg('cpu', 'Play as')}</div>
-      <div class="form-row"><div class="lbl">Move timer</div>${timerSeg('cpu')}</div>`,
+      <div class="form-row"><div class="lbl">Move timer <small class="timer-hint"></small></div>${timerSeg('cpu')}</div>`,
     foot: '<button type="submit" class="btn3d big" data-start><i data-lucide="play"></i>Start</button>',
   });
   pvpSheet = createSheet({
@@ -255,7 +264,7 @@ function buildSheets() {
       ${nameFieldHTML({ id: 'p1Name', field: 'p1', label: '<span class="fmark" data-for="p1"></span>Player 1 name', enterkey: 'next', max: NAME_MAX })}
       ${nameFieldHTML({ id: 'p2Name', field: 'p2', label: '<span class="fmark" data-for="p2"></span>Player 2 name', max: NAME_MAX })}
       <div class="form-row"><div class="lbl">Player 1 is</div>${markSeg('pvp', 'Player 1 is')}</div>
-      <div class="form-row"><div class="lbl">Move timer</div>${timerSeg('pvp')}</div>`,
+      <div class="form-row"><div class="lbl">Move timer <small class="timer-hint"></small></div>${timerSeg('pvp')}</div>`,
     foot: '<button type="submit" class="btn3d big" data-start><i data-lucide="play"></i>Start</button>',
   });
 
@@ -264,11 +273,12 @@ function buildSheets() {
       const btn = e.target.closest('.seg button');
       if (!btn) return;
       const seg = btn.parentElement, group = seg.dataset.group, key = seg.dataset.key;
-      const val = key === 'timer' ? +btn.dataset.val : btn.dataset.val;
-      if (key === 'timer') app.settings.timer = val; // one shared timer choice
+      const val = btn.dataset.val;
+      if (key === 'timerOn') app.settings.timerOn = val === 'true'; // one shared timer setting
       else app.choices[group][key] = val;
       setSeg(seg, val);
       if (group === 'pvp' && key === 'p1Mark') renderPvpMarks();
+      renderTimerHint(sheet.el.id);
       saveApp(); sound.click(); haptic(8);
     });
   });
@@ -331,7 +341,8 @@ function openCpuSheet() {
   cpuSheet.setTitle(`vs Computer · ${sizeLabel(app.prefs.size)}`);
   setSeg($('#cpuSheet .seg[data-key="difficulty"]'), c.difficulty);
   setSeg($('#cpuSheet .seg[data-key="p1Mark"]'), c.p1Mark);
-  setSeg($('#cpuSheet .seg[data-key="timer"]'), app.settings.timer);
+  setSeg($('#cpuSheet .seg[data-key="timerOn"]'), String(app.settings.timerOn));
+  renderTimerHint('cpuSheet');
   $('#cpuName').value = app.names.solo === 'You' ? '' : app.names.solo;
   validateCpu();
   cpuSheet.open();
@@ -341,7 +352,8 @@ function openPvpSheet() {
   const c = app.choices.pvp;
   pvpSheet.setTitle(`vs Player · ${sizeLabel(app.prefs.size)}`);
   setSeg($('#pvpSheet .seg[data-key="p1Mark"]'), c.p1Mark);
-  setSeg($('#pvpSheet .seg[data-key="timer"]'), app.settings.timer);
+  setSeg($('#pvpSheet .seg[data-key="timerOn"]'), String(app.settings.timerOn));
+  renderTimerHint('pvpSheet');
   $('#p1Name').value = app.names.p1;
   $('#p2Name').value = app.names.p2;
   renderPvpMarks();
@@ -351,7 +363,7 @@ function openPvpSheet() {
 
 /** Builds the game config and opens the game page. */
 function start(extra, sheet) {
-  const config = { size: app.prefs.size, timer: app.settings.timer, ...extra };
+  const config = { size: app.prefs.size, ...extra }; // the game page works out the move time
   sheet.close();
   sound.click(); haptic(15);
   navigate('#/game', { state: config });

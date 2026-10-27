@@ -3,7 +3,7 @@
  * Bump CACHE when files change so players get the new version.
  * Google Fonts are cached at runtime the first time they load.
  */
-const CACHE = 'ttt-v1';
+const CACHE = 'ttt-v2';
 const FONT_CACHE = 'ttt-fonts-v1';
 const APP_FILES = [
   './',
@@ -40,12 +40,12 @@ const APP_FILES = [
   "./css/pages/levels.css",
   "./css/pages/profile.css",
   "./css/pages/shop.css",
-  "./index.html",
   "./js/components/board-view.js",
   "./js/components/bottom-nav.js",
   "./js/components/bottom-sheet.js",
-  "./js/components/coin-counter.js",
   "./js/components/confetti.js",
+  "./js/components/confirm-sheet.js",
+  "./js/components/currency-bar.js",
   "./js/components/level-popup.js",
   "./js/components/modal.js",
   "./js/components/timer-ring.js",
@@ -53,6 +53,7 @@ const APP_FILES = [
   "./js/config/constants.js",
   "./js/config/levels.js",
   "./js/config/shop-items.js",
+  "./js/config/timers.js",
   "./js/core/ai.js",
   "./js/core/ai.worker.js",
   "./js/core/board.js",
@@ -80,6 +81,7 @@ const APP_FILES = [
   "./js/utils/format.js",
   "./js/utils/icons.js",
   "./js/utils/validate.js",
+  "./index.html",
   "./manifest.json",
 ];
 

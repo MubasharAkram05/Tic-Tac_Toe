@@ -30,6 +30,8 @@ export function skinMark(skin, mark) {
   if (skin === 'glow') return markSVG(mark, 'skin-glow');
   if (skin === 'emoji') return `<span class="emoji-mark pop" aria-hidden="true">${mark === 'X' ? '❌' : '⭕'}</span>`;
   if (skin === 'pixel') return pixelSVG(mark);
+  if (skin === 'pulse') return markSVG(mark, 'skin-pulse');     // diamond skin: gentle beat (transform only)
+  if (skin === 'rainbow') return markSVG(mark, 'skin-rainbow'); // diamond skin: colour cycle
   return markSVG(mark);
 }
 /** Mark drawn with the equipped skin. */
@@ -100,6 +102,15 @@ export class BoardView {
     line.forEach(i => this.cellEl(i).classList.add('win'));
     this.board.classList.add('done');
     this.drawWinLine(true);
+  }
+
+  /** Removes the win glow and line (used when a lost level is continued). */
+  clearWin() {
+    this.lastWin = null;
+    this.board.querySelectorAll('.cell.win').forEach(c => c.classList.remove('win'));
+    this.board.classList.remove('done');
+    const ln = this.board.querySelector('.win-line line');
+    if (ln) { ln.style.strokeDasharray = ''; ln.style.strokeDashoffset = ''; ln.setAttribute('x2', ln.getAttribute('x1')); ln.setAttribute('y2', ln.getAttribute('y1')); }
   }
 
   drawWinLine(animate) {

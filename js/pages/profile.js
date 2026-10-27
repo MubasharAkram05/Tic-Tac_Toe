@@ -10,7 +10,7 @@ import { shopItem } from '../config/shop-items.js';
 import { save } from '../services/storage.js';
 import { levelInfo, titleFor, totalStars, highestLevel } from '../services/progress.js';
 import { statsFor } from '../services/stats.js';
-import { ACHIEVEMENTS, isUnlockedAchievement, progressText, progressFraction } from '../services/achievements.js';
+import { ACHIEVEMENTS, isUnlockedAchievement, progressText, progressFraction, rewardText } from '../services/achievements.js';
 import { equipItem } from '../services/economy.js';
 import { applyCosmetics } from '../services/theme.js';
 import { sound } from '../services/audio.js';
@@ -53,7 +53,7 @@ export function unmount() {
 
 function skeleton() {
   const block = cls => `<div class="skel-block ${cls}"></div>`;
-  return `<div class="page-scroll profile-page">${block('sk-hero')}<div class="quick-row">${block('sk-tile')}${block('sk-tile')}${block('sk-tile')}</div>${block('sk-card')}${block('sk-card')}</div>`;
+  return `<div class="page-scroll profile-page">${block('sk-hero')}<div class="quick-row">${block('sk-tile')}${block('sk-tile')}${block('sk-tile')}${block('sk-tile')}</div>${block('sk-card')}${block('sk-card')}</div>`;
 }
 
 /* =========================================================================
@@ -92,6 +92,7 @@ function render(animate) {
 
       <div class="quick-row">
         ${mini('coins', 'gold', d.coins, 'Coins')}
+        ${mini('gem', 'gem', d.diamonds, 'Diamonds')}
         ${mini('star', 'gold', totalStars(), 'Stars')}
         ${mini('flag', '', highestLevel(), 'Highest level')}
       </div>
@@ -172,7 +173,7 @@ function badgeHTML(a, full = false) {
   return `<div class="badge-card ${on ? 'on' : 'locked'}${full ? ' full' : ''}">
     <span class="b-icon"><i data-lucide="${on ? a.icon : 'lock'}"></i></span>
     <b>${a.name}</b>
-    <small>${on ? `+${a.reward} coins` : progressText(a)}</small>
+    <small>${on ? rewardText(a) : progressText(a)}</small>
     ${full ? `<span class="b-desc">${a.desc}</span>` : ''}
     ${on ? '' : `<span class="b-bar"><i data-pct="${pct}"></i></span>`}
   </div>`;
@@ -266,7 +267,7 @@ function buildSheets() {
 
   resetSheet = createSheet({
     id: 'resetSheet', title: 'Reset progress?',
-    body: '<p class="sheet-note">This clears your coins, levels and stars, shop items, stats and achievements. Settings stay. This can\'t be undone.</p>',
+    body: '<p class="sheet-note">This clears your coins, diamonds, levels and stars, shop items, stats and achievements. Settings stay. This can\'t be undone.</p>',
     foot: '<div class="two-btns"><button type="button" class="btn3d ghost" data-close-sheet>Cancel</button><button type="button" class="btn3d danger" data-reset>Reset</button></div>',
   });
   resetSheet.el.querySelector('[data-close-sheet]').addEventListener('click', () => resetSheet.close());
@@ -275,6 +276,7 @@ function buildSheets() {
     applyCosmetics();
     resetSheet.close();
     emit('coins', { from: 0, to: 0 });
+    emit('diamonds', { from: 0, to: 0 });
     emit('progress');
     showToast('Progress reset. Fresh start!', 'rotate-ccw');
     sound.click(); haptic([10, 30, 10]);
