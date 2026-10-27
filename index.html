@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#1b1838">
 <title>Tic Tac Toe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,12 +46,16 @@
   --shadow: 0 10px 30px rgba(0, 0, 0, .3);
   --edge: rgba(0, 0, 0, .4);
   --track: rgba(255, 255, 255, .2);
-  --sheet: rgba(30, 26, 66, .97);
+  --sheet: rgba(30, 26, 66, .98);
   --input: rgba(255, 255, 255, .08);
   --x: #22d3ee;
   --x-glow: rgba(34, 211, 238, .75);
   --o: #f472b6;
   --o-glow: rgba(244, 114, 182, .75);
+  --neon-cyan: #22d3ee;
+  --neon-cyan-glow: rgba(34, 211, 238, .45);
+  --neon-amber: #fbbf24;
+  --neon-amber-glow: rgba(251, 146, 60, .45);
 }
 
 /* Light theme: soft pastel peach, coral, teal, mint, lavender */
@@ -72,12 +76,16 @@
   --shadow: 0 10px 28px rgba(120, 70, 110, .16);
   --edge: rgba(120, 80, 140, .28);
   --track: rgba(30, 27, 75, .2);
-  --sheet: rgba(255, 255, 255, .97);
+  --sheet: rgba(255, 255, 255, .98);
   --input: rgba(255, 255, 255, .85);
   --x: #0891b2;
   --x-glow: rgba(8, 145, 178, .45);
   --o: #db2777;
   --o-glow: rgba(219, 39, 119, .4);
+  --neon-cyan: #0891b2;
+  --neon-cyan-glow: rgba(8, 145, 178, .35);
+  --neon-amber: #d97706;
+  --neon-amber-glow: rgba(217, 119, 6, .35);
 }
 
 /* =========================================================
@@ -125,7 +133,7 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 .app {
   position: relative; z-index: 1;
   height: 100vh; height: 100dvh;
-  max-width: 520px; margin: 0 auto;
+  max-width: 560px; margin: 0 auto;
   overflow: hidden;
 }
 .screen {
@@ -149,11 +157,11 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
   display: grid; place-items: center;
   background: var(--glass-strong); border: 1px solid var(--glass-border);
   box-shadow: 0 4px 0 var(--edge);
-  transition: transform var(--fast) ease, box-shadow var(--fast) ease, background var(--fast) ease;
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease, opacity var(--fast) ease;
 }
 .icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--edge); }
-.theme-toggle .i-sun, :root[data-theme="light"] .theme-toggle .i-moon { display: none; }
-:root[data-theme="light"] .theme-toggle .i-sun { display: block; }
+.icon-btn:disabled { opacity: .35; pointer-events: none; }
+.icon-btn.ghosted { visibility: hidden; } /* keeps the layout, hides the button */
 
 /* 3D press-down button */
 .btn3d {
@@ -171,8 +179,8 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 .btn3d.danger { --c1: #fb7185; --c2: #e11d48; --bedge: #9f1239; box-shadow: 0 6px 0 var(--bedge); }
 .btn3d.danger:active { box-shadow: 0 1px 0 var(--bedge); }
 .btn3d:disabled { opacity: .45; filter: grayscale(.4); pointer-events: none; }
-.btn3d.big { min-height: 62px; font-size: 21px; border-radius: 22px; width: 100%; }
-.btn3d.big svg.lucide { width: 26px; height: 26px; fill: currentColor; }
+.btn3d.big { min-height: 60px; font-size: 20px; border-radius: 20px; width: 100%; }
+.btn3d.big svg.lucide { width: 24px; height: 24px; fill: currentColor; }
 
 /* Segmented control with sliding thumb */
 .seg {
@@ -208,12 +216,6 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 .seg button[aria-checked="true"] .mini-mark path,
 .seg button[aria-checked="true"] .mini-mark circle { stroke: #fff; }
 
-.section-label {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 14px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase;
-  color: var(--muted); margin: 0 0 6px 2px;
-}
-.section-label svg.lucide { width: 16px; height: 16px; }
 .footer { text-align: center; font-size: 13px; color: var(--muted); padding-top: 6px; flex-shrink: 0; }
 .footer b { color: var(--text); font-weight: 600; }
 
@@ -247,83 +249,71 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 @keyframes rise { to { opacity: 1; transform: none; } }
 
 /* =========================================================
-   6. HOME
+   6. HOME / LEVEL SELECT
    ========================================================= */
-.home-scroll {
-  flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
-  padding: 2px 2px var(--s3);
-  display: flex; flex-direction: column; gap: 14px;
+.home-main {
+  flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-evenly;
+  gap: 14px; padding: 4px 0 8px;
   scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(#000 calc(100% - 18px), transparent);
-  mask-image: linear-gradient(#000 calc(100% - 18px), transparent);
 }
-.home-scroll::-webkit-scrollbar { display: none; }
-.hero { display: flex; align-items: center; gap: var(--s3); padding: 0 2px; }
-.hero .logo { width: 54px; height: 54px; }
-.hero h1 { margin: 0; font-size: 30px; line-height: 1.05; font-weight: 700; }
-.hero h1 span { color: var(--o); }
-.hero h1 em { font-style: normal; color: var(--x); }
-.hero p { margin: 2px 0 0; color: var(--muted); }
+.home-main::-webkit-scrollbar { display: none; }
+.title {
+  margin: 0; text-align: center;
+  font-size: 32px; font-weight: 700; letter-spacing: 5px; text-transform: uppercase; line-height: 1.1;
+  background: linear-gradient(90deg, var(--x), var(--primary), var(--o));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
 
-.mode-cards { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); }
-.mode-card {
-  position: relative; text-align: left; padding: 14px; border-radius: var(--radius-lg);
-  display: flex; flex-direction: column; gap: 3px; min-width: 0;
-  transition: transform var(--fast) ease, border-color var(--med) ease, box-shadow var(--med) ease;
+/* Level carousel */
+.carousel { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.lv-row { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+.lv-stage { touch-action: pan-y; padding: 6px; } /* horizontal swipes come to JS, vertical still scrolls */
+.lv-preview {
+  width: min(54vw, 34vh, 280px); width: min(54vw, 34dvh, 280px); aspect-ratio: 1;
+  padding: 8px; border-radius: 24px; will-change: transform;
 }
-.mode-card:active { transform: scale(.97); }
-.mode-card .mc-icon {
-  width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; margin-bottom: 3px;
-  background: var(--glass-strong); color: var(--muted);
-  transition: background var(--med) ease, color var(--med) ease;
+.lv-preview svg { display: block; width: 100%; height: 100%; }
+.pv-cell { fill: var(--cell-a); stroke: var(--cell-border); stroke-width: .4; }
+.pv-x { stroke: var(--x); fill: none; stroke-linecap: round; }
+.pv-o { stroke: var(--o); fill: none; }
+.pv-mark { opacity: 0; transform-box: fill-box; transform-origin: center; animation: pvIn 200ms var(--ease) forwards; }
+@keyframes pvIn { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
+.pv-win { stroke: #fff; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; animation: draw 300ms var(--ease) forwards; }
+.pv-win.x { filter: drop-shadow(0 0 1.5px var(--x)); }
+.arrow { width: 48px; height: 48px; border-radius: 50%; }
+.lv-label { font-size: 20px; font-weight: 600; min-height: 28px; }
+.lv-label span { color: var(--muted); font-weight: 500; }
+.dots { display: flex; justify-content: center; }
+.dot { width: 30px; height: 36px; display: grid; place-items: center; }
+.dot span {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--muted); opacity: .4;
+  transition: transform var(--med) var(--ease), opacity var(--med) ease, background var(--med) ease, box-shadow var(--med) ease;
 }
-.mode-card b { font-size: 18px; font-weight: 600; }
-.mode-card span { font-size: 14px; color: var(--muted); }
-.mode-card[aria-checked="true"] { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary), 0 12px 26px rgba(124, 92, 255, .28); }
-.mode-card[aria-checked="true"] .mc-icon { background: linear-gradient(180deg, #8f73ff, var(--primary-2)); color: #fff; }
-.mode-card .check { position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--glass-border); transition: all var(--med) ease; }
-.mode-card[aria-checked="true"] .check { border-color: var(--primary); background: var(--primary); box-shadow: inset 0 0 0 4px var(--glass-strong); }
+.dot[aria-current="true"] span { transform: scale(1.6); opacity: 1; background: var(--primary); box-shadow: 0 0 10px var(--primary); }
+.dot:active span { transform: scale(1.3); }
 
-/* Board size chips: horizontal snap scroll */
-.chips {
-  position: relative;
-  display: flex; gap: 10px; overflow-x: auto; overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-  padding: 4px 4px 10px;
-  scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+/* Mode buttons with neon outline */
+.modes { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 320px; }
+.mode-btn {
+  --nc: var(--neon-cyan); --ng: var(--neon-cyan-glow);
+  height: 64px; border-radius: 20px;
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  background: var(--glass); border: 2px solid var(--nc); color: var(--nc);
+  box-shadow: 0 0 16px var(--ng), inset 0 0 12px var(--ng), 0 5px 0 var(--edge);
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease;
 }
-.chips::-webkit-scrollbar { display: none; }
-.chip {
-  flex: 0 0 auto; scroll-snap-align: center;
-  min-width: 82px; min-height: 62px; padding: 6px 10px; border-radius: 18px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: var(--glass); border: 1px solid var(--glass-border);
-  box-shadow: 0 4px 0 var(--edge);
-  transition: transform var(--fast) ease, box-shadow var(--fast) ease, background var(--med) ease, color var(--med) ease;
-}
-.chip b { font-size: 18px; font-weight: 600; line-height: 1.1; }
-.chip small { font-size: 12px; color: var(--muted); white-space: nowrap; transition: color var(--med) ease; }
-.chip:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--edge); }
-.chip[aria-checked="true"] {
-  color: #fff; border-color: transparent;
-  background: linear-gradient(180deg, #8f73ff, var(--primary-2));
-  box-shadow: 0 4px 0 var(--primary-edge), 0 8px 18px rgba(91, 61, 245, .3);
-}
-.chip[aria-checked="true"] small { color: rgba(255, 255, 255, .88); }
-
-.collapsible { display: grid; grid-template-rows: 1fr; opacity: 1; transition: grid-template-rows var(--med) var(--ease), opacity var(--med) ease, margin var(--med) var(--ease); }
-.collapsible > div { overflow: hidden; min-height: 0; }
-.collapsible.closed { grid-template-rows: 0fr; opacity: 0; margin-top: -14px; }
-.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px var(--s3); }
-.home-bottom { flex-shrink: 0; padding-top: var(--s2); }
+.mode-btn.pvp { --nc: var(--neon-amber); --ng: var(--neon-amber-glow); }
+.mode-btn:active { transform: translateY(4px); box-shadow: 0 0 10px var(--ng), inset 0 0 10px var(--ng), 0 1px 0 var(--edge); }
+.mode-btn svg.lucide { width: 30px; height: 30px; }
+.mode-btn b { font-size: 20px; font-weight: 700; letter-spacing: 1px; color: var(--text); }
 
 /* =========================================================
    7. GAME SCREEN
    ========================================================= */
+#game { padding-left: 8px; padding-right: 8px; }
 .turn-pill {
-  flex: 1; min-width: 0; max-width: 240px; margin: 0 auto;
+  flex: 1; min-width: 0; max-width: 260px; margin: 0 auto;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 44px; padding: 0 14px; border-radius: 99px;
   font-weight: 600; font-size: 16px; white-space: nowrap;
@@ -382,25 +372,27 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
   height: 32px; display: flex; align-items: center; justify-content: center; gap: 8px;
   color: var(--muted); font-size: 16px; flex-shrink: 0;
 }
-.status-line .dots { display: none; gap: 4px; }
+.status-line .dots-anim { display: none; gap: 4px; }
 .status-line.thinking { color: var(--text); }
-.status-line.thinking .dots { display: inline-flex; }
-.dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--o); animation: blink 900ms infinite ease-in-out; }
-.dots i:nth-child(2) { animation-delay: 150ms; }
-.dots i:nth-child(3) { animation-delay: 300ms; }
+.status-line.thinking .dots-anim { display: inline-flex; }
+.dots-anim i { width: 7px; height: 7px; border-radius: 50%; background: var(--o); animation: blink 900ms infinite ease-in-out; }
+.dots-anim i:nth-child(2) { animation-delay: 150ms; }
+.dots-anim i:nth-child(3) { animation-delay: 300ms; }
 @keyframes blink { 0%, 80%, 100% { transform: scale(.6); opacity: .4; } 40% { transform: scale(1); opacity: 1; } }
 
-/* Board viewport: pan / pinch area for big boards */
-.board-area { position: relative; flex: 1; min-height: 0; }
-.viewport { position: absolute; inset: 0; overflow: hidden; border-radius: var(--radius-lg); touch-action: manipulation; }
-.viewport.pannable { touch-action: none; }
+/* Board area: full width; the viewport is sized in JS to exactly fit whole cells */
+.board-area { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; }
+.viewport {
+  --cr: 18px;
+  position: relative; overflow: hidden; border-radius: var(--cr);
+  touch-action: manipulation;
+}
+.viewport.zoomable { touch-action: none; }
 .board {
-  --n: 3; --cell: 90px; --gap: 10px; --pad: 10px; --cr: 18px;
+  --n: 3; --cell: 90px; --gap: 10px;
   position: absolute; left: 0; top: 0; transform-origin: 0 0;
   display: grid; grid-template-columns: repeat(var(--n), var(--cell)); grid-auto-rows: var(--cell);
-  gap: var(--gap); padding: var(--pad);
-  border-radius: calc(var(--cr) + var(--pad));
-  background: var(--glass); border: 1px solid var(--glass-border); box-shadow: var(--shadow);
+  gap: var(--gap);
 }
 .board.smooth { transition: transform 240ms var(--ease); }
 .board.enter { animation: fadeIn 240ms var(--ease); }
@@ -444,21 +436,29 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 .win-line.x line { filter: drop-shadow(0 0 6px var(--x)) drop-shadow(0 0 2px var(--x)); }
 .win-line.o line { filter: drop-shadow(0 0 6px var(--o)) drop-shadow(0 0 2px var(--o)); }
 
-/* Zoom controls (9x9 and up) */
-.zoom-ctrls { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 10px; z-index: 2; }
-.zoom-ctrls .icon-btn { width: 44px; height: 44px; }
+/* One-time zoom hint for 9x9+ */
+.zoom-hint {
+  position: absolute; left: 50%; bottom: 10px; z-index: 2;
+  padding: 8px 16px; border-radius: 99px; white-space: nowrap;
+  background: var(--sheet); border: 1px solid var(--glass-border); box-shadow: var(--shadow);
+  font-size: 16px; font-weight: 500;
+  opacity: 0; transform: translate(-50%, 8px); pointer-events: none;
+  transition: opacity 280ms ease, transform 280ms var(--ease);
+}
+.zoom-hint.show { opacity: 1; transform: translate(-50%, 0); }
 
-.actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); padding-top: var(--s3); flex-shrink: 0; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); padding: var(--s3) 8px 0; flex-shrink: 0; }
 
 /* =========================================================
-   8. POPUPS (result + names)
+   8. POPUPS (result + leave confirm)
    ========================================================= */
 .overlay {
-  position: fixed; inset: 0; z-index: 20; background: rgba(8, 6, 26, .5);
+  position: fixed; inset: 0; z-index: 30; background: rgba(8, 6, 26, .5);
   opacity: 0; pointer-events: none; visibility: hidden;
   transition: opacity var(--med) ease, visibility 0s linear var(--med);
 }
 .overlay.open { opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+#sheetBackdrop { z-index: 21; }
 .modal { display: grid; place-items: center; padding: 16px; }
 .modal-card {
   position: relative; width: min(100%, 370px); max-height: calc(100dvh - 32px); overflow-y: auto;
@@ -477,53 +477,58 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 }
 .result-icon svg.lucide { width: 44px; height: 44px; }
 .result-icon.lose { background: linear-gradient(160deg, #94a3b8, #475569); box-shadow: 0 6px 0 #334155; }
-.result-icon.draw, .result-icon.names { background: linear-gradient(160deg, #a78bfa, var(--primary-2)); box-shadow: 0 6px 0 var(--primary-edge); }
-.result-icon.names { width: 64px; height: 64px; border-radius: 20px; }
-.result-icon.names svg.lucide { width: 32px; height: 32px; }
+.result-icon.draw { background: linear-gradient(160deg, #a78bfa, var(--primary-2)); box-shadow: 0 6px 0 var(--primary-edge); }
+.result-icon.warn { width: 64px; height: 64px; border-radius: 20px; background: linear-gradient(160deg, #fb7185, #e11d48); box-shadow: 0 6px 0 #9f1239; }
+.result-icon.warn svg.lucide { width: 32px; height: 32px; }
 .modal-card h2 { margin: 0; font-size: 30px; font-weight: 700; overflow-wrap: anywhere; }
 .modal-card p { margin: 6px 0 var(--s5); color: var(--muted); }
 .modal-actions { display: grid; gap: var(--s4); }
-.close-x { position: absolute; top: 12px; right: 12px; }
+.modal-actions.two { grid-template-columns: 1fr 1fr; gap: var(--s3); }
+.modal-actions.two .btn3d { padding: 0 12px; }
 
-/* Name fields with inline validation */
-.names-card { text-align: left; }
-.names-card h2, .names-card > p { text-align: center; }
-.field { margin-bottom: var(--s2); }
-.field label { display: flex; align-items: center; gap: 6px; font-weight: 600; margin: 0 0 6px 2px; }
+/* =========================================================
+   9. BOTTOM SHEETS (vs Computer, vs Player, Settings)
+   ========================================================= */
+.sheet {
+  position: fixed; z-index: 22; left: 0; right: 0; bottom: var(--kb, 0px);
+  max-width: 560px; margin: 0 auto;
+  max-height: min(88vh, calc(var(--vvh, 100vh) - 16px));
+  display: flex; flex-direction: column;
+  border-radius: 28px 28px 0 0;
+  background: var(--sheet); border: 1px solid var(--glass-border); border-bottom: 0;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, .25);
+  transform: translateY(105%); visibility: hidden;
+  transition: transform 280ms var(--ease), visibility 0s linear 280ms, bottom 200ms ease;
+}
+.sheet.open { transform: none; visibility: visible; transition-delay: 0s; }
+.sheet-grab { flex-shrink: 0; padding: 10px 16px 8px; touch-action: none; cursor: grab; }
+.sheet-handle { width: 44px; height: 5px; border-radius: 99px; background: var(--track); margin: 0 auto 10px; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sheet-head h3 { margin: 0; font-size: 22px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sheet-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 6px 16px 8px; }
+.sheet-foot { flex-shrink: 0; padding: 12px 16px calc(env(safe-area-inset-bottom) + 16px); border-top: 1px solid var(--glass-border); }
+
+.form-row { margin-bottom: 14px; }
+.form-row .lbl { display: flex; align-items: center; gap: 6px; font-weight: 600; margin: 0 0 6px 2px; }
+.form-row .lbl small { color: var(--muted); font-weight: 400; font-size: 14px; }
 .input-wrap { position: relative; }
-.field input {
+.form-row input {
   width: 100%; min-height: 50px; padding: 0 64px 0 14px; border-radius: 14px;
   font: inherit; font-size: 17px; color: var(--text);
   background: var(--input); border: 2px solid var(--glass-border);
   -webkit-user-select: text; user-select: text;
   transition: border-color var(--fast) ease, box-shadow var(--fast) ease;
 }
-.field input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(124, 92, 255, .2); }
-.field .count { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--muted); }
-.field .err { min-height: 20px; font-size: 14px; color: var(--danger); margin: 4px 0 0 4px; }
-.field.invalid input { border-color: var(--danger); box-shadow: 0 0 0 4px rgba(244, 63, 94, .15); }
-.field.invalid .count { color: var(--danger); }
-.names-card .btn3d { width: 100%; margin-top: var(--s2); }
+.form-row input::placeholder { color: var(--muted); opacity: .8; }
+.form-row input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(124, 92, 255, .2); }
+.form-row .count { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--muted); }
+.form-row .err { min-height: 20px; font-size: 14px; color: var(--danger); margin: 4px 0 0 4px; }
+.form-row.invalid input { border-color: var(--danger); box-shadow: 0 0 0 4px rgba(244, 63, 94, .15); }
+.form-row.invalid .count { color: var(--danger); }
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0 12px; }
 
-/* =========================================================
-   9. SETTINGS SHEET
-   ========================================================= */
-.sheet {
-  position: fixed; z-index: 21; left: 0; right: 0; bottom: 0;
-  max-width: 520px; margin: 0 auto;
-  max-height: 85vh; max-height: 85dvh; overflow-y: auto;
-  padding: 10px var(--s4) calc(env(safe-area-inset-bottom) + var(--s4));
-  border-radius: 28px 28px 0 0;
-  background: var(--sheet); border: 1px solid var(--glass-border); border-bottom: 0;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, .25);
-  transform: translateY(105%); visibility: hidden;
-  transition: transform 280ms var(--ease), visibility 0s linear 280ms;
-}
-.sheet.open { transform: none; visibility: visible; transition-delay: 0s; }
-.sheet-handle { width: 44px; height: 5px; border-radius: 99px; background: var(--track); margin: 0 auto 10px; }
-.sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--s3); }
-.sheet-head h3 { margin: 0; font-size: 22px; font-weight: 600; }
-.set-list { display: grid; gap: var(--s3); }
+/* Settings rows */
+.set-list { display: grid; gap: var(--s3); padding-bottom: 8px; }
 .set-row {
   width: 100%; min-height: 60px; padding: 10px 14px; border-radius: var(--radius);
   display: flex; align-items: center; gap: var(--s3); text-align: left;
@@ -540,18 +545,24 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
 .switch::after { content: ''; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .25); transition: transform var(--med) var(--ease); }
 [aria-checked="true"] > .switch { background: var(--primary); }
 [aria-checked="true"] > .switch::after { transform: translateX(20px); }
-#resetScores { width: 100%; margin-top: var(--s2); }
+.reset-box { margin-top: 4px; }
+.reset-box > .btn3d { width: 100%; }
+.reset-confirm { padding: 14px; border-radius: var(--radius); border: 2px solid var(--danger); background: rgba(244, 63, 94, .08); animation: fadeIn 200ms ease; }
+.reset-confirm p { margin: 0 0 12px; font-weight: 500; }
+.reset-confirm .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.reset-confirm .btn3d { padding: 0 10px; }
+.reset-done { text-align: center; color: var(--muted); min-height: 22px; margin-top: 8px; }
 
-#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; }
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
 
 /* =========================================================
    10. RESPONSIVE + REDUCED MOTION
    ========================================================= */
 @media (min-width: 768px) {
   .screen { padding-left: 24px; padding-right: 24px; }
-  .hero h1 { font-size: 36px; }
+  #game { padding-left: 8px; padding-right: 8px; }
+  .title { font-size: 38px; }
 }
-@media (min-width: 1024px) { .app { max-width: 580px; } }
 @media (prefers-reduced-motion: reduce) {
   .bg::before { animation: none; }
   *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
@@ -579,85 +590,39 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
     <p class="splash-sub">Tap to start</p>
   </section>
 
-  <!-- ================= HOME ================= -->
-  <section class="screen" id="home" aria-label="Home">
+  <!-- ================= HOME / LEVEL SELECT ================= -->
+  <section class="screen" id="home" aria-label="Select level">
     <header class="topbar">
-      <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Toggle light or dark theme">
-        <i data-lucide="moon" class="i-moon"></i><i data-lucide="sun" class="i-sun"></i>
-      </button>
+      <button class="icon-btn ghosted" aria-hidden="true" tabindex="-1"><i data-lucide="arrow-left"></i></button>
       <button class="icon-btn" data-open-settings aria-label="Settings"><i data-lucide="settings"></i></button>
     </header>
 
-    <div class="home-scroll">
-      <div class="hero">
-        <svg class="logo" viewBox="0 0 120 120" aria-hidden="true">
-          <path class="grid-line" d="M44 10 V110 M76 10 V110 M10 44 H110 M10 76 H110"/>
-          <path class="lx" d="M16 16 L38 38 M38 16 L16 38"/>
-          <circle class="lo" cx="93" cy="93" r="11"/>
-        </svg>
-        <div>
-          <h1><em>Tic</em> Tac <span>Toe</span></h1>
-          <p>Classic game, fresh look</p>
-        </div>
-      </div>
+    <div class="home-main">
+      <h1 class="title">Select Level</h1>
 
-      <div>
-        <div class="section-label"><i data-lucide="gamepad-2"></i>Game mode</div>
-        <div class="mode-cards" role="radiogroup" aria-label="Game mode">
-          <button class="mode-card glass" role="radio" data-mode="computer">
-            <span class="check"></span>
-            <span class="mc-icon"><i data-lucide="bot"></i></span>
-            <b>vs Computer</b><span>Beat the machine</span>
-          </button>
-          <button class="mode-card glass" role="radio" data-mode="friend">
-            <span class="check"></span>
-            <span class="mc-icon"><i data-lucide="users"></i></span>
-            <b>vs Friend</b><span>Pass and play</span>
-          </button>
-        </div>
-      </div>
-
-      <div>
-        <div class="section-label"><i data-lucide="grid-3x3"></i>Board size</div>
-        <div class="chips" id="sizeChips" role="radiogroup" aria-label="Board size"></div>
-      </div>
-
-      <div class="collapsible" id="difficultyBlock">
-        <div>
-          <div class="section-label"><i data-lucide="gauge"></i>Difficulty</div>
-          <div class="seg" data-key="difficulty" role="radiogroup" aria-label="Difficulty">
-            <span class="seg-thumb"></span>
-            <button role="radio" data-val="easy">Easy</button>
-            <button role="radio" data-val="medium">Medium</button>
-            <button role="radio" data-val="hard">Hard</button>
+      <div class="carousel" role="group" aria-roledescription="carousel" aria-label="Board size">
+        <div class="lv-row">
+          <button class="icon-btn arrow" id="lvPrev" aria-label="Smaller board"><i data-lucide="chevron-left"></i></button>
+          <div class="lv-stage" id="lvStage">
+            <div class="lv-preview glass" id="lvPreview" aria-hidden="true"></div>
           </div>
+          <button class="icon-btn arrow" id="lvNext" aria-label="Bigger board"><i data-lucide="chevron-right"></i></button>
         </div>
+        <div class="lv-label" id="lvLabel" aria-live="polite"></div>
+        <div class="dots" id="lvDots"></div>
       </div>
 
-      <div class="two-col">
-        <div>
-          <div class="section-label" id="markLabel">You play as</div>
-          <div class="seg" data-key="p1Mark" role="radiogroup" aria-labelledby="markLabel">
-            <span class="seg-thumb"></span>
-            <button role="radio" data-val="X" aria-label="X" class="mark-opt"></button>
-            <button role="radio" data-val="O" aria-label="O" class="mark-opt"></button>
-          </div>
-        </div>
-        <div>
-          <div class="section-label" id="starterLabel">First move</div>
-          <div class="seg" data-key="starter" role="radiogroup" aria-labelledby="starterLabel">
-            <span class="seg-thumb"></span>
-            <button role="radio" data-val="p1" id="starterP1">You</button>
-            <button role="radio" data-val="p2" id="starterP2">Machine</button>
-          </div>
-        </div>
+      <div class="modes">
+        <button class="mode-btn cpu" data-mode="computer" aria-label="Player vs Computer">
+          <i data-lucide="user"></i><b>vs</b><i data-lucide="monitor"></i>
+        </button>
+        <button class="mode-btn pvp" data-mode="friend" aria-label="Player vs Player">
+          <i data-lucide="user"></i><b>vs</b><i data-lucide="user"></i>
+        </button>
       </div>
     </div>
 
-    <div class="home-bottom">
-      <button class="btn3d big" id="playBtn"><i data-lucide="play"></i>Play</button>
-      <div class="footer">Made by <b>Mubashar Akram</b></div>
-    </div>
+    <div class="footer">Made by <b>Mubashar Akram</b></div>
   </section>
 
   <!-- ================= GAME ================= -->
@@ -681,18 +646,14 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
     </div>
 
     <div class="status-line" id="statusLine" aria-live="polite">
-      <span class="dots"><i></i><i></i><i></i></span><span id="statusText"></span>
+      <span class="dots-anim"><i></i><i></i><i></i></span><span id="statusText"></span>
     </div>
 
-    <div class="board-area">
+    <div class="board-area" id="boardArea">
       <div class="viewport" id="viewport">
         <div class="board" id="board" role="grid" aria-label="Game board"></div>
       </div>
-      <div class="zoom-ctrls" id="zoomCtrls" hidden>
-        <button class="icon-btn" id="zoomIn" aria-label="Zoom in"><i data-lucide="zoom-in"></i></button>
-        <button class="icon-btn" id="zoomOut" aria-label="Zoom out"><i data-lucide="zoom-out"></i></button>
-        <button class="icon-btn" id="zoomFit" aria-label="Fit board to screen"><i data-lucide="scan"></i></button>
-      </div>
+      <div class="zoom-hint" id="zoomHint" role="status">Pinch to zoom, double-tap to reset</div>
     </div>
 
     <div class="actions">
@@ -703,31 +664,156 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
   </section>
 </main>
 
-<!-- ================= NAMES POPUP ================= -->
-<div class="overlay modal" id="namesModal" role="dialog" aria-modal="true" aria-labelledby="namesTitle">
-  <form class="modal-card names-card" id="namesForm" novalidate>
-    <button type="button" class="icon-btn close-x" id="namesClose" aria-label="Close"><i data-lucide="x"></i></button>
-    <div class="result-icon names"><i data-lucide="users"></i></div>
-    <h2 id="namesTitle">Who's playing?</h2>
-    <p id="namesSub">Max 12 characters each</p>
-    <div class="field" id="field1">
-      <label for="name1"><span class="fmark"></span><span class="flabel">Player 1</span></label>
+<!-- ================= SHEETS ================= -->
+<div class="overlay" id="sheetBackdrop"></div>
+
+<!-- vs Computer -->
+<form class="sheet" id="cpuSheet" role="dialog" aria-modal="true" aria-labelledby="cpuTitle" novalidate>
+  <div class="sheet-grab">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h3 id="cpuTitle">vs Computer</h3>
+      <button type="button" class="icon-btn" data-close-sheet aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+  </div>
+  <div class="sheet-body">
+    <div class="form-row">
+      <div class="lbl">Difficulty</div>
+      <div class="seg" data-group="cpu" data-key="difficulty" role="radiogroup" aria-label="Difficulty">
+        <span class="seg-thumb"></span>
+        <button type="button" role="radio" data-val="easy">Easy</button>
+        <button type="button" role="radio" data-val="medium">Medium</button>
+        <button type="button" role="radio" data-val="hard">Hard</button>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="form-row">
+        <div class="lbl" id="cpuMarkLbl">Play as</div>
+        <div class="seg" data-group="cpu" data-key="p1Mark" role="radiogroup" aria-labelledby="cpuMarkLbl">
+          <span class="seg-thumb"></span>
+          <button type="button" role="radio" data-val="X" aria-label="X" class="mark-opt"></button>
+          <button type="button" role="radio" data-val="O" aria-label="O" class="mark-opt"></button>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="lbl" id="cpuStartLbl">First move</div>
+        <div class="seg" data-group="cpu" data-key="starter" role="radiogroup" aria-labelledby="cpuStartLbl">
+          <span class="seg-thumb"></span>
+          <button type="button" role="radio" data-val="p1">You</button>
+          <button type="button" role="radio" data-val="p2">Machine</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-row" data-field="solo">
+      <label class="lbl" for="cpuName">Your name <small>(optional)</small></label>
       <div class="input-wrap">
-        <input id="name1" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" aria-describedby="err1">
+        <input id="cpuName" type="text" maxlength="12" placeholder="You" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="go" aria-describedby="cpuNameErr">
         <span class="count"></span>
       </div>
-      <div class="err" id="err1" aria-live="polite"></div>
+      <div class="err" id="cpuNameErr" aria-live="polite"></div>
     </div>
-    <div class="field" id="field2">
-      <label for="name2"><span class="fmark"></span><span class="flabel">Player 2</span></label>
+  </div>
+  <div class="sheet-foot">
+    <button type="submit" class="btn3d big" id="cpuStart"><i data-lucide="play"></i>Start</button>
+  </div>
+</form>
+
+<!-- vs Player -->
+<form class="sheet" id="pvpSheet" role="dialog" aria-modal="true" aria-labelledby="pvpTitle" novalidate>
+  <div class="sheet-grab">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h3 id="pvpTitle">vs Player</h3>
+      <button type="button" class="icon-btn" data-close-sheet aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+  </div>
+  <div class="sheet-body">
+    <div class="form-row" data-field="p1">
+      <label class="lbl" for="p1Name"><span class="fmark" data-for="p1"></span>Player 1 name</label>
       <div class="input-wrap">
-        <input id="name2" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="go" aria-describedby="err2">
+        <input id="p1Name" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" aria-describedby="p1NameErr">
         <span class="count"></span>
       </div>
-      <div class="err" id="err2" aria-live="polite"></div>
+      <div class="err" id="p1NameErr" aria-live="polite"></div>
     </div>
-    <button type="submit" class="btn3d" id="namesStart"><i data-lucide="play"></i>Start game</button>
-  </form>
+    <div class="form-row" data-field="p2">
+      <label class="lbl" for="p2Name"><span class="fmark" data-for="p2"></span>Player 2 name</label>
+      <div class="input-wrap">
+        <input id="p2Name" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="go" aria-describedby="p2NameErr">
+        <span class="count"></span>
+      </div>
+      <div class="err" id="p2NameErr" aria-live="polite"></div>
+    </div>
+    <div class="two-col">
+      <div class="form-row">
+        <div class="lbl" id="pvpMarkLbl">Player 1 is</div>
+        <div class="seg" data-group="pvp" data-key="p1Mark" role="radiogroup" aria-labelledby="pvpMarkLbl">
+          <span class="seg-thumb"></span>
+          <button type="button" role="radio" data-val="X" aria-label="X" class="mark-opt"></button>
+          <button type="button" role="radio" data-val="O" aria-label="O" class="mark-opt"></button>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="lbl" id="pvpStartLbl">First move</div>
+        <div class="seg" data-group="pvp" data-key="starter" role="radiogroup" aria-labelledby="pvpStartLbl">
+          <span class="seg-thumb"></span>
+          <button type="button" role="radio" data-val="p1">Player 1</button>
+          <button type="button" role="radio" data-val="p2">Player 2</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sheet-foot">
+    <button type="submit" class="btn3d big" id="pvpStart"><i data-lucide="play"></i>Start</button>
+  </div>
+</form>
+
+<!-- Settings -->
+<div class="sheet" id="settingsSheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="sheet-grab">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h3 id="settingsTitle">Settings</h3>
+      <button type="button" class="icon-btn" data-close-sheet aria-label="Close settings"><i data-lucide="x"></i></button>
+    </div>
+  </div>
+  <div class="sheet-body">
+    <div class="set-list">
+      <div class="set-row set-theme">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="ri"><i data-lucide="palette"></i></span>
+          <span class="rt">Theme<small>Auto follows the time of day</small></span>
+        </div>
+        <div class="seg" data-group="settings" data-key="theme" role="radiogroup" aria-label="Theme">
+          <span class="seg-thumb"></span>
+          <button type="button" role="radio" data-val="auto">Auto</button>
+          <button type="button" role="radio" data-val="light">Light</button>
+          <button type="button" role="radio" data-val="dark">Dark</button>
+        </div>
+      </div>
+      <button type="button" class="set-row" role="switch" id="soundToggle">
+        <span class="ri"><i data-lucide="volume-2"></i></span>
+        <span class="rt">Sound<small>Tap, win and lose effects</small></span>
+        <span class="switch"></span>
+      </button>
+      <button type="button" class="set-row" role="switch" id="vibeToggle">
+        <span class="ri"><i data-lucide="vibrate"></i></span>
+        <span class="rt">Vibration<small>Haptic feedback on supported phones</small></span>
+        <span class="switch"></span>
+      </button>
+      <div class="reset-box">
+        <button type="button" class="btn3d danger" id="resetScores"><i data-lucide="trash-2"></i>Reset all scores</button>
+        <div class="reset-confirm" id="resetConfirm" hidden>
+          <p>Reset every score on every board? This can't be undone.</p>
+          <div class="row">
+            <button type="button" class="btn3d ghost" id="resetCancel">Cancel</button>
+            <button type="button" class="btn3d danger" id="resetYes">Reset</button>
+          </div>
+        </div>
+        <div class="reset-done" id="resetDone" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ================= RESULT POPUP ================= -->
@@ -743,38 +829,16 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
   </div>
 </div>
 
-<!-- ================= SETTINGS SHEET ================= -->
-<div class="overlay" id="sheetBackdrop"></div>
-<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-  <div class="sheet-handle"></div>
-  <div class="sheet-head">
-    <h3 id="sheetTitle">Settings</h3>
-    <button class="icon-btn" id="closeSheet" aria-label="Close settings"><i data-lucide="x"></i></button>
-  </div>
-  <div class="set-list">
-    <button class="set-row" role="switch" id="soundToggle">
-      <span class="ri"><i data-lucide="volume-2"></i></span>
-      <span class="rt">Sound<small>Tap, win and lose effects</small></span>
-      <span class="switch"></span>
-    </button>
-    <button class="set-row" role="switch" id="vibeToggle">
-      <span class="ri"><i data-lucide="vibrate"></i></span>
-      <span class="rt">Vibration<small>Haptic feedback on supported phones</small></span>
-      <span class="switch"></span>
-    </button>
-    <div class="set-row set-theme">
-      <div style="display:flex;align-items:center;gap:12px">
-        <span class="ri"><i data-lucide="palette"></i></span>
-        <span class="rt">Theme<small>Auto follows the time of day</small></span>
-      </div>
-      <div class="seg" data-key="theme" role="radiogroup" aria-label="Theme">
-        <span class="seg-thumb"></span>
-        <button role="radio" data-val="auto">Auto</button>
-        <button role="radio" data-val="light">Light</button>
-        <button role="radio" data-val="dark">Dark</button>
-      </div>
+<!-- ================= LEAVE GAME CONFIRM ================= -->
+<div class="overlay modal" id="leaveModal" role="alertdialog" aria-modal="true" aria-labelledby="leaveTitle" aria-describedby="leaveSub">
+  <div class="modal-card">
+    <div class="result-icon warn"><i data-lucide="log-out"></i></div>
+    <h2 id="leaveTitle">Leave game?</h2>
+    <p id="leaveSub">This game is still going. Your progress will be lost.</p>
+    <div class="modal-actions two">
+      <button class="btn3d ghost" id="leaveStay">Stay</button>
+      <button class="btn3d danger" id="leaveGo">Leave</button>
     </div>
-    <button class="btn3d danger" id="resetScores"><i data-lucide="trash-2"></i><span>Reset all scores</span></button>
   </div>
 </div>
 
@@ -1303,13 +1367,20 @@ const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
 const renderIcons = () => { if (window.lucide) window.lucide.createIcons(); };
 const NAME_MAX = 12;
-const DEFAULT_NAMES = { p1: 'Player 1', p2: 'Player 2', solo: 'You' };
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const App = {
   settings: { sound: true, vibration: true, theme: 'auto' },
+  // the game being played (size = level picked in the carousel)
   prefs: { mode: 'computer', size: 3, difficulty: 'medium', p1Mark: 'X', starter: 'p1' },
-  names: { ...DEFAULT_NAMES },
+  // last choices made in each mode's sheet
+  choices: {
+    cpu: { difficulty: 'medium', p1Mark: 'X', starter: 'p1' },
+    pvp: { p1Mark: 'X', starter: 'p1' },
+  },
+  names: { p1: 'Player 1', p2: 'Player 2', solo: 'You' },
   scores: { computer: {}, friend: {} },   // scores[mode][size] = { p1, p2, draw }
+  flags: { zoomHint: false },
   board: [], history: [], over: false, thinking: false, aiToken: 0, lastWin: null,
   screen: 'splash',
 };
@@ -1318,10 +1389,22 @@ const App = {
   Object.assign(App.settings, saved.settings);
   Object.assign(App.prefs, saved.prefs);
   Object.assign(App.names, saved.names);
+  Object.assign(App.flags, saved.flags);
+  if (saved.choices) {
+    Object.assign(App.choices.cpu, saved.choices.cpu);
+    Object.assign(App.choices.pvp, saved.choices.pvp);
+  } else if (saved.prefs) { // older save: reuse its single set of choices
+    const { difficulty, p1Mark, starter } = App.prefs;
+    Object.assign(App.choices.cpu, { difficulty, p1Mark, starter });
+    Object.assign(App.choices.pvp, { p1Mark, starter });
+  }
   if (saved.scores) App.scores = { computer: saved.scores.computer || {}, friend: saved.scores.friend || {} };
   if (!Logic.SIZES.includes(App.prefs.size)) App.prefs.size = 3;
 })();
-const persist = () => Store.save({ settings: App.settings, prefs: App.prefs, names: App.names, scores: App.scores });
+const persist = () => Store.save({
+  settings: App.settings, prefs: App.prefs, choices: App.choices,
+  names: App.names, scores: App.scores, flags: App.flags,
+});
 
 /* ---------- Derived helpers ---------- */
 const vsAI = () => App.prefs.mode === 'computer';
@@ -1333,6 +1416,7 @@ const ownerOf = mark => (mark === App.prefs.p1Mark ? 'p1' : 'p2');
 const isAITurn = () => vsAI() && ownerOf(currentMark()) === 'p2';
 const nameOf = who => (vsAI() ? (who === 'p1' ? App.names.solo : 'Machine') : App.names[who]);
 const isDefaultYou = () => vsAI() && App.names.solo === 'You';
+const sizeLabel = n => `${n}×${n}`;
 /** Scores are kept per mode AND per board size. */
 function scoreBook() {
   const book = App.scores[App.prefs.mode];
@@ -1347,9 +1431,10 @@ function markSVG(mark, cls = '') {
 }
 const miniMark = mark => markSVG(mark, 'mini-mark');
 const escapeHTML = s => s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
 /* =========================================================================
-   PART G: THEME + SCREENS + SEGMENTED CONTROLS
+   PART G: THEME + SCREENS + SEGMENTED CONTROLS + MODALS
    ========================================================================= */
 function resolvedTheme() {
   if (App.settings.theme !== 'auto') return App.settings.theme;
@@ -1360,7 +1445,6 @@ function applyTheme() {
   const t = resolvedTheme();
   document.documentElement.dataset.theme = t;
   $('meta[name="theme-color"]').setAttribute('content', t === 'light' ? '#fde8dc' : '#1b1838');
-  setSeg($('.seg[data-key="theme"]'), App.settings.theme);
 }
 setInterval(() => { if (App.settings.theme === 'auto') applyTheme(); }, 5 * 60 * 1000);
 
@@ -1383,243 +1467,502 @@ function setSeg(seg, val) {
   seg.style.setProperty('--idx', idx);
   btns.forEach((b, i) => b.setAttribute('aria-checked', String(i === idx)));
 }
+const segOf = (group, key) => $(`.seg[data-group="${group}"][data-key="${key}"]`);
+
+const openModal = id => $('#' + id).classList.add('open');
+const closeModal = id => $('#' + id).classList.remove('open');
+const isModalOpen = id => $('#' + id).classList.contains('open');
 
 /* =========================================================================
-   PART H: HOME SCREEN
+   PART H: LEVEL CAROUSEL (home screen)
    ========================================================================= */
-const chipsEl = $('#sizeChips');
-function buildChips() {
-  chipsEl.innerHTML = Logic.SIZES.map(s =>
-    `<button class="chip" role="radio" data-size="${s}" aria-label="${s} by ${s}, ${Logic.winLength(s)} in a row"><b>${s}×${s}</b><small>${Logic.winLength(s)} in a row</small></button>`
-  ).join('');
-}
-function scrollChipIntoView(smooth) {
-  const chip = chipsEl.querySelector(`[data-size="${App.prefs.size}"]`);
-  if (!chip) return;
-  const left = chip.offsetLeft - (chipsEl.clientWidth - chip.offsetWidth) / 2;
-  chipsEl.scrollTo({ left, behavior: smooth ? 'smooth' : 'auto' });
-}
-function renderHome() {
-  const p = App.prefs;
-  $$('.mode-card').forEach(c => c.setAttribute('aria-checked', String(c.dataset.mode === p.mode)));
-  $$('.chip').forEach(c => c.setAttribute('aria-checked', String(+c.dataset.size === p.size)));
-  ['difficulty', 'p1Mark', 'starter'].forEach(k => setSeg($(`.seg[data-key="${k}"]`), p[k]));
-  $('#difficultyBlock').classList.toggle('closed', !vsAI());
-  $('#markLabel').textContent = vsAI() ? 'You play as' : 'Player 1 is';
-  $('#starterP1').textContent = vsAI() ? 'You' : 'Player 1';
-  $('#starterP2').textContent = vsAI() ? 'Machine' : 'Player 2';
-}
+const Level = (() => {
+  const SIZES = Logic.SIZES, LAST = SIZES.length - 1;
+  const stage = $('#lvStage'), preview = $('#lvPreview'), label = $('#lvLabel');
+  const dotsEl = $('#lvDots'), prevBtn = $('#lvPrev'), nextBtn = $('#lvNext');
+  const index = () => SIZES.indexOf(App.prefs.size);
 
-/* =========================================================================
-   PART I: NAMES POPUP (inline validation)
-   ========================================================================= */
-const nameFields = [
-  { field: $('#field1'), input: $('#name1'), err: $('#err1') },
-  { field: $('#field2'), input: $('#name2'), err: $('#err2') },
-];
-
-/** Returns an error message for field idx, or '' when it is valid. */
-function nameError(idx) {
-  const v = nameFields[idx].input.value.trim();
-  if (!v) return "Name can't be empty";
-  if (v.length > NAME_MAX) return `Max ${NAME_MAX} characters`;
-  if (!vsAI() && idx === 1 && v.toLowerCase() === nameFields[0].input.value.trim().toLowerCase()) return 'Pick a different name';
-  return '';
-}
-function validateNames() {
-  const count = vsAI() ? 1 : 2;
-  let ok = true;
-  for (let i = 0; i < count; i++) {
-    const f = nameFields[i], e = nameError(i);
-    f.field.querySelector('.count').textContent = `${f.input.value.trim().length}/${NAME_MAX}`;
-    f.field.classList.toggle('invalid', !!e);
-    f.input.setAttribute('aria-invalid', String(!!e));
-    f.err.textContent = e;
-    if (e) ok = false;
+  /**
+   * Small animated demo board as SVG: X marks a winning line of the right
+   * length for this size, O marks sit next to it, then the win line draws.
+   */
+  function demoSVG(n) {
+    const k = Logic.winLength(n);
+    const g = n <= 4 ? 4 : n <= 8 ? 2.5 : 1.6;       // gap in viewBox units
+    const c = (100 - (n - 1) * g) / n, step = c + g;  // cell size in viewBox units
+    const at = (r, col) => [col * step + c / 2, r * step + c / 2];
+    let svg = `<svg viewBox="0 0 100 100">`;
+    for (let r = 0; r < n; r++) for (let col = 0; col < n; col++) {
+      svg += `<rect class="pv-cell" x="${(col * step).toFixed(2)}" y="${(r * step).toFixed(2)}" width="${c.toFixed(2)}" height="${c.toFixed(2)}" rx="${(c * 0.22).toFixed(2)}"/>`;
+    }
+    // odd sizes: diagonal win, even sizes: middle row win
+    const line = [], os = [];
+    if (n % 2) {
+      const s0 = Math.floor((n - k) / 2);
+      for (let i = 0; i < k; i++) line.push([s0 + i, s0 + i]);
+      for (let i = 0; i < k - 1; i++) os.push([s0 + i, s0 + i + 1]);
+    } else {
+      const r = Math.floor((n - 1) / 2), c0 = Math.floor((n - k) / 2);
+      for (let i = 0; i < k; i++) line.push([r, c0 + i]);
+      for (let i = 0; i < k - 1; i++) os.push([r + 1, c0 + i]);
+    }
+    const h = c * 0.28, sw = (c * 0.15).toFixed(2);
+    let delay = 120;
+    for (let i = 0; i < k; i++) {
+      const [x, y] = at(...line[i]);
+      svg += `<g class="pv-mark" style="animation-delay:${delay}ms"><path class="pv-x" stroke-width="${sw}" d="M${x - h} ${y - h}L${x + h} ${y + h}M${x + h} ${y - h}L${x - h} ${y + h}"/></g>`;
+      delay += 110;
+      if (i < k - 1) {
+        const [ox, oy] = at(...os[i]);
+        svg += `<g class="pv-mark" style="animation-delay:${delay}ms"><circle class="pv-o" stroke-width="${sw}" cx="${ox}" cy="${oy}" r="${h * 1.05}"/></g>`;
+        delay += 110;
+      }
+    }
+    let [x1, y1] = at(...line[0]), [x2, y2] = at(...line[k - 1]);
+    const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy), ext = c * 0.32;
+    x1 -= dx / len * ext; y1 -= dy / len * ext; x2 += dx / len * ext; y2 += dy / len * ext;
+    svg += `<line class="pv-win x" pathLength="100" stroke-width="${(c * 0.12).toFixed(2)}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="animation-delay:${delay + 60}ms"/>`;
+    return svg + '</svg>';
   }
-  $('#namesStart').disabled = !ok;
-  return ok;
+
+  function build() {
+    dotsEl.innerHTML = SIZES.map((s, i) =>
+      `<button class="dot" data-i="${i}" aria-label="${sizeLabel(s)}, ${Logic.winLength(s)} in a row"><span></span></button>`
+    ).join('');
+  }
+  /** Label, dots and arrows (instant). */
+  function renderMeta() {
+    const n = App.prefs.size, i = index();
+    label.innerHTML = `${sizeLabel(n)} <span>· ${Logic.winLength(n)} in a row</span>`;
+    dotsEl.querySelectorAll('.dot').forEach((d, j) => d.setAttribute('aria-current', String(j === i)));
+    prevBtn.disabled = i === 0;
+    nextBtn.disabled = i === LAST;
+  }
+  function renderPreview() { preview.innerHTML = demoSVG(App.prefs.size); }
+  function render() { renderMeta(); renderPreview(); }
+
+  /** Slides to level `to`. dragX = where the preview currently is (after a swipe). */
+  function changeTo(to, dragX = 0) {
+    to = clamp(to, 0, LAST);
+    const from = index();
+    if (to === from) { snapBack(dragX); return; }
+    const dir = to > from ? 1 : -1;
+    App.prefs.size = SIZES[to];
+    persist(); renderMeta();
+    Sound.click(); haptic(8);
+    preview.getAnimations().forEach(a => a.cancel());
+    preview.style.transform = '';
+    if (reduceMotion.matches || !preview.animate) { renderPreview(); return; }
+    const out = preview.animate(
+      [{ transform: `translateX(${dragX}px)`, opacity: 1 }, { transform: `translateX(${-dir * 90}px)`, opacity: 0 }],
+      { duration: 140, easing: 'ease-in' });
+    out.onfinish = () => {
+      renderPreview();
+      preview.animate(
+        [{ transform: `translateX(${dir * 90}px)`, opacity: 0 }, { transform: 'translateX(0)', opacity: 1 }],
+        { duration: 200, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    };
+  }
+  function snapBack(x) {
+    preview.style.transform = '';
+    if (x && preview.animate) preview.animate([{ transform: `translateX(${x}px)` }, { transform: 'translateX(0)' }], { duration: 200, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  }
+
+  /* Swipe left / right. Vertical moves are left to the browser (touch-action: pan-y). */
+  let sx = 0, sy = 0, dx = 0, axis = null, active = false;
+  stage.addEventListener('pointerdown', e => {
+    active = true; axis = null; dx = 0; sx = e.clientX; sy = e.clientY;
+  });
+  stage.addEventListener('pointermove', e => {
+    if (!active) return;
+    const mx = e.clientX - sx, my = e.clientY - sy;
+    if (!axis && Math.hypot(mx, my) > 8) {
+      axis = Math.abs(mx) > Math.abs(my) ? 'x' : 'y';
+      if (axis === 'x') stage.setPointerCapture(e.pointerId);
+    }
+    if (axis !== 'x') return;
+    const atEdge = (mx > 0 && index() === 0) || (mx < 0 && index() === LAST);
+    dx = atEdge ? mx * 0.25 : mx; // rubber band at the ends
+    preview.style.transform = `translateX(${dx}px)`;
+  });
+  const end = () => {
+    if (!active) return;
+    active = false;
+    if (axis !== 'x') return;
+    if (dx < -50) changeTo(index() + 1, dx);
+    else if (dx > 50) changeTo(index() - 1, dx);
+    else snapBack(dx);
+  };
+  stage.addEventListener('pointerup', end);
+  stage.addEventListener('pointercancel', end);
+
+  prevBtn.addEventListener('click', () => changeTo(index() - 1));
+  nextBtn.addEventListener('click', () => changeTo(index() + 1));
+  dotsEl.addEventListener('click', e => {
+    const d = e.target.closest('.dot');
+    if (d) changeTo(+d.dataset.i);
+  });
+  return { build, render, step: d => changeTo(index() + d) };
+})();
+
+/* =========================================================================
+   PART I: BOTTOM SHEETS (swipe down, backdrop, Escape; keyboard aware)
+   ========================================================================= */
+const Sheets = (() => {
+  const back = $('#sheetBackdrop');
+  let stack = [];
+  function open(id) {
+    const el = $('#' + id);
+    if (stack.includes(el)) return;
+    stack.push(el);
+    el.style.zIndex = 21 + stack.length;
+    el.classList.add('open');
+    back.classList.add('open');
+  }
+  function close(el = stack[stack.length - 1]) {
+    if (!el) return;
+    stack = stack.filter(s => s !== el);
+    el.classList.remove('open');
+    el.style.transform = '';
+    if (el.contains(document.activeElement)) document.activeElement.blur();
+    if (!stack.length) back.classList.remove('open');
+    if (el.id === 'settingsSheet') hideResetConfirm();
+  }
+  // Drag the handle / header down to close
+  $$('.sheet').forEach(el => {
+    const grab = el.querySelector('.sheet-grab');
+    let y0 = null, dy = 0;
+    grab.addEventListener('pointerdown', e => {
+      if (e.target.closest('button')) return;
+      y0 = e.clientY; dy = 0;
+      grab.setPointerCapture(e.pointerId);
+      el.style.transition = 'none';
+    });
+    grab.addEventListener('pointermove', e => {
+      if (y0 === null) return;
+      dy = Math.max(0, e.clientY - y0);
+      el.style.transform = `translateY(${dy}px)`;
+    });
+    const end = () => {
+      if (y0 === null) return;
+      y0 = null;
+      el.style.transition = '';
+      if (dy > 80) close(el); else el.style.transform = '';
+    };
+    grab.addEventListener('pointerup', end);
+    grab.addEventListener('pointercancel', end);
+    el.querySelectorAll('[data-close-sheet]').forEach(b => b.addEventListener('click', () => { Sound.click(); close(el); }));
+    // keep a focused input visible above the on-screen keyboard
+    el.querySelectorAll('input').forEach(inp => inp.addEventListener('focus', () => {
+      setTimeout(() => inp.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
+    }));
+  });
+  back.addEventListener('click', () => close());
+
+  // Track the visual viewport so sheets sit above the keyboard and never overflow
+  const vv = window.visualViewport;
+  function trackViewport() {
+    if (!vv) return;
+    const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    document.documentElement.style.setProperty('--kb', kb + 'px');
+    document.documentElement.style.setProperty('--vvh', vv.height + 'px');
+  }
+  if (vv) { vv.addEventListener('resize', trackViewport); vv.addEventListener('scroll', trackViewport); trackViewport(); }
+
+  return { open, close, isOpen: () => stack.length > 0 };
+})();
+
+/* ---------- Name validation (inline, under each field) ---------- */
+function setFieldState(row, value, error) {
+  row.querySelector('.count').textContent = `${value.length}/${NAME_MAX}`;
+  row.classList.toggle('invalid', !!error);
+  row.querySelector('input').setAttribute('aria-invalid', String(!!error));
+  row.querySelector('.err').textContent = error;
 }
-function openNames() {
-  const ai = vsAI();
-  $('#namesTitle').textContent = ai ? "What's your name?" : "Who's playing?";
-  $('#namesSub').textContent = `Max ${NAME_MAX} characters`;
-  $('#field2').hidden = ai;
-  nameFields[0].field.querySelector('.flabel').textContent = ai ? 'Your name' : 'Player 1';
-  nameFields[0].field.querySelector('.fmark').innerHTML = miniMark(App.prefs.p1Mark);
-  nameFields[1].field.querySelector('.fmark').innerHTML = miniMark(p2Mark());
-  nameFields[0].input.value = ai ? App.names.solo : App.names.p1;
-  nameFields[1].input.value = App.names.p2;
-  nameFields[0].input.enterKeyHint = ai ? 'go' : 'next';
-  validateNames();
-  $('#namesModal').classList.add('open');
+
+/* vs Computer sheet: name is optional (empty = "You") */
+function validateCpu(save) {
+  const v = $('#cpuName').value.trim();
+  const err = v.length > NAME_MAX ? `Max ${NAME_MAX} characters` : '';
+  setFieldState($('[data-field="solo"]'), v, err);
+  $('#cpuStart').disabled = !!err;
+  if (save === true && !err) { App.names.solo = v || 'You'; persist(); } // remember even without Start
+  return !err;
 }
-function closeNames() {
-  $('#namesModal').classList.remove('open');
-  if (document.activeElement) document.activeElement.blur();
+function openCpuSheet() {
+  const c = App.choices.cpu;
+  $('#cpuTitle').textContent = `vs Computer · ${sizeLabel(App.prefs.size)}`;
+  setSeg(segOf('cpu', 'difficulty'), c.difficulty);
+  setSeg(segOf('cpu', 'p1Mark'), c.p1Mark);
+  setSeg(segOf('cpu', 'starter'), c.starter);
+  $('#cpuName').value = App.names.solo === 'You' ? '' : App.names.solo;
+  validateCpu();
+  Sheets.open('cpuSheet');
 }
-function submitNames(e) {
-  e.preventDefault();
-  if (!validateNames()) { Sound.error(); haptic(40); return; }
-  const n1 = nameFields[0].input.value.trim(), n2 = nameFields[1].input.value.trim();
-  if (vsAI()) App.names.solo = n1;
-  else { App.names.p1 = n1; App.names.p2 = n2; }
+
+/* vs Player sheet: both names required and different */
+function pvpErrors() {
+  const a = $('#p1Name').value.trim(), b = $('#p2Name').value.trim();
+  const check = v => (!v ? "Name can't be empty" : v.length > NAME_MAX ? `Max ${NAME_MAX} characters` : '');
+  let e2 = check(b);
+  if (!e2 && a && a.toLowerCase() === b.toLowerCase()) e2 = 'Pick a different name';
+  return { a, b, e1: check(a), e2 };
+}
+function validatePvp(save) {
+  const { a, b, e1, e2 } = pvpErrors();
+  setFieldState($('[data-field="p1"]'), a, e1);
+  setFieldState($('[data-field="p2"]'), b, e2);
+  $('#pvpStart').disabled = !!(e1 || e2);
+  if (save === true) { // remember valid names even without Start
+    if (!e1) App.names.p1 = a;
+    if (!e2) App.names.p2 = b;
+    persist();
+  }
+  return !(e1 || e2);
+}
+function renderPvpMarks() {
+  const m1 = App.choices.pvp.p1Mark;
+  $('[data-for="p1"]').innerHTML = miniMark(m1);
+  $('[data-for="p2"]').innerHTML = miniMark(Logic.other(m1));
+}
+function openPvpSheet() {
+  const c = App.choices.pvp;
+  $('#pvpTitle').textContent = `vs Player · ${sizeLabel(App.prefs.size)}`;
+  setSeg(segOf('pvp', 'p1Mark'), c.p1Mark);
+  setSeg(segOf('pvp', 'starter'), c.starter);
+  $('#p1Name').value = App.names.p1;
+  $('#p2Name').value = App.names.p2;
+  renderPvpMarks();
+  validatePvp();
+  Sheets.open('pvpSheet');
+}
+
+/** Copies the sheet's choices into the game config and starts playing. */
+function startFromSheet(mode) {
+  const c = mode === 'computer' ? App.choices.cpu : App.choices.pvp;
+  Object.assign(App.prefs, { mode, p1Mark: c.p1Mark, starter: c.starter });
+  if (mode === 'computer') App.prefs.difficulty = c.difficulty;
   persist();
-  closeNames();
+  Sheets.close();
   Sound.click(); haptic(15);
   go('game');
   startGame();
 }
 
+/* ---------- Settings sheet ---------- */
+function renderSettings() {
+  $('#soundToggle').setAttribute('aria-checked', String(App.settings.sound));
+  $('#vibeToggle').setAttribute('aria-checked', String(App.settings.vibration));
+  setSeg(segOf('settings', 'theme'), App.settings.theme);
+}
+function showResetConfirm() {
+  $('#resetScores').hidden = true;
+  $('#resetConfirm').hidden = false;
+  $('#resetDone').textContent = '';
+  haptic(15);
+}
+function hideResetConfirm() {
+  $('#resetScores').hidden = false;
+  $('#resetConfirm').hidden = true;
+}
+function resetScores() {
+  App.scores = { computer: {}, friend: {} };
+  persist();
+  if (App.screen === 'game') renderPlayers();
+  hideResetConfirm();
+  $('#resetDone').textContent = 'All scores cleared';
+  Sound.click(); haptic([10, 30, 10]);
+  setTimeout(() => { $('#resetDone').textContent = ''; }, 2000);
+}
+
 /* =========================================================================
-   PART J: BOARD VIEW (sizing, pinch-to-zoom, pan)
+   PART J: BOARD VIEW (fit to width, pinch zoom + pan on 9x9 and up)
    ========================================================================= */
-const vpEl = $('#viewport'), boardEl = $('#board');
-const GAPS = { 3: 10, 4: 9, 5: 8, 6: 6, 7: 5, 8: 4, 9: 4, 10: 4 }; // 11x11 and 12x12 use 3px
-const BIG_CELL = 52;     // cell size at zoom 1 on 9x9+ (comfortably over 44px tap target)
-const MIN_VISUAL = 28;   // cells never look smaller than this
-const View = { s: 1, tx: 0, ty: 0, min: 1, max: 1, cell: 0, gap: 0, pad: 0, bw: 0, zoomable: false, pannable: false };
+const areaEl = $('#boardArea'), vpEl = $('#viewport'), boardEl = $('#board');
+const GAPS = { 3: 10, 4: 9, 5: 8, 6: 6, 7: 5, 8: 4, 9: 4 }; // 10x10 and up use 3px
+const ZOOM_FROM = 9, MAX_ZOOM = 2;
+const View = { s: 1, tx: 0, ty: 0, cell: 0, gap: 0, step: 0, bw: 0, m: 0, mMin: 0, sMax: 1, zoomable: false };
 
 /**
- * Sets cell size, gap and radius as CSS variables from JS.
- * 3x3..8x8 fit the screen; 9x9+ use 52px cells scaled down to fit (pinch to zoom in).
- * refit = true resets zoom (new game); false keeps it (resize, URL bar show/hide).
+ * cellSize = floor((available - total gaps) / size), set as a CSS variable.
+ * The viewport is sized to exactly n whole cells, so nothing is ever cut.
+ * Runs on every resize and orientation change and resets the zoom.
  */
-function layoutBoard(refit) {
+function layoutBoard() {
   const n = App.prefs.size;
   if (!boardEl.children.length) return;
-  const W = vpEl.clientWidth, H = vpEl.clientHeight;
+  const W = areaEl.clientWidth, H = areaEl.clientHeight;
   if (!W || !H) return;
-  const gap = GAPS[n] || 3, pad = Math.max(6, gap);
-  const BORDER = 2; // board has a 1px border on each side
-  const fitCell = Math.floor((Math.min(W, H) - BORDER - 2 * pad - (n - 1) * gap) / n);
-  let cell;
-  if (n <= 8) { cell = Math.max(MIN_VISUAL, Math.min(fitCell, 120)); View.zoomable = false; }
-  else { cell = BIG_CELL; View.zoomable = true; }
-  Object.assign(View, { cell, gap, pad });
-  View.bw = n * cell + (n - 1) * gap + 2 * pad + BORDER;
+  const avail = Math.min(W, H);
+  let gap = GAPS[n] || 3;
+  const cell = clamp(Math.floor((avail - (n - 1) * gap) / n), 8, 140);
+  // rounding the cell down leaves a few spare pixels: spread them into the gaps
+  if (cell < 140) gap += Math.floor((avail - n * cell - (n - 1) * gap) / (n - 1));
+  const step = cell + gap, bw = n * cell + (n - 1) * gap;
+  Object.assign(View, { cell, gap, step, bw, zoomable: n >= ZOOM_FROM });
+  // Zoom levels are "show m x m whole cells"; the smallest m keeps zoom <= 2x
+  View.mMin = View.zoomable ? Math.ceil((bw / MAX_ZOOM + gap) / step) : n;
+  View.sMax = bw / (View.mMin * step - gap);
+
+  const cr = Math.max(4, Math.round(cell * 0.22)) + 'px';
+  vpEl.style.width = vpEl.style.height = bw + 'px';
+  vpEl.style.setProperty('--cr', cr);
   boardEl.style.setProperty('--n', n);
   boardEl.style.setProperty('--cell', cell + 'px');
   boardEl.style.setProperty('--gap', gap + 'px');
-  boardEl.style.setProperty('--pad', pad + 'px');
-  boardEl.style.setProperty('--cr', Math.max(5, Math.round(cell * 0.22)) + 'px');
-
-  if (View.zoomable) {
-    const fit = Math.min(W / View.bw, H / View.bw);
-    View.min = Math.min(1, Math.max(fit, MIN_VISUAL / BIG_CELL));
-    View.max = 1.25;
-  } else {
-    View.min = View.max = 1;
-  }
-  if (refit) {
-    View.s = View.min;
-    View.tx = (W - View.bw * View.s) / 2;
-    View.ty = (H - View.bw * View.s) / 2;
-  } else {
-    View.s = Math.min(View.max, Math.max(View.min, View.s));
-  }
-  clampView();
-  View.pannable = View.zoomable || View.bw > W || View.bw > H;
-  vpEl.classList.toggle('pannable', View.pannable);
-  $('#zoomCtrls').hidden = !View.zoomable;
-  applyView(false);
+  vpEl.classList.toggle('zoomable', View.zoomable);
+  resetView(false);
   if (App.over && App.lastWin) drawWinLine(App.lastWin, false);
 }
 
-/** Keeps the board inside the viewport, centred on any axis where it is smaller. */
-function clampView() {
-  const W = vpEl.clientWidth, H = vpEl.clientHeight, sz = View.bw * View.s;
-  View.tx = sz <= W ? (W - sz) / 2 : Math.min(0, Math.max(W - sz, View.tx));
-  View.ty = sz <= H ? (H - sz) / 2 : Math.min(0, Math.max(H - sz, View.ty));
-}
 function applyView(smooth) {
   boardEl.classList.toggle('smooth', !!smooth);
-  boardEl.style.transform = `translate(${View.tx}px, ${View.ty}px) scale(${View.s})`;
+  boardEl.style.transform = View.s === 1 && !View.tx && !View.ty ? '' : `translate(${View.tx}px, ${View.ty}px) scale(${View.s})`;
 }
-/** Zooms to scale s while keeping viewport point (cx, cy) under the finger / cursor. */
-function zoomAt(s, cx, cy, smooth) {
-  const ns = Math.min(View.max, Math.max(View.min, s));
+function resetView(smooth) {
+  Object.assign(View, { s: 1, tx: 0, ty: 0, m: App.prefs.size });
+  applyView(smooth);
+}
+/** Board edges never leave the viewport edges: no empty space past the board. */
+function clampPan() {
+  const lim = View.bw - View.bw * View.s;
+  View.tx = clamp(View.tx, lim, 0);
+  View.ty = clamp(View.ty, lim, 0);
+}
+
+/**
+ * After a gesture: pick the nearest zoom where m x m whole cells exactly fill
+ * the viewport (s = bw / (m*step - gap)), then snap pan to whole cells.
+ * With that zoom, a pan of j cells puts cell j's edge exactly on the viewport edge.
+ */
+function snapView(smooth) {
+  if (!View.zoomable) return;
+  const n = App.prefs.size, { bw, step, gap } = View;
+  let m = n, best = Infinity;
+  for (let k = n; k >= View.mMin; k--) {
+    const d = Math.abs(bw / (k * step - gap) - View.s);
+    if (d < best) { best = d; m = k; }
+  }
+  if (m === n) { resetView(smooth); return; }
+  // keep the board point at the viewport centre roughly where it is
+  const cx = (bw / 2 - View.tx) / View.s, cy = (bw / 2 - View.ty) / View.s;
+  const s = bw / (m * step - gap), half = bw / (2 * s);
+  const j = clamp(Math.round((cx - half) / step), 0, n - m);
+  const i = clamp(Math.round((cy - half) / step), 0, n - m);
+  Object.assign(View, { s, m, tx: -j * step * s, ty: -i * step * s });
+  applyView(smooth);
+}
+/** Zoom to s keeping viewport point (cx, cy) still. */
+function zoomAt(s, cx, cy) {
+  const ns = clamp(s, 1, View.sMax);
   const px = (cx - View.tx) / View.s, py = (cy - View.ty) / View.s;
   View.s = ns;
   View.tx = cx - px * ns; View.ty = cy - py * ns;
-  clampView(); applyView(smooth);
+  clampPan(); applyView(false);
 }
-const zoomBy = f => zoomAt(View.s * f, vpEl.clientWidth / 2, vpEl.clientHeight / 2, true);
-function fitView() {
-  View.s = View.min;
-  View.tx = (vpEl.clientWidth - View.bw * View.s) / 2;
-  View.ty = (vpEl.clientHeight - View.bw * View.s) / 2;
-  clampView(); applyView(true);
-}
-/** Pans so cell i is on screen (e.g. the AI played somewhere you are not looking). */
+/** When zoomed in, pan by whole cells so cell i is on screen (e.g. the AI's move). */
 function ensureVisible(i) {
-  if (!View.pannable) return;
-  const n = App.prefs.size, step = View.cell + View.gap;
-  const x = (View.pad + (i % n) * step + View.cell / 2) * View.s + View.tx;
-  const y = (View.pad + Math.floor(i / n) * step + View.cell / 2) * View.s + View.ty;
-  const W = vpEl.clientWidth, H = vpEl.clientHeight, m = View.cell * View.s;
-  if (x > m && x < W - m && y > m && y < H - m) return;
-  View.tx += W / 2 - x; View.ty += H / 2 - y;
-  clampView(); applyView(true);
+  if (!View.zoomable || View.s === 1) return;
+  const n = App.prefs.size, { step, s, m } = View, unit = step * s;
+  let j = Math.round(-View.tx / unit), r = Math.round(-View.ty / unit);
+  const col = i % n, row = Math.floor(i / n);
+  if (col < j) j = col; else if (col > j + m - 1) j = col - m + 1;
+  if (row < r) r = row; else if (row > r + m - 1) r = row - m + 1;
+  View.tx = -j * unit; View.ty = -r * unit;
+  applyView(true);
 }
 
-/* Pointer gestures: 1 finger drags (pan), 2 fingers pinch (zoom). A plain tap still places a mark. */
-const Gesture = { pts: new Map(), moved: false, suppress: false, start: null };
+/* Gestures. Any drag over 8px is not a tap. 9x9+: two fingers pinch, one finger pans when zoomed. */
+const G = { pts: new Map(), start: null, origin: null, moved: false, pinched: false, suppress: false };
 function gestureBase() {
-  const pts = Array.from(Gesture.pts.values());
-  const rect = vpEl.getBoundingClientRect();
+  const pts = Array.from(G.pts.values()), rect = vpEl.getBoundingClientRect();
   if (pts.length >= 2) {
     const [a, b] = pts;
-    Gesture.start = {
+    G.start = {
       dist: Math.hypot(a.x - b.x, a.y - b.y) || 1,
       mx: (a.x + b.x) / 2 - rect.left, my: (a.y + b.y) / 2 - rect.top,
       s: View.s, tx: View.tx, ty: View.ty,
     };
   } else if (pts.length === 1) {
-    Gesture.start = { x: pts[0].x, y: pts[0].y, tx: View.tx, ty: View.ty };
+    G.start = { x: pts[0].x, y: pts[0].y, tx: View.tx, ty: View.ty };
   }
 }
 vpEl.addEventListener('pointerdown', e => {
-  if (!Gesture.pts.size) { Gesture.moved = false; Gesture.suppress = false; }
-  if (!View.pannable) return;
-  Gesture.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  if (Gesture.pts.size === 2) { Gesture.moved = true; Gesture.suppress = true; }
+  if (!G.pts.size) {
+    Object.assign(G, { moved: false, pinched: false, suppress: false, origin: { x: e.clientX, y: e.clientY } });
+  }
+  G.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (G.pts.size === 2 && View.zoomable) { G.pinched = true; G.suppress = true; }
   gestureBase();
 });
 vpEl.addEventListener('pointermove', e => {
-  if (!Gesture.pts.has(e.pointerId)) return;
-  Gesture.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  const st = Gesture.start, pts = Array.from(Gesture.pts.values());
-  if (pts.length >= 2 && View.zoomable && st.dist) {
+  if (!G.pts.has(e.pointerId)) return;
+  G.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  const pts = Array.from(G.pts.values()), st = G.start;
+  if (!G.moved && pts.length === 1 && Math.hypot(e.clientX - G.origin.x, e.clientY - G.origin.y) > 8) {
+    G.moved = true; G.suppress = true; // a drag, not a tap
+    if (View.zoomable) vpEl.setPointerCapture(e.pointerId);
+  }
+  if (!View.zoomable) return;
+  if (pts.length >= 2 && st.dist) {
     const [a, b] = pts, rect = vpEl.getBoundingClientRect();
-    const ns = Math.min(View.max, Math.max(View.min, st.s * Math.hypot(a.x - b.x, a.y - b.y) / st.dist));
+    const ns = clamp(st.s * Math.hypot(a.x - b.x, a.y - b.y) / st.dist, 1, View.sMax);
     const mx = (a.x + b.x) / 2 - rect.left, my = (a.y + b.y) / 2 - rect.top;
     const px = (st.mx - st.tx) / st.s, py = (st.my - st.ty) / st.s; // board point under the start midpoint
     View.s = ns; View.tx = mx - px * ns; View.ty = my - py * ns;
-    clampView(); applyView(false);
-  } else if (pts.length === 1 && st.x !== undefined) {
-    const dx = pts[0].x - st.x, dy = pts[0].y - st.y;
-    if (!Gesture.moved && Math.hypot(dx, dy) > 8) {
-      Gesture.moved = true; Gesture.suppress = true;
-      vpEl.setPointerCapture(e.pointerId); // capture only once it is a drag, so taps still reach cells
-    }
-    if (Gesture.moved) { View.tx = st.tx + dx; View.ty = st.ty + dy; clampView(); applyView(false); }
+    clampPan(); applyView(false);
+  } else if (pts.length === 1 && G.moved && View.s > 1 && st.x !== undefined) {
+    View.tx = st.tx + (pts[0].x - st.x); View.ty = st.ty + (pts[0].y - st.y);
+    clampPan(); applyView(false);
   }
 });
 function endPointer(e) {
-  if (!Gesture.pts.delete(e.pointerId)) return;
-  gestureBase(); // carry on smoothly with the remaining finger
+  if (!G.pts.delete(e.pointerId)) return;
+  if (G.pts.size) { gestureBase(); return; } // keep going with the other finger
+  if (View.zoomable && (G.moved || G.pinched)) snapView(true);
 }
 vpEl.addEventListener('pointerup', endPointer);
 vpEl.addEventListener('pointercancel', endPointer);
+let wheelSnap = 0;
 vpEl.addEventListener('wheel', e => {
   if (!View.zoomable) return;
   e.preventDefault();
   const rect = vpEl.getBoundingClientRect();
-  zoomAt(View.s * Math.exp(-e.deltaY * 0.0015), e.clientX - rect.left, e.clientY - rect.top, false);
+  zoomAt(View.s * Math.exp(-e.deltaY * 0.0015), e.clientX - rect.left, e.clientY - rect.top);
+  clearTimeout(wheelSnap);
+  wheelSnap = setTimeout(() => snapView(true), 160);
 }, { passive: false });
-if (window.ResizeObserver) new ResizeObserver(() => layoutBoard(false)).observe(vpEl);
-else window.addEventListener('resize', () => layoutBoard(false));
+
+/* Taps: a short tap on an empty cell plays; two quick taps anywhere else reset the zoom. */
+let lastTap = null;
+areaEl.addEventListener('click', e => {
+  if (G.suppress) return; // it was a drag or pinch
+  const cell = e.target.closest('.cell');
+  if (cell && tryPlace(+cell.dataset.i)) { lastTap = null; return; }
+  if (!View.zoomable) return;
+  const now = performance.now();
+  if (lastTap && now - lastTap.t < 350 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 40) {
+    lastTap = null;
+    if (View.s > 1) { resetView(true); haptic(10); }
+  } else {
+    lastTap = { t: now, x: e.clientX, y: e.clientY };
+  }
+});
+
+if (window.ResizeObserver) new ResizeObserver(() => layoutBoard()).observe(areaEl);
+else window.addEventListener('resize', layoutBoard);
+window.addEventListener('orientationchange', () => setTimeout(layoutBoard, 200));
+
+let hintTimer = 0;
+function maybeShowZoomHint() {
+  if (App.prefs.size < ZOOM_FROM || App.flags.zoomHint) return;
+  App.flags.zoomHint = true;
+  persist();
+  const hint = $('#zoomHint');
+  hint.classList.add('show');
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => hint.classList.remove('show'), 3000);
+}
 
 /* =========================================================================
    PART K: GAME RENDERING
@@ -1636,7 +1979,7 @@ function buildBoard() {
   void boardEl.offsetWidth; // restart the fade-in
   boardEl.classList.add('enter');
   App.lastWin = null;
-  layoutBoard(true);
+  layoutBoard();
 }
 
 function paintCell(i, mark, animate) {
@@ -1665,9 +2008,9 @@ function renderPlayers() {
     nameEl.title = name;
     card.querySelector('.pscore').textContent = s[who];
     card.querySelector('.badge').innerHTML = miniMark(mark);
-    // Avatar: bot for the machine, user icon for the default "You", else the first letter
+    // Avatar: computer icon for the machine, user icon for the default "You", else the first letter
     const av = card.querySelector('.av');
-    if (vsAI() && who === 'p2') av.innerHTML = '<i data-lucide="bot"></i>';
+    if (vsAI() && who === 'p2') av.innerHTML = '<i data-lucide="monitor"></i>';
     else if (vsAI() && isDefaultYou()) av.innerHTML = '<i data-lucide="user"></i>';
     else av.textContent = name.charAt(0).toUpperCase();
   });
@@ -1691,7 +2034,7 @@ function renderTurn() {
   $('#cardP2').classList.toggle('active', !App.over && who === 'p2');
   const n = App.prefs.size;
   $('#statusLine').classList.toggle('thinking', App.thinking);
-  $('#statusText').textContent = App.thinking ? 'Thinking...' : `${n}×${n} · ${Logic.winLength(n)} in a row`;
+  $('#statusText').textContent = App.thinking ? 'Thinking...' : `${sizeLabel(n)} · ${Logic.winLength(n)} in a row`;
   boardEl.classList.toggle('locked', App.thinking || App.over);
   $('#undoBtn').disabled = !canUndo();
 }
@@ -1708,7 +2051,7 @@ function drawWinLine(line, animate = true) {
   x1 -= dx / len * ext; y1 -= dy / len * ext; x2 += dx / len * ext; y2 += dy / len * ext;
   const total = len + ext * 2;
   ln.setAttribute('x1', x1); ln.setAttribute('y1', y1); ln.setAttribute('x2', x2); ln.setAttribute('y2', y2);
-  ln.style.strokeWidth = Math.max(4, View.cell * 0.12);
+  ln.style.strokeWidth = Math.max(3, View.cell * 0.12);
   svg.setAttribute('class', 'win-line ' + App.board[line[0]].toLowerCase());
   ln.style.strokeDasharray = total;
   if (animate) {
@@ -1737,6 +2080,7 @@ function startGame() {
   buildBoard();
   renderPlayers();
   renderTurn();
+  maybeShowZoomHint();
   if (isAITurn()) scheduleAI();
 }
 
@@ -1753,6 +2097,12 @@ function place(i) {
   if (App.history.length === App.board.length) return endGame(null, null);
   renderTurn();
   if (isAITurn()) scheduleAI();
+}
+/** Places a mark if this cell can be played right now. Returns true if it did. */
+function tryPlace(i) {
+  if (App.over || App.thinking || App.board[i] || isAITurn()) return false;
+  place(i);
+  return true;
 }
 
 /**
@@ -1772,15 +2122,6 @@ function scheduleAI() {
       ensureVisible(move);
     });
   }, 60);
-}
-
-function onCellTap(e) {
-  if (Gesture.suppress) return; // that was a drag or pinch, not a tap
-  const cell = e.target.closest('.cell');
-  if (!cell) return;
-  const i = +cell.dataset.i;
-  if (App.over || App.thinking || App.board[i] || isAITurn()) return;
-  place(i);
 }
 
 function endGame(mark, line) {
@@ -1834,6 +2175,16 @@ function undo() {
   renderTurn();
 }
 
+/* ---------- Leaving a game ---------- */
+const gameInProgress = () => App.history.length > 0 && !App.over;
+function leaveGame() {
+  cancelAI();
+  closeModal('leaveModal');
+  closeModal('resultModal');
+  Level.render();
+  go('home');
+}
+
 /* ---------- Result popup ---------- */
 function showResult(outcome, winnerWho) {
   const icon = $('#resultIcon'), card = $('#resultCard');
@@ -1852,122 +2203,105 @@ function showResult(outcome, winnerWho) {
   renderIcons();
   $('#resultTitle').textContent = title;
   $('#resultSub').textContent = sub;
-  $('#resultModal').classList.add('open');
+  openModal('resultModal');
   card.classList.remove('shake');
   if (outcome === 'win') Confetti.fire();
   if (outcome === 'lose') setTimeout(() => { void card.offsetWidth; card.classList.add('shake'); }, 220);
-}
-const hideResult = () => $('#resultModal').classList.remove('open');
-
-/* ---------- Settings sheet ---------- */
-function renderSettings() {
-  $('#soundToggle').setAttribute('aria-checked', String(App.settings.sound));
-  $('#vibeToggle').setAttribute('aria-checked', String(App.settings.vibration));
-  setSeg($('.seg[data-key="theme"]'), App.settings.theme);
-}
-function openSheet() { renderSettings(); $('#sheetBackdrop').classList.add('open'); $('#sheet').classList.add('open'); }
-function closeSheet() { $('#sheetBackdrop').classList.remove('open'); $('#sheet').classList.remove('open'); }
-let resetArmed = null;
-function resetScores() {
-  const label = $('#resetScores span');
-  if (!resetArmed) { // first tap asks to confirm
-    label.textContent = 'Tap again to confirm';
-    resetArmed = setTimeout(() => { label.textContent = 'Reset all scores'; resetArmed = null; }, 2500);
-    haptic(15);
-    return;
-  }
-  clearTimeout(resetArmed); resetArmed = null;
-  App.scores = { computer: {}, friend: {} };
-  persist();
-  renderPlayers();
-  label.textContent = 'Scores cleared';
-  Sound.click(); haptic([10, 30, 10]);
-  setTimeout(() => { label.textContent = 'Reset all scores'; }, 1500);
 }
 
 /* =========================================================================
    PART M: EVENT WIRING
    ========================================================================= */
 function init() {
-  buildChips();
+  Level.build();
   $$('.mark-opt').forEach(b => { b.innerHTML = miniMark(b.dataset.val); });
   renderIcons();
   applyTheme();
-  renderHome();
   renderSettings();
 
   const leaveSplash = () => {
     if (App.screen !== 'splash') return;
+    Level.render(); // render on arrival so the demo animation plays
     go('home');
-    requestAnimationFrame(() => scrollChipIntoView(false));
   };
+  Level.render();
   $('#splash').addEventListener('click', leaveSplash);
   setTimeout(leaveSplash, 1700);
 
-  $$('.mode-card').forEach(card => card.addEventListener('click', () => {
-    App.prefs.mode = card.dataset.mode;
-    persist(); renderHome(); Sound.click(); haptic(8);
+  // Mode buttons open that mode's sheet (they don't start the game)
+  $$('.mode-btn').forEach(btn => btn.addEventListener('click', () => {
+    Sound.click(); haptic(10);
+    if (btn.dataset.mode === 'computer') openCpuSheet(); else openPvpSheet();
   }));
 
-  chipsEl.addEventListener('click', e => {
-    const chip = e.target.closest('.chip');
-    if (!chip) return;
-    App.prefs.size = +chip.dataset.size;
-    persist(); renderHome(); scrollChipIntoView(true);
-    Sound.click(); haptic(8);
-  });
-
+  // All segmented controls: sheet choices and theme
   $$('.seg').forEach(seg => seg.addEventListener('click', e => {
     const btn = e.target.closest('button');
     if (!btn) return;
-    const key = seg.dataset.key, val = btn.dataset.val;
-    if (key === 'theme') { App.settings.theme = val; applyTheme(); }
-    else { App.prefs[key] = val; renderHome(); }
+    const group = seg.dataset.group, key = seg.dataset.key, val = btn.dataset.val;
+    if (group === 'settings') { App.settings.theme = val; applyTheme(); }
+    else App.choices[group][key] = val;
+    if (group === 'pvp' && key === 'p1Mark') { App.choices.pvp.p1Mark = val; renderPvpMarks(); }
     setSeg(seg, val);
     persist(); Sound.click(); haptic(8);
   }));
 
-  $('#themeToggle').addEventListener('click', () => {
-    App.settings.theme = resolvedTheme() === 'dark' ? 'light' : 'dark';
-    applyTheme(); persist(); Sound.click(); haptic(8);
+  // vs Computer sheet
+  $('#cpuName').addEventListener('input', () => validateCpu(true));
+  $('#cpuSheet').addEventListener('submit', e => {
+    e.preventDefault();
+    if (!validateCpu()) { Sound.error(); haptic(40); return; }
+    App.names.solo = $('#cpuName').value.trim() || 'You';
+    startFromSheet('computer');
   });
 
-  // Play opens the names popup first (two names vs friend, your name vs computer)
-  $('#playBtn').addEventListener('click', () => { Sound.click(); haptic(12); openNames(); });
-  $('#namesForm').addEventListener('submit', submitNames);
-  $('#namesClose').addEventListener('click', () => { Sound.click(); closeNames(); });
-  nameFields.forEach(f => f.input.addEventListener('input', validateNames));
-  nameFields[0].input.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !vsAI()) { e.preventDefault(); nameFields[1].input.focus(); }
+  // vs Player sheet
+  ['#p1Name', '#p2Name'].forEach(id => $(id).addEventListener('input', () => validatePvp(true)));
+  $('#p1Name').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#p2Name').focus(); } });
+  $('#pvpSheet').addEventListener('submit', e => {
+    e.preventDefault();
+    if (!validatePvp()) { Sound.error(); haptic(40); return; }
+    const { a, b } = pvpErrors();
+    App.names.p1 = a; App.names.p2 = b;
+    startFromSheet('friend');
   });
 
-  boardEl.addEventListener('click', onCellTap);
+  // Settings
+  $$('[data-open-settings]').forEach(b => b.addEventListener('click', () => {
+    Sound.click(); haptic(8);
+    renderSettings(); hideResetConfirm(); $('#resetDone').textContent = '';
+    Sheets.open('settingsSheet');
+  }));
+  $('#soundToggle').addEventListener('click', () => { App.settings.sound = !App.settings.sound; renderSettings(); persist(); Sound.click(); });
+  $('#vibeToggle').addEventListener('click', () => { App.settings.vibration = !App.settings.vibration; renderSettings(); persist(); haptic(20); });
+  $('#resetScores').addEventListener('click', showResetConfirm);
+  $('#resetCancel').addEventListener('click', () => { Sound.click(); hideResetConfirm(); });
+  $('#resetYes').addEventListener('click', resetScores);
+
+  // Game screen
   $('#undoBtn').addEventListener('click', undo);
   $('#restartBtn').addEventListener('click', () => { Sound.click(); haptic(12); startGame(); });
   $('#backBtn').addEventListener('click', () => {
-    cancelAI();
     Sound.click(); haptic(8);
-    renderHome(); go('home');
+    if (gameInProgress()) openModal('leaveModal'); else leaveGame();
   });
-  $('#zoomIn').addEventListener('click', () => { zoomBy(1.3); haptic(8); });
-  $('#zoomOut').addEventListener('click', () => { zoomBy(1 / 1.3); haptic(8); });
-  $('#zoomFit').addEventListener('click', () => { fitView(); haptic(8); });
+  $('#leaveStay').addEventListener('click', () => { Sound.click(); closeModal('leaveModal'); });
+  $('#leaveGo').addEventListener('click', () => { Sound.click(); leaveGame(); });
+  $('#againBtn').addEventListener('click', () => { closeModal('resultModal'); Sound.click(); startGame(); });
+  $('#homeBtn').addEventListener('click', () => { Sound.click(); leaveGame(); });
 
-  $('#againBtn').addEventListener('click', () => { hideResult(); Sound.click(); startGame(); });
-  $('#homeBtn').addEventListener('click', () => { hideResult(); Sound.click(); renderHome(); go('home'); });
-
-  $$('[data-open-settings]').forEach(b => b.addEventListener('click', () => { Sound.click(); haptic(8); openSheet(); }));
-  $('#closeSheet').addEventListener('click', closeSheet);
-  $('#sheetBackdrop').addEventListener('click', closeSheet);
+  // Keyboard: Escape closes the top layer; arrow keys change level on home
   document.addEventListener('keydown', e => {
-    if (e.key !== 'Escape') return;
-    closeSheet();
-    if ($('#namesModal').classList.contains('open')) closeNames();
+    if (e.key === 'Escape') {
+      if (isModalOpen('leaveModal')) closeModal('leaveModal');
+      else if (Sheets.isOpen()) Sheets.close();
+      return;
+    }
+    if (App.screen === 'home' && !Sheets.isOpen() && !e.target.closest('input')) {
+      if (e.key === 'ArrowLeft') Level.step(-1);
+      if (e.key === 'ArrowRight') Level.step(1);
+    }
   });
-
-  $('#soundToggle').addEventListener('click', () => { App.settings.sound = !App.settings.sound; renderSettings(); persist(); Sound.click(); });
-  $('#vibeToggle').addEventListener('click', () => { App.settings.vibration = !App.settings.vibration; renderSettings(); persist(); haptic(20); });
-  $('#resetScores').addEventListener('click', resetScores);
 }
 
 init();
