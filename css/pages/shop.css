@@ -1,0 +1,21 @@
+/* Shop grid and item previews. */
+.shop-page .seg { margin-bottom: 12px; }
+.shop-page .seg button { font-size: 15px; }
+.shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.shop-item { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 10px; border-radius: 20px; text-align: center; min-width: 0; }
+.shop-item.equipped { border: 2px solid var(--primary); box-shadow: 0 0 0 2px rgba(124, 92, 255, .25); }
+.si-lock { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--glass-strong); color: var(--muted); }
+.si-lock svg.lucide { width: 14px; height: 14px; }
+.si-name { font-weight: 600; }
+.si-desc { color: var(--muted); font-size: 13px; margin-top: -6px; }
+.si-msg { color: var(--danger); font-size: 13px; min-height: 18px; margin-top: -4px; }
+.shop-item .btn3d { width: 100%; }
+.si-board { display: grid; grid-template-columns: repeat(3, 22px); gap: 4px; padding: 6px; border-radius: 12px; --cell: 22px; --cr: 6px; }
+.si-board .cell, .si-marks .cell { pointer-events: none; }
+.si-marks { display: flex; gap: 6px; --cell: 40px; --cr: 10px; }
+.si-avatar, .si-boost { width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; color: #fff; }
+.si-avatar { border-radius: 50%; background: linear-gradient(160deg, var(--x), var(--primary-2)); }
+.si-boost { background: linear-gradient(160deg, var(--gold), var(--gold-2)); }
+.si-avatar svg.lucide, .si-boost svg.lucide { width: 30px; height: 30px; }
+
+@media (min-width: 768px) { .shop-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

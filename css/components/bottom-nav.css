@@ -1,0 +1,17 @@
+/* Bottom navigation: three tabs, glowing active tab, hidden during a game. */
+.bottom-nav {
+  position: absolute; z-index: 15; left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom) + 6px);
+  height: var(--nav-h); display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px;
+  border-radius: 22px; background: var(--sheet); border: 1px solid var(--glass-border); box-shadow: var(--shadow);
+  transition: transform var(--med) var(--ease), opacity var(--med) ease;
+}
+.bottom-nav.hidden { transform: translateY(140%); opacity: 0; pointer-events: none; }
+.nav-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  border-radius: 16px; font-size: 13px; font-weight: 600; color: var(--muted);
+  transition: color var(--med) ease, background var(--med) ease, transform var(--fast) ease;
+}
+.nav-btn svg.lucide { width: 24px; height: 24px; transition: transform var(--med) var(--ease), filter var(--med) ease; }
+.nav-btn:active { transform: scale(.94); }
+.nav-btn[aria-current="page"] { color: var(--primary); background: rgba(124, 92, 255, .14); }
+.nav-btn[aria-current="page"] svg.lucide { transform: translateY(-1px); filter: drop-shadow(0 0 6px var(--primary)); }

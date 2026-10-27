@@ -1,0 +1,12 @@
+{
+  "name": "tic-tac-toe",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Mobile-first Tic Tac Toe PWA in plain HTML, CSS and vanilla JS (ES modules). No build step.",
+  "type": "module",
+  "scripts": {
+    "start": "npx --yes serve -l 5173 .",
+    "test": "node --test"
+  },
+  "license": "UNLICENSED"
+}
