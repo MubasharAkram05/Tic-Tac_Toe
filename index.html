@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" data-board="classic">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#1b1838">
 <title>Tic Tac Toe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,19 +39,23 @@
   --glass: rgba(255, 255, 255, .09);
   --glass-strong: rgba(255, 255, 255, .15);
   --glass-border: rgba(255, 255, 255, .16);
-  --cell-a: rgba(255, 255, 255, .13);
-  --cell-b: rgba(255, 255, 255, .04);
-  --cell-border: rgba(255, 255, 255, .14);
-  --cell-active: rgba(255, 255, 255, .2);
+  --t-cell-a: rgba(255, 255, 255, .13);
+  --t-cell-b: rgba(255, 255, 255, .04);
+  --t-cell-border: rgba(255, 255, 255, .14);
+  --t-cell-active: rgba(255, 255, 255, .2);
   --shadow: 0 10px 30px rgba(0, 0, 0, .3);
   --edge: rgba(0, 0, 0, .4);
   --track: rgba(255, 255, 255, .2);
-  --sheet: rgba(30, 26, 66, .97);
+  --sheet: rgba(30, 26, 66, .98);
   --input: rgba(255, 255, 255, .08);
   --x: #22d3ee;
   --x-glow: rgba(34, 211, 238, .75);
   --o: #f472b6;
   --o-glow: rgba(244, 114, 182, .75);
+  --neon-cyan: #22d3ee;
+  --neon-cyan-glow: rgba(34, 211, 238, .45);
+  --neon-amber: #fbbf24;
+  --neon-amber-glow: rgba(251, 146, 60, .45);
 }
 
 /* Light theme: soft pastel peach, coral, teal, mint, lavender */
@@ -65,19 +69,53 @@
   --glass: rgba(255, 255, 255, .55);
   --glass-strong: rgba(255, 255, 255, .78);
   --glass-border: rgba(255, 255, 255, .9);
-  --cell-a: rgba(255, 255, 255, .85);
-  --cell-b: rgba(255, 255, 255, .5);
-  --cell-border: rgba(255, 255, 255, .95);
-  --cell-active: rgba(255, 255, 255, .98);
+  --t-cell-a: rgba(255, 255, 255, .85);
+  --t-cell-b: rgba(255, 255, 255, .5);
+  --t-cell-border: rgba(255, 255, 255, .95);
+  --t-cell-active: rgba(255, 255, 255, .98);
   --shadow: 0 10px 28px rgba(120, 70, 110, .16);
   --edge: rgba(120, 80, 140, .28);
   --track: rgba(30, 27, 75, .2);
-  --sheet: rgba(255, 255, 255, .97);
+  --sheet: rgba(255, 255, 255, .98);
   --input: rgba(255, 255, 255, .85);
   --x: #0891b2;
   --x-glow: rgba(8, 145, 178, .45);
   --o: #db2777;
   --o-glow: rgba(219, 39, 119, .4);
+  --neon-cyan: #0891b2;
+  --neon-cyan-glow: rgba(8, 145, 178, .35);
+  --neon-amber: #d97706;
+  --neon-amber-glow: rgba(217, 119, 6, .35);
+}
+
+/* Board themes (shop). Each one only sets variables, so a preview can nest
+   a different theme inside the page without selector clashes. */
+[data-board="classic"] {
+  --cell-a: var(--t-cell-a); --cell-b: var(--t-cell-b); --cell-border: var(--t-cell-border); --cell-active: var(--t-cell-active);
+  --cell-img: linear-gradient(transparent, transparent); --cell-glow: 0 0 0 transparent;
+  --mark-x: var(--x); --mark-o: var(--o);
+}
+[data-board="neon"] {
+  --cell-a: rgba(24, 18, 70, .92); --cell-b: rgba(10, 8, 36, .95); --cell-border: rgba(34, 211, 238, .6); --cell-active: rgba(46, 34, 110, .95);
+  --cell-img: linear-gradient(transparent, transparent); --cell-glow: 0 0 8px rgba(34, 211, 238, .35), inset 0 0 6px rgba(244, 114, 182, .25);
+  --mark-x: #22d3ee; --mark-o: #f472b6;
+}
+[data-board="pastel"] {
+  --cell-a: #ffe1ec; --cell-b: #dff1ff; --cell-border: #ffffff; --cell-active: #fff6fa;
+  --cell-img: linear-gradient(transparent, transparent); --cell-glow: 0 2px 6px rgba(200, 120, 170, .18);
+  --mark-x: #0891b2; --mark-o: #db2777;
+}
+[data-board="wood"] {
+  --cell-a: #dcaa70; --cell-b: #b07a43; --cell-border: rgba(90, 50, 20, .45); --cell-active: #e9bd85;
+  --cell-img: repeating-linear-gradient(100deg, rgba(255, 255, 255, .07) 0 3px, transparent 3px 9px);
+  --cell-glow: inset 0 -2px 0 rgba(70, 35, 10, .25);
+  --mark-x: #0e5a6e; --mark-o: #9d1b4f;
+}
+[data-board="galaxy"] {
+  --cell-a: rgba(64, 32, 128, .95); --cell-b: rgba(14, 10, 44, .97); --cell-border: rgba(167, 139, 250, .5); --cell-active: rgba(92, 52, 168, .97);
+  --cell-img: radial-gradient(1px 1px at 22% 30%, #fff, transparent), radial-gradient(1px 1px at 70% 62%, rgba(255,255,255,.8), transparent), radial-gradient(1.5px 1.5px at 45% 80%, rgba(255,255,255,.7), transparent);
+  --cell-glow: 0 0 8px rgba(167, 139, 250, .3);
+  --mark-x: #5eead4; --mark-o: #f9a8d4;
 }
 
 /* =========================================================
@@ -125,7 +163,7 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 .app {
   position: relative; z-index: 1;
   height: 100vh; height: 100dvh;
-  max-width: 520px; margin: 0 auto;
+  max-width: 560px; margin: 0 auto;
   overflow: hidden;
 }
 .screen {
@@ -149,11 +187,11 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
   display: grid; place-items: center;
   background: var(--glass-strong); border: 1px solid var(--glass-border);
   box-shadow: 0 4px 0 var(--edge);
-  transition: transform var(--fast) ease, box-shadow var(--fast) ease, background var(--fast) ease;
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease, opacity var(--fast) ease;
 }
 .icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--edge); }
-.theme-toggle .i-sun, :root[data-theme="light"] .theme-toggle .i-moon { display: none; }
-:root[data-theme="light"] .theme-toggle .i-sun { display: block; }
+.icon-btn:disabled { opacity: .35; pointer-events: none; }
+.icon-btn.ghosted { visibility: hidden; } /* keeps the layout, hides the button */
 
 /* 3D press-down button */
 .btn3d {
@@ -171,8 +209,8 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 .btn3d.danger { --c1: #fb7185; --c2: #e11d48; --bedge: #9f1239; box-shadow: 0 6px 0 var(--bedge); }
 .btn3d.danger:active { box-shadow: 0 1px 0 var(--bedge); }
 .btn3d:disabled { opacity: .45; filter: grayscale(.4); pointer-events: none; }
-.btn3d.big { min-height: 62px; font-size: 21px; border-radius: 22px; width: 100%; }
-.btn3d.big svg.lucide { width: 26px; height: 26px; fill: currentColor; }
+.btn3d.big { min-height: 60px; font-size: 20px; border-radius: 20px; width: 100%; }
+.btn3d.big svg.lucide { width: 24px; height: 24px; fill: currentColor; }
 
 /* Segmented control with sliding thumb */
 .seg {
@@ -208,12 +246,6 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 .seg button[aria-checked="true"] .mini-mark path,
 .seg button[aria-checked="true"] .mini-mark circle { stroke: #fff; }
 
-.section-label {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 14px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase;
-  color: var(--muted); margin: 0 0 6px 2px;
-}
-.section-label svg.lucide { width: 16px; height: 16px; }
 .footer { text-align: center; font-size: 13px; color: var(--muted); padding-top: 6px; flex-shrink: 0; }
 .footer b { color: var(--text); font-weight: 600; }
 
@@ -247,83 +279,74 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 @keyframes rise { to { opacity: 1; transform: none; } }
 
 /* =========================================================
-   6. HOME
+   6. HOME / LEVEL SELECT
    ========================================================= */
-.home-scroll {
-  flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
-  padding: 2px 2px var(--s3);
-  display: flex; flex-direction: column; gap: 14px;
+.home-main {
+  flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  gap: 14px; padding: 4px 0 8px;
   scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(#000 calc(100% - 18px), transparent);
-  mask-image: linear-gradient(#000 calc(100% - 18px), transparent);
 }
-.home-scroll::-webkit-scrollbar { display: none; }
-.hero { display: flex; align-items: center; gap: var(--s3); padding: 0 2px; }
-.hero .logo { width: 54px; height: 54px; }
-.hero h1 { margin: 0; font-size: 30px; line-height: 1.05; font-weight: 700; }
-.hero h1 span { color: var(--o); }
-.hero h1 em { font-style: normal; color: var(--x); }
-.hero p { margin: 2px 0 0; color: var(--muted); }
+.home-main::-webkit-scrollbar { display: none; }
+/* centre the content when it fits, scroll from the top when it doesn't */
+.home-main > :first-child { margin-top: auto; }
+.home-main > :last-child { margin-bottom: auto; }
+.title {
+  margin: 0; text-align: center;
+  font-size: 32px; font-weight: 700; letter-spacing: 5px; text-transform: uppercase; line-height: 1.1;
+  background: linear-gradient(90deg, var(--x), var(--primary), var(--o));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
 
-.mode-cards { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); }
-.mode-card {
-  position: relative; text-align: left; padding: 14px; border-radius: var(--radius-lg);
-  display: flex; flex-direction: column; gap: 3px; min-width: 0;
-  transition: transform var(--fast) ease, border-color var(--med) ease, box-shadow var(--med) ease;
+/* Level carousel */
+.carousel { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.lv-row { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+.lv-stage { touch-action: pan-y; padding: 6px; } /* horizontal swipes come to JS, vertical still scrolls */
+.lv-preview {
+  width: min(54vw, 30vh, 280px); width: min(54vw, 30dvh, 280px); aspect-ratio: 1;
+  padding: 8px; border-radius: 24px; will-change: transform;
 }
-.mode-card:active { transform: scale(.97); }
-.mode-card .mc-icon {
-  width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; margin-bottom: 3px;
-  background: var(--glass-strong); color: var(--muted);
-  transition: background var(--med) ease, color var(--med) ease;
+.lv-preview svg { display: block; width: 100%; height: 100%; }
+.pv-cell { fill: var(--cell-a); stroke: var(--cell-border); stroke-width: .4; }
+.pv-x { stroke: var(--x); fill: none; stroke-linecap: round; }
+.pv-o { stroke: var(--o); fill: none; }
+.pv-mark { opacity: 0; transform-box: fill-box; transform-origin: center; animation: pvIn 200ms var(--ease) forwards; }
+@keyframes pvIn { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
+.pv-win { stroke: #fff; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; animation: draw 300ms var(--ease) forwards; }
+.pv-win.x { filter: drop-shadow(0 0 1.5px var(--x)); }
+.arrow { width: 48px; height: 48px; border-radius: 50%; }
+.lv-label { font-size: 20px; font-weight: 600; min-height: 28px; }
+.lv-label span { color: var(--muted); font-weight: 500; }
+.dots { display: flex; justify-content: center; }
+.dot { width: 30px; height: 36px; display: grid; place-items: center; }
+.dot span {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--muted); opacity: .4;
+  transition: transform var(--med) var(--ease), opacity var(--med) ease, background var(--med) ease, box-shadow var(--med) ease;
 }
-.mode-card b { font-size: 18px; font-weight: 600; }
-.mode-card span { font-size: 14px; color: var(--muted); }
-.mode-card[aria-checked="true"] { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary), 0 12px 26px rgba(124, 92, 255, .28); }
-.mode-card[aria-checked="true"] .mc-icon { background: linear-gradient(180deg, #8f73ff, var(--primary-2)); color: #fff; }
-.mode-card .check { position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--glass-border); transition: all var(--med) ease; }
-.mode-card[aria-checked="true"] .check { border-color: var(--primary); background: var(--primary); box-shadow: inset 0 0 0 4px var(--glass-strong); }
+.dot[aria-current="true"] span { transform: scale(1.6); opacity: 1; background: var(--primary); box-shadow: 0 0 10px var(--primary); }
+.dot:active span { transform: scale(1.3); }
 
-/* Board size chips: horizontal snap scroll */
-.chips {
-  position: relative;
-  display: flex; gap: 10px; overflow-x: auto; overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-  padding: 4px 4px 10px;
-  scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+/* Mode buttons with neon outline */
+.modes { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 320px; }
+.mode-btn {
+  --nc: var(--neon-cyan); --ng: var(--neon-cyan-glow);
+  height: 64px; border-radius: 20px;
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  background: var(--glass); border: 2px solid var(--nc); color: var(--nc);
+  box-shadow: 0 0 16px var(--ng), inset 0 0 12px var(--ng), 0 5px 0 var(--edge);
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease;
 }
-.chips::-webkit-scrollbar { display: none; }
-.chip {
-  flex: 0 0 auto; scroll-snap-align: center;
-  min-width: 82px; min-height: 62px; padding: 6px 10px; border-radius: 18px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: var(--glass); border: 1px solid var(--glass-border);
-  box-shadow: 0 4px 0 var(--edge);
-  transition: transform var(--fast) ease, box-shadow var(--fast) ease, background var(--med) ease, color var(--med) ease;
-}
-.chip b { font-size: 18px; font-weight: 600; line-height: 1.1; }
-.chip small { font-size: 12px; color: var(--muted); white-space: nowrap; transition: color var(--med) ease; }
-.chip:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--edge); }
-.chip[aria-checked="true"] {
-  color: #fff; border-color: transparent;
-  background: linear-gradient(180deg, #8f73ff, var(--primary-2));
-  box-shadow: 0 4px 0 var(--primary-edge), 0 8px 18px rgba(91, 61, 245, .3);
-}
-.chip[aria-checked="true"] small { color: rgba(255, 255, 255, .88); }
-
-.collapsible { display: grid; grid-template-rows: 1fr; opacity: 1; transition: grid-template-rows var(--med) var(--ease), opacity var(--med) ease, margin var(--med) var(--ease); }
-.collapsible > div { overflow: hidden; min-height: 0; }
-.collapsible.closed { grid-template-rows: 0fr; opacity: 0; margin-top: -14px; }
-.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px var(--s3); }
-.home-bottom { flex-shrink: 0; padding-top: var(--s2); }
+.mode-btn.pvp { --nc: var(--neon-amber); --ng: var(--neon-amber-glow); }
+.mode-btn:active { transform: translateY(4px); box-shadow: 0 0 10px var(--ng), inset 0 0 10px var(--ng), 0 1px 0 var(--edge); }
+.mode-btn svg.lucide { width: 30px; height: 30px; }
+.mode-btn b { font-size: 20px; font-weight: 700; letter-spacing: 1px; color: var(--text); }
 
 /* =========================================================
    7. GAME SCREEN
    ========================================================= */
+#game { padding-left: 8px; padding-right: 8px; }
 .turn-pill {
-  flex: 1; min-width: 0; max-width: 240px; margin: 0 auto;
+  flex: 1; min-width: 0; max-width: 260px; margin: 0 auto;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 44px; padding: 0 14px; border-radius: 99px;
   font-weight: 600; font-size: 16px; white-space: nowrap;
@@ -382,25 +405,27 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
   height: 32px; display: flex; align-items: center; justify-content: center; gap: 8px;
   color: var(--muted); font-size: 16px; flex-shrink: 0;
 }
-.status-line .dots { display: none; gap: 4px; }
+.status-line .dots-anim { display: none; gap: 4px; }
 .status-line.thinking { color: var(--text); }
-.status-line.thinking .dots { display: inline-flex; }
-.dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--o); animation: blink 900ms infinite ease-in-out; }
-.dots i:nth-child(2) { animation-delay: 150ms; }
-.dots i:nth-child(3) { animation-delay: 300ms; }
+.status-line.thinking .dots-anim { display: inline-flex; }
+.dots-anim i { width: 7px; height: 7px; border-radius: 50%; background: var(--o); animation: blink 900ms infinite ease-in-out; }
+.dots-anim i:nth-child(2) { animation-delay: 150ms; }
+.dots-anim i:nth-child(3) { animation-delay: 300ms; }
 @keyframes blink { 0%, 80%, 100% { transform: scale(.6); opacity: .4; } 40% { transform: scale(1); opacity: 1; } }
 
-/* Board viewport: pan / pinch area for big boards */
-.board-area { position: relative; flex: 1; min-height: 0; }
-.viewport { position: absolute; inset: 0; overflow: hidden; border-radius: var(--radius-lg); touch-action: manipulation; }
-.viewport.pannable { touch-action: none; }
+/* Board area: full width; the viewport is sized in JS to exactly fit whole cells */
+.board-area { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; }
+.viewport {
+  --cr: 18px;
+  position: relative; overflow: hidden; border-radius: var(--cr);
+  touch-action: manipulation;
+}
+.viewport.zoomable { touch-action: none; }
 .board {
-  --n: 3; --cell: 90px; --gap: 10px; --pad: 10px; --cr: 18px;
+  --n: 3; --cell: 90px; --gap: 10px;
   position: absolute; left: 0; top: 0; transform-origin: 0 0;
   display: grid; grid-template-columns: repeat(var(--n), var(--cell)); grid-auto-rows: var(--cell);
-  gap: var(--gap); padding: var(--pad);
-  border-radius: calc(var(--cr) + var(--pad));
-  background: var(--glass); border: 1px solid var(--glass-border); box-shadow: var(--shadow);
+  gap: var(--gap);
 }
 .board.smooth { transition: transform 240ms var(--ease); }
 .board.enter { animation: fadeIn 240ms var(--ease); }
@@ -410,9 +435,9 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 .cell {
   position: relative; width: var(--cell); height: var(--cell); padding: 0;
   border-radius: var(--cr);
-  background: linear-gradient(145deg, var(--cell-a), var(--cell-b));
+  background: var(--cell-img), linear-gradient(145deg, var(--cell-a), var(--cell-b));
   border: 1px solid var(--cell-border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), var(--cell-glow);
   display: grid; place-items: center;
   transition: background var(--fast) ease, transform var(--fast) ease, opacity var(--med) ease, box-shadow var(--med) ease;
 }
@@ -422,8 +447,22 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 .cell.filled { cursor: default; }
 .cell svg { width: 70%; height: 70%; overflow: visible; }
 .cell path, .cell circle { fill: none; stroke-width: 13; stroke-linecap: round; }
-.cell.x path { stroke: var(--x); filter: drop-shadow(0 0 4px var(--x-glow)); }
-.cell.o circle { stroke: var(--o); filter: drop-shadow(0 0 4px var(--o-glow)); transform: rotate(-90deg); transform-origin: 50% 50%; }
+.cell.x path { stroke: var(--mark-x); filter: drop-shadow(0 0 4px var(--x-glow)); }
+.cell.o circle { stroke: var(--mark-o); filter: drop-shadow(0 0 4px var(--o-glow)); transform: rotate(-90deg); transform-origin: 50% 50%; }
+/* X / O skins (shop) */
+.cell svg.skin-glow path, .cell svg.skin-glow circle { stroke-width: 15; }
+.cell.x svg.skin-glow path { filter: drop-shadow(0 0 4px var(--mark-x)) drop-shadow(0 0 10px var(--mark-x)); }
+.cell.o svg.skin-glow circle { filter: drop-shadow(0 0 4px var(--mark-o)) drop-shadow(0 0 10px var(--mark-o)); }
+.cell .emoji-mark { font-size: calc(var(--cell) * .55); line-height: 1; }
+.cell svg.pixel { width: 72%; height: 72%; shape-rendering: crispEdges; }
+.cell.x svg.pixel rect { fill: var(--mark-x); }
+.cell.o svg.pixel rect { fill: var(--mark-o); }
+.cell .pop { animation: markPop 220ms var(--ease); }
+.cell.instant .pop { animation: none; }
+@keyframes markPop { from { transform: scale(.3); opacity: 0; } }
+/* Hint highlight */
+.cell.hint { animation: hintPulse 900ms ease-in-out infinite; box-shadow: 0 0 0 3px var(--accent), 0 0 16px var(--accent); }
+@keyframes hintPulse { 50% { box-shadow: 0 0 0 3px var(--accent), 0 0 4px var(--accent); } }
 .cell .stroke { stroke-dasharray: 100; stroke-dashoffset: 100; animation: draw 220ms var(--ease) forwards; }
 .cell .stroke.second { animation-delay: 90ms; }
 .cell.instant .stroke { animation: none; stroke-dashoffset: 0; }
@@ -444,21 +483,29 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 .win-line.x line { filter: drop-shadow(0 0 6px var(--x)) drop-shadow(0 0 2px var(--x)); }
 .win-line.o line { filter: drop-shadow(0 0 6px var(--o)) drop-shadow(0 0 2px var(--o)); }
 
-/* Zoom controls (9x9 and up) */
-.zoom-ctrls { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 10px; z-index: 2; }
-.zoom-ctrls .icon-btn { width: 44px; height: 44px; }
+/* One-time zoom hint for 9x9+ */
+.zoom-hint {
+  position: absolute; left: 50%; bottom: 10px; z-index: 2;
+  padding: 8px 16px; border-radius: 99px; white-space: nowrap;
+  background: var(--sheet); border: 1px solid var(--glass-border); box-shadow: var(--shadow);
+  font-size: 16px; font-weight: 500;
+  opacity: 0; transform: translate(-50%, 8px); pointer-events: none;
+  transition: opacity 280ms ease, transform 280ms var(--ease);
+}
+.zoom-hint.show { opacity: 1; transform: translate(-50%, 0); }
 
-.actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); padding-top: var(--s3); flex-shrink: 0; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); padding: var(--s3) 8px 0; flex-shrink: 0; }
 
 /* =========================================================
-   8. POPUPS (result + names)
+   8. POPUPS (result + leave confirm)
    ========================================================= */
 .overlay {
-  position: fixed; inset: 0; z-index: 20; background: rgba(8, 6, 26, .5);
+  position: fixed; inset: 0; z-index: 30; background: rgba(8, 6, 26, .5);
   opacity: 0; pointer-events: none; visibility: hidden;
   transition: opacity var(--med) ease, visibility 0s linear var(--med);
 }
 .overlay.open { opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+#sheetBackdrop { z-index: 21; }
 .modal { display: grid; place-items: center; padding: 16px; }
 .modal-card {
   position: relative; width: min(100%, 370px); max-height: calc(100dvh - 32px); overflow-y: auto;
@@ -477,53 +524,58 @@ svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
 }
 .result-icon svg.lucide { width: 44px; height: 44px; }
 .result-icon.lose { background: linear-gradient(160deg, #94a3b8, #475569); box-shadow: 0 6px 0 #334155; }
-.result-icon.draw, .result-icon.names { background: linear-gradient(160deg, #a78bfa, var(--primary-2)); box-shadow: 0 6px 0 var(--primary-edge); }
-.result-icon.names { width: 64px; height: 64px; border-radius: 20px; }
-.result-icon.names svg.lucide { width: 32px; height: 32px; }
+.result-icon.draw { background: linear-gradient(160deg, #a78bfa, var(--primary-2)); box-shadow: 0 6px 0 var(--primary-edge); }
+.result-icon.warn { width: 64px; height: 64px; border-radius: 20px; background: linear-gradient(160deg, #fb7185, #e11d48); box-shadow: 0 6px 0 #9f1239; }
+.result-icon.warn svg.lucide { width: 32px; height: 32px; }
 .modal-card h2 { margin: 0; font-size: 30px; font-weight: 700; overflow-wrap: anywhere; }
 .modal-card p { margin: 6px 0 var(--s5); color: var(--muted); }
 .modal-actions { display: grid; gap: var(--s4); }
-.close-x { position: absolute; top: 12px; right: 12px; }
+.modal-actions.two { grid-template-columns: 1fr 1fr; gap: var(--s3); }
+.modal-actions.two .btn3d { padding: 0 12px; }
 
-/* Name fields with inline validation */
-.names-card { text-align: left; }
-.names-card h2, .names-card > p { text-align: center; }
-.field { margin-bottom: var(--s2); }
-.field label { display: flex; align-items: center; gap: 6px; font-weight: 600; margin: 0 0 6px 2px; }
+/* =========================================================
+   9. BOTTOM SHEETS (vs Computer, vs Player, Settings)
+   ========================================================= */
+.sheet {
+  position: fixed; z-index: 22; left: 0; right: 0; bottom: var(--kb, 0px);
+  max-width: 560px; margin: 0 auto;
+  max-height: min(88vh, calc(var(--vvh, 100vh) - 16px));
+  display: flex; flex-direction: column;
+  border-radius: 28px 28px 0 0;
+  background: var(--sheet); border: 1px solid var(--glass-border); border-bottom: 0;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, .25);
+  transform: translateY(105%); visibility: hidden;
+  transition: transform 280ms var(--ease), visibility 0s linear 280ms, bottom 200ms ease;
+}
+.sheet.open { transform: none; visibility: visible; transition-delay: 0s; }
+.sheet-grab { flex-shrink: 0; padding: 10px 16px 8px; touch-action: none; cursor: grab; }
+.sheet-handle { width: 44px; height: 5px; border-radius: 99px; background: var(--track); margin: 0 auto 10px; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sheet-head h3 { margin: 0; font-size: 22px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sheet-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 6px 16px 8px; }
+.sheet-foot { flex-shrink: 0; padding: 12px 16px calc(env(safe-area-inset-bottom) + 16px); border-top: 1px solid var(--glass-border); }
+
+.form-row { margin-bottom: 14px; }
+.form-row .lbl { display: flex; align-items: center; gap: 6px; font-weight: 600; margin: 0 0 6px 2px; }
+.form-row .lbl small { color: var(--muted); font-weight: 400; font-size: 14px; }
 .input-wrap { position: relative; }
-.field input {
+.form-row input {
   width: 100%; min-height: 50px; padding: 0 64px 0 14px; border-radius: 14px;
   font: inherit; font-size: 17px; color: var(--text);
   background: var(--input); border: 2px solid var(--glass-border);
   -webkit-user-select: text; user-select: text;
   transition: border-color var(--fast) ease, box-shadow var(--fast) ease;
 }
-.field input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(124, 92, 255, .2); }
-.field .count { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--muted); }
-.field .err { min-height: 20px; font-size: 14px; color: var(--danger); margin: 4px 0 0 4px; }
-.field.invalid input { border-color: var(--danger); box-shadow: 0 0 0 4px rgba(244, 63, 94, .15); }
-.field.invalid .count { color: var(--danger); }
-.names-card .btn3d { width: 100%; margin-top: var(--s2); }
+.form-row input::placeholder { color: var(--muted); opacity: .8; }
+.form-row input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(124, 92, 255, .2); }
+.form-row .count { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--muted); }
+.form-row .err { min-height: 20px; font-size: 14px; color: var(--danger); margin: 4px 0 0 4px; }
+.form-row.invalid input { border-color: var(--danger); box-shadow: 0 0 0 4px rgba(244, 63, 94, .15); }
+.form-row.invalid .count { color: var(--danger); }
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0 12px; }
 
-/* =========================================================
-   9. SETTINGS SHEET
-   ========================================================= */
-.sheet {
-  position: fixed; z-index: 21; left: 0; right: 0; bottom: 0;
-  max-width: 520px; margin: 0 auto;
-  max-height: 85vh; max-height: 85dvh; overflow-y: auto;
-  padding: 10px var(--s4) calc(env(safe-area-inset-bottom) + var(--s4));
-  border-radius: 28px 28px 0 0;
-  background: var(--sheet); border: 1px solid var(--glass-border); border-bottom: 0;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, .25);
-  transform: translateY(105%); visibility: hidden;
-  transition: transform 280ms var(--ease), visibility 0s linear 280ms;
-}
-.sheet.open { transform: none; visibility: visible; transition-delay: 0s; }
-.sheet-handle { width: 44px; height: 5px; border-radius: 99px; background: var(--track); margin: 0 auto 10px; }
-.sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--s3); }
-.sheet-head h3 { margin: 0; font-size: 22px; font-weight: 600; }
-.set-list { display: grid; gap: var(--s3); }
+/* Settings rows */
+.set-list { display: grid; gap: var(--s3); padding-bottom: 8px; }
 .set-row {
   width: 100%; min-height: 60px; padding: 10px 14px; border-radius: var(--radius);
   display: flex; align-items: center; gap: var(--s3); text-align: left;
@@ -540,18 +592,254 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
 .switch::after { content: ''; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .25); transition: transform var(--med) var(--ease); }
 [aria-checked="true"] > .switch { background: var(--primary); }
 [aria-checked="true"] > .switch::after { transform: translateX(20px); }
-#resetScores { width: 100%; margin-top: var(--s2); }
+.reset-box { margin-top: 4px; }
+.reset-box > .btn3d { width: 100%; }
+.reset-confirm { padding: 14px; border-radius: var(--radius); border: 2px solid var(--danger); background: rgba(244, 63, 94, .08); animation: fadeIn 200ms ease; }
+.reset-confirm p { margin: 0 0 12px; font-weight: 500; }
+.reset-confirm .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.reset-confirm .btn3d { padding: 0 10px; }
+.reset-done { text-align: center; color: var(--muted); min-height: 22px; margin-top: 8px; }
 
-#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; }
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+
+/* =========================================================
+   9b. CAMPAIGN, PROFILE, SHOP, NAVIGATION
+   ========================================================= */
+:root { --gold: #f5b301; --gold-2: #f08c00; --gold-glow: rgba(245, 179, 1, .45); --nav-h: 64px; }
+
+/* Tab pages leave room for the bottom nav */
+.screen.tab-page { padding-bottom: calc(env(safe-area-inset-bottom) + var(--nav-h) + 12px); }
+.page-title { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+.page-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 4px 2px 12px; scrollbar-width: none; }
+.page-scroll::-webkit-scrollbar { display: none; }
+
+/* Coin + star pills */
+.coin-pill, .star-pill {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px 0 8px;
+  border-radius: 99px; font-weight: 700; font-size: 17px; white-space: nowrap;
+  background: var(--glass-strong); border: 1px solid var(--glass-border); box-shadow: 0 3px 0 var(--edge);
+}
+.coin-pill svg.lucide, .coin-ico { width: 24px; height: 24px; color: var(--gold); filter: drop-shadow(0 0 4px var(--gold-glow)); }
+.star-pill svg { width: 22px; height: 22px; }
+.coin-pill.bump { animation: bump 260ms var(--ease); }
+.flying-coin { position: fixed; z-index: 60; width: 22px; height: 22px; pointer-events: none; color: var(--gold); }
+.flying-coin svg { width: 100%; height: 100%; }
+
+/* Bottom nav */
+.bottom-nav {
+  position: absolute; z-index: 15; left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom) + 6px);
+  height: var(--nav-h); display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px;
+  border-radius: 22px; background: var(--sheet); border: 1px solid var(--glass-border); box-shadow: var(--shadow);
+  transition: transform var(--med) var(--ease), opacity var(--med) ease;
+}
+body[data-screen="game"] .bottom-nav, body[data-screen="splash"] .bottom-nav { transform: translateY(140%); opacity: 0; pointer-events: none; }
+.nav-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  border-radius: 16px; font-size: 13px; font-weight: 600; color: var(--muted);
+  transition: color var(--med) ease, background var(--med) ease, transform var(--fast) ease;
+}
+.nav-btn svg.lucide { width: 24px; height: 24px; transition: transform var(--med) var(--ease), filter var(--med) ease; }
+.nav-btn:active { transform: scale(.94); }
+.nav-btn[aria-current="page"] { color: var(--primary); background: rgba(124, 92, 255, .14); }
+.nav-btn[aria-current="page"] svg.lucide { transform: translateY(-1px); filter: drop-shadow(0 0 6px var(--primary)); }
+
+/* Home: continue + daily cards */
+.home-cards { width: 100%; max-width: 420px; display: grid; gap: 10px; }
+.continue-card, .daily-card {
+  width: 100%; min-height: 60px; padding: 8px 12px; border-radius: 20px; text-align: left;
+  display: flex; align-items: center; gap: 12px;
+  transition: transform var(--fast) ease;
+}
+.continue-card:active { transform: scale(.98); }
+.cc-icon, .dc-icon { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; flex-shrink: 0; color: #fff; }
+.cc-icon { background: linear-gradient(160deg, #8f73ff, var(--primary-2)); }
+.dc-icon { background: linear-gradient(160deg, var(--gold), var(--gold-2)); }
+.cc-text, .dc-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.cc-text small, .dc-text small { color: var(--muted); font-size: 14px; }
+.cc-text b, .dc-text b { font-size: 17px; }
+.daily-card { border: 2px solid var(--gold); box-shadow: 0 0 14px var(--gold-glow); }
+.btn3d.small { min-height: 44px; padding: 0 16px; font-size: 16px; border-radius: 14px; }
+.btn3d.gold { --c1: #ffd34d; --c2: var(--gold-2); --bedge: #b45309; color: #3b2300; box-shadow: 0 5px 0 var(--bedge); }
+.btn3d.gold:active { box-shadow: 0 1px 0 var(--bedge); }
+
+/* Levels page: zig-zag path map */
+.levels-scroll { position: relative; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding: 4px 0 24px; }
+.levels-scroll::-webkit-scrollbar { display: none; }
+.ch-card { height: 104px; margin: 14px 4px 10px; padding: 12px 14px; border-radius: 22px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 10px; }
+.ch-card .ch-num { font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.ch-card h3 { margin: 0; font-size: 20px; }
+.ch-card .ch-meta { color: var(--muted); font-size: 15px; }
+.ch-card .ch-stars { grid-row: 1 / 3; grid-column: 2; display: flex; align-items: center; gap: 4px; font-weight: 700; }
+.ch-card .ch-stars svg { width: 20px; height: 20px; }
+.ch-bar { grid-column: 1 / -1; height: 6px; border-radius: 99px; background: var(--track); overflow: hidden; }
+.ch-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--gold), var(--gold-2)); }
+.ch-card.locked { opacity: .55; }
+.levels-map { position: relative; }
+.ch-nodes { position: relative; }
+.ch-path { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.ch-path path { fill: none; stroke-width: 6; stroke-linecap: round; stroke: var(--track); stroke-dasharray: 2 12; }
+.ch-path path.done { stroke: var(--gold); stroke-dasharray: none; opacity: .75; }
+.node {
+  position: absolute; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 700; font-size: 20px; color: #fff;
+  background: linear-gradient(160deg, #8f73ff, var(--primary-2)); box-shadow: 0 5px 0 var(--primary-edge);
+  transition: transform var(--fast) ease;
+}
+.node:active { transform: translateY(3px); }
+.node svg { width: 24px; height: 24px; }
+.node.boss { width: 82px; height: 82px; margin: -41px 0 0 -41px; background: linear-gradient(160deg, #fb7185, #c026d3); box-shadow: 0 6px 0 #86198f; font-size: 22px; }
+.node.boss .crown { position: absolute; top: -18px; width: 30px; height: 30px; color: var(--gold); filter: drop-shadow(0 0 4px var(--gold-glow)); }
+.node.locked { background: var(--glass-strong); color: var(--muted); box-shadow: 0 4px 0 var(--edge); }
+.node.locked.boss .crown { color: var(--muted); filter: none; }
+.node.current { box-shadow: 0 5px 0 var(--primary-edge), 0 0 0 6px rgba(124, 92, 255, .25), 0 0 22px var(--primary); animation: nodePulse 1.6s ease-in-out infinite; }
+.node.boss.current { box-shadow: 0 6px 0 #86198f, 0 0 0 6px rgba(236, 72, 153, .25), 0 0 24px #ec4899; }
+@keyframes nodePulse { 50% { transform: scale(1.06); } }
+.node.done { background: linear-gradient(160deg, #34d399, #059669); box-shadow: 0 5px 0 #065f46; }
+.node.boss.done { background: linear-gradient(160deg, #fbbf24, #ea580c); box-shadow: 0 6px 0 #9a3412; }
+.node-stars { position: absolute; bottom: -14px; display: flex; gap: 1px; }
+.node-stars svg { width: 18px; height: 18px; }
+.node.shake { animation: shake 300ms ease; }
+.star-on { fill: var(--gold); stroke: #b45309; stroke-width: 1; }
+.star-off { fill: var(--track); stroke: none; }
+/* Skeleton loader */
+.skel { position: absolute; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; background: var(--glass-strong); overflow: hidden; }
+.skel::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .35), transparent); animation: shimmer 1.1s infinite; }
+@keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+/* Level start popup + campaign result */
+.level-card { text-align: left; }
+.level-card h2, .level-card > .lm-sub { text-align: center; }
+.lm-sub { margin: 2px 0 14px; color: var(--muted); }
+.lm-badge { display: flex; justify-content: center; margin-bottom: 8px; }
+.lm-badge span { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 99px; font-weight: 700; font-size: 14px; color: #fff; background: linear-gradient(160deg, #fb7185, #c026d3); }
+.lm-badge svg { width: 18px; height: 18px; }
+.lm-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.lm-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 12px; background: var(--glass); border: 1px solid var(--glass-border); font-weight: 500; }
+.lm-chip svg.lucide { width: 18px; height: 18px; color: var(--primary); }
+.lm-box { padding: 10px 12px; border-radius: 14px; background: var(--glass); border: 1px solid var(--glass-border); margin-bottom: 10px; }
+.lm-box b { display: block; margin-bottom: 4px; }
+.lm-box ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.lm-box li { display: flex; align-items: center; gap: 6px; }
+.lm-box li .stars { display: inline-flex; min-width: 58px; }
+.lm-box li svg { width: 18px; height: 18px; }
+.level-card .btn3d.big { margin-top: 6px; }
+.cm-top { display: flex; justify-content: center; margin-bottom: 10px; }
+.cm-stars { display: flex; justify-content: center; gap: 6px; margin: 4px 0 8px; }
+.cm-stars svg { width: 56px; height: 56px; }
+.cm-stars svg:nth-child(2) { transform: translateY(-10px); }
+.cm-stars .star-pop { animation: starPop 260ms var(--ease) both; }
+@keyframes starPop { from { transform: scale(.2) rotate(-30deg); opacity: 0; } }
+.cm-rewards { display: grid; gap: 6px; margin: 0 0 16px; text-align: left; }
+.cm-rewards div { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 12px; background: var(--glass); font-weight: 500; }
+.cm-rewards b { display: inline-flex; align-items: center; gap: 4px; }
+.cm-rewards svg.lucide { width: 18px; height: 18px; color: var(--gold); }
+.modal-actions.three { grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-actions.three .btn3d:first-child { grid-column: 1 / -1; }
+
+/* Campaign extras on the game screen */
+.actions.has-hint { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.actions.has-hint .btn3d { padding: 0 6px; gap: 4px; font-size: 16px; min-width: 0; white-space: nowrap; }
+.actions.has-hint .btn3d svg.lucide { width: 20px; height: 20px; }
+@media (max-width: 360px) { .actions.has-hint .btn3d > svg.lucide:first-child { display: none; } }
+.price-chip { display: inline-flex; align-items: center; gap: 2px; font-size: 14px; color: var(--gold-2); }
+.price-chip svg.lucide { width: 16px; height: 16px; color: var(--gold); }
+.status-line.urgent { color: var(--danger); font-weight: 600; }
+
+/* Toasts */
+.toasts { position: fixed; z-index: 50; top: calc(env(safe-area-inset-top) + 10px); left: 50%; transform: translateX(-50%); width: min(92vw, 420px); display: grid; gap: 8px; pointer-events: none; }
+.toast {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 16px; font-weight: 500;
+  background: var(--sheet); border: 1px solid var(--glass-border); box-shadow: var(--shadow);
+  animation: toastIn 240ms var(--ease);
+}
+.toast.out { opacity: 0; transform: translateY(-8px); transition: opacity 240ms ease, transform 240ms ease; }
+.toast svg.lucide { width: 22px; height: 22px; color: var(--gold); flex-shrink: 0; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(-10px); } }
+
+/* Profile */
+.profile-card { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 24px; }
+.pf-avatar { position: relative; width: 72px; height: 72px; border-radius: 22px; flex-shrink: 0; display: grid; place-items: center; color: #fff; background: linear-gradient(160deg, var(--x), var(--primary-2)); box-shadow: 0 5px 0 var(--primary-edge); }
+.pf-avatar svg.lucide { width: 38px; height: 38px; }
+.pf-avatar .edit-dot { position: absolute; right: -4px; bottom: -4px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--sheet); color: var(--text); border: 1px solid var(--glass-border); }
+.pf-avatar .edit-dot svg.lucide { width: 14px; height: 14px; }
+.pf-main { flex: 1; min-width: 0; }
+.pf-name-row { display: flex; align-items: center; gap: 4px; }
+.pf-name-row b { font-size: 22px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pf-name-row .icon-btn { width: 44px; height: 44px; box-shadow: none; background: transparent; border: 0; }
+.pf-name-row .icon-btn svg.lucide { width: 18px; height: 18px; }
+.pf-name-form .form-row { margin: 0; }
+.pf-name-form input { min-height: 44px; }
+.pf-level { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-weight: 600; }
+.xp-bar { flex: 1; height: 10px; border-radius: 99px; background: var(--track); overflow: hidden; }
+.xp-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--x), var(--primary)); transition: width var(--med) var(--ease); }
+.pf-xp { color: var(--muted); font-size: 14px; margin-top: 2px; }
+.sec-title { display: flex; align-items: baseline; justify-content: space-between; margin: 20px 2px 10px; font-size: 18px; }
+.sec-title small { color: var(--muted); font-weight: 500; font-size: 14px; }
+.tile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.tile { padding: 10px 8px; border-radius: 18px; text-align: center; min-width: 0; }
+.tile b { display: block; font-size: 22px; line-height: 1.2; }
+.tile small { color: var(--muted); font-size: 13px; }
+.tile svg.lucide { width: 20px; height: 20px; color: var(--primary); }
+.tile.gold svg.lucide { color: var(--gold); }
+.mode-stats { display: grid; gap: 10px; margin-top: 10px; }
+.mode-stat { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 18px; }
+.mode-stat .ms-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--glass-strong); color: var(--primary); flex-shrink: 0; }
+.mode-stat .ms-text { flex: 1; min-width: 0; }
+.mode-stat .ms-text small { display: block; color: var(--muted); font-size: 14px; }
+.ach-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ach { display: flex; gap: 10px; align-items: center; padding: 10px; border-radius: 18px; min-width: 0; }
+.ach .a-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; color: #fff; background: linear-gradient(160deg, var(--gold), var(--gold-2)); }
+.ach .a-icon svg.lucide { width: 22px; height: 22px; }
+.ach .a-text { min-width: 0; }
+.ach .a-text b { display: block; font-size: 15px; line-height: 1.2; }
+.ach .a-text small { display: block; color: var(--muted); font-size: 13px; line-height: 1.25; }
+.ach.locked { opacity: .55; }
+.ach.locked .a-icon { background: var(--glass-strong); color: var(--muted); }
+.empty-state { display: flex; align-items: center; gap: 10px; padding: 12px 14px; margin-bottom: 10px; border-radius: 16px; border: 1px dashed var(--glass-border); color: var(--muted); }
+.empty-state svg.lucide { color: var(--primary); }
+
+/* Shop */
+.shop-tabs { margin-bottom: 12px; }
+.shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.shop-item { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 10px; border-radius: 20px; text-align: center; min-width: 0; }
+.shop-item.equipped { border: 2px solid var(--primary); box-shadow: 0 0 0 2px rgba(124, 92, 255, .25); }
+.si-lock { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--glass-strong); color: var(--muted); }
+.si-lock svg.lucide { width: 14px; height: 14px; }
+.si-name { font-weight: 600; }
+.si-desc { color: var(--muted); font-size: 13px; margin-top: -6px; }
+.si-msg { color: var(--danger); font-size: 13px; min-height: 18px; margin-top: -4px; }
+.shop-item .btn3d { width: 100%; }
+.si-board { display: grid; grid-template-columns: repeat(3, 22px); gap: 4px; padding: 6px; border-radius: 12px; --cell: 22px; --cr: 6px; }
+.si-board .cell, .si-marks .cell { pointer-events: none; }
+.si-marks { display: flex; gap: 6px; --cell: 40px; --cr: 10px; }
+.si-avatar { width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; color: #fff; background: linear-gradient(160deg, var(--x), var(--primary-2)); }
+.si-avatar svg.lucide { width: 30px; height: 30px; }
+.si-boost { width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; color: #fff; background: linear-gradient(160deg, var(--gold), var(--gold-2)); }
+.si-boost svg.lucide { width: 30px; height: 30px; }
+.pf-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 22px; }
+.pf-actions .btn3d { padding: 0 10px; }
+.avatar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 12px; padding-bottom: 8px; }
+.avatar-opt { display: grid; place-items: center; height: 76px; border-radius: 20px; color: #fff; background: linear-gradient(160deg, var(--x), var(--primary-2)); border: 3px solid transparent; }
+.avatar-opt svg.lucide { width: 34px; height: 34px; }
+.avatar-opt[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 14px var(--accent); }
+.sheet-note { color: var(--muted); margin: 4px 2px 14px; }
+.sheet-note a, .link-btn { color: var(--primary); font-weight: 600; text-decoration: underline; min-height: 44px; }
+.code-box { width: 100%; min-height: 96px; padding: 10px 12px; border-radius: 14px; resize: vertical; font: 14px/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--text); background: var(--input); border: 2px solid var(--glass-border); -webkit-user-select: text; user-select: text; word-break: break-all; }
+.code-box:focus { outline: none; border-color: var(--primary); }
+.backup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.backup-row .btn3d { padding: 0 10px; }
+.backup-msg { min-height: 22px; font-size: 14px; margin-top: 6px; }
+.backup-msg.ok { color: #059669; }
+.backup-msg.bad { color: var(--danger); }
 
 /* =========================================================
    10. RESPONSIVE + REDUCED MOTION
    ========================================================= */
 @media (min-width: 768px) {
   .screen { padding-left: 24px; padding-right: 24px; }
-  .hero h1 { font-size: 36px; }
+  #game { padding-left: 8px; padding-right: 8px; }
+  .title { font-size: 38px; }
 }
-@media (min-width: 1024px) { .app { max-width: 580px; } }
 @media (prefers-reduced-motion: reduce) {
   .bg::before { animation: none; }
   *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
@@ -579,85 +867,51 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
     <p class="splash-sub">Tap to start</p>
   </section>
 
-  <!-- ================= HOME ================= -->
-  <section class="screen" id="home" aria-label="Home">
+  <!-- ================= HOME / LEVEL SELECT ================= -->
+  <section class="screen tab-page" id="home" aria-label="Home">
     <header class="topbar">
-      <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Toggle light or dark theme">
-        <i data-lucide="moon" class="i-moon"></i><i data-lucide="sun" class="i-sun"></i>
-      </button>
+      <button class="coin-pill" data-coin-pill aria-label="Coins, open shop"><i data-lucide="coins"></i><span class="coin-amt">0</span></button>
       <button class="icon-btn" data-open-settings aria-label="Settings"><i data-lucide="settings"></i></button>
     </header>
 
-    <div class="home-scroll">
-      <div class="hero">
-        <svg class="logo" viewBox="0 0 120 120" aria-hidden="true">
-          <path class="grid-line" d="M44 10 V110 M76 10 V110 M10 44 H110 M10 76 H110"/>
-          <path class="lx" d="M16 16 L38 38 M38 16 L16 38"/>
-          <circle class="lo" cx="93" cy="93" r="11"/>
-        </svg>
-        <div>
-          <h1><em>Tic</em> Tac <span>Toe</span></h1>
-          <p>Classic game, fresh look</p>
+    <div class="home-main">
+      <div class="home-cards">
+        <button class="continue-card glass" id="continueCard">
+          <span class="cc-icon"><i data-lucide="map"></i></span>
+          <span class="cc-text"><small id="ccLabel">Continue Campaign</small><b id="ccTitle">Level 1</b></span>
+          <i data-lucide="chevron-right"></i>
+        </button>
+        <div class="daily-card glass" id="dailyCard" hidden>
+          <span class="dc-icon"><i data-lucide="gift"></i></span>
+          <span class="dc-text"><b>Daily reward</b><small id="dailyText">Day 1 · 20 coins</small></span>
+          <button class="btn3d gold small" id="dailyClaim">Claim</button>
         </div>
       </div>
+      <h1 class="title">Select Level</h1>
 
-      <div>
-        <div class="section-label"><i data-lucide="gamepad-2"></i>Game mode</div>
-        <div class="mode-cards" role="radiogroup" aria-label="Game mode">
-          <button class="mode-card glass" role="radio" data-mode="computer">
-            <span class="check"></span>
-            <span class="mc-icon"><i data-lucide="bot"></i></span>
-            <b>vs Computer</b><span>Beat the machine</span>
-          </button>
-          <button class="mode-card glass" role="radio" data-mode="friend">
-            <span class="check"></span>
-            <span class="mc-icon"><i data-lucide="users"></i></span>
-            <b>vs Friend</b><span>Pass and play</span>
-          </button>
-        </div>
-      </div>
-
-      <div>
-        <div class="section-label"><i data-lucide="grid-3x3"></i>Board size</div>
-        <div class="chips" id="sizeChips" role="radiogroup" aria-label="Board size"></div>
-      </div>
-
-      <div class="collapsible" id="difficultyBlock">
-        <div>
-          <div class="section-label"><i data-lucide="gauge"></i>Difficulty</div>
-          <div class="seg" data-key="difficulty" role="radiogroup" aria-label="Difficulty">
-            <span class="seg-thumb"></span>
-            <button role="radio" data-val="easy">Easy</button>
-            <button role="radio" data-val="medium">Medium</button>
-            <button role="radio" data-val="hard">Hard</button>
+      <div class="carousel" role="group" aria-roledescription="carousel" aria-label="Board size">
+        <div class="lv-row">
+          <button class="icon-btn arrow" id="lvPrev" aria-label="Smaller board"><i data-lucide="chevron-left"></i></button>
+          <div class="lv-stage" id="lvStage">
+            <div class="lv-preview glass" id="lvPreview" aria-hidden="true"></div>
           </div>
+          <button class="icon-btn arrow" id="lvNext" aria-label="Bigger board"><i data-lucide="chevron-right"></i></button>
         </div>
+        <div class="lv-label" id="lvLabel" aria-live="polite"></div>
+        <div class="dots" id="lvDots"></div>
       </div>
 
-      <div class="two-col">
-        <div>
-          <div class="section-label" id="markLabel">You play as</div>
-          <div class="seg" data-key="p1Mark" role="radiogroup" aria-labelledby="markLabel">
-            <span class="seg-thumb"></span>
-            <button role="radio" data-val="X" aria-label="X" class="mark-opt"></button>
-            <button role="radio" data-val="O" aria-label="O" class="mark-opt"></button>
-          </div>
-        </div>
-        <div>
-          <div class="section-label" id="starterLabel">First move</div>
-          <div class="seg" data-key="starter" role="radiogroup" aria-labelledby="starterLabel">
-            <span class="seg-thumb"></span>
-            <button role="radio" data-val="p1" id="starterP1">You</button>
-            <button role="radio" data-val="p2" id="starterP2">Machine</button>
-          </div>
-        </div>
+      <div class="modes">
+        <button class="mode-btn cpu" data-mode="computer" aria-label="Player vs Computer">
+          <i data-lucide="user"></i><b>vs</b><i data-lucide="monitor"></i>
+        </button>
+        <button class="mode-btn pvp" data-mode="friend" aria-label="Player vs Player">
+          <i data-lucide="user"></i><b>vs</b><i data-lucide="user"></i>
+        </button>
       </div>
     </div>
 
-    <div class="home-bottom">
-      <button class="btn3d big" id="playBtn"><i data-lucide="play"></i>Play</button>
-      <div class="footer">Made by <b>Mubashar Akram</b></div>
-    </div>
+    <div class="footer">Made by <b>Mubashar Akram</b></div>
   </section>
 
   <!-- ================= GAME ================= -->
@@ -681,53 +935,299 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
     </div>
 
     <div class="status-line" id="statusLine" aria-live="polite">
-      <span class="dots"><i></i><i></i><i></i></span><span id="statusText"></span>
+      <span class="dots-anim"><i></i><i></i><i></i></span><span id="statusText"></span>
     </div>
 
-    <div class="board-area">
+    <div class="board-area" id="boardArea">
       <div class="viewport" id="viewport">
         <div class="board" id="board" role="grid" aria-label="Game board"></div>
       </div>
-      <div class="zoom-ctrls" id="zoomCtrls" hidden>
-        <button class="icon-btn" id="zoomIn" aria-label="Zoom in"><i data-lucide="zoom-in"></i></button>
-        <button class="icon-btn" id="zoomOut" aria-label="Zoom out"><i data-lucide="zoom-out"></i></button>
-        <button class="icon-btn" id="zoomFit" aria-label="Fit board to screen"><i data-lucide="scan"></i></button>
-      </div>
+      <div class="zoom-hint" id="zoomHint" role="status">Pinch to zoom, double-tap to reset</div>
     </div>
 
-    <div class="actions">
-      <button class="btn3d ghost" id="undoBtn"><i data-lucide="undo-2"></i>Undo</button>
+    <div class="actions" id="gameActions">
+      <button class="btn3d ghost" id="undoBtn"><i data-lucide="undo-2"></i>Undo<span class="price-chip" id="undoPrice" hidden></span></button>
+      <button class="btn3d ghost" id="hintBtn" hidden><i data-lucide="lightbulb"></i>Hint<span class="price-chip" id="hintPrice"></span></button>
       <button class="btn3d ghost" id="restartBtn"><i data-lucide="rotate-ccw"></i>Restart</button>
     </div>
     <div class="footer">Made by <b>Mubashar Akram</b></div>
   </section>
+
+  <!-- ================= LEVELS (campaign map) ================= -->
+  <section class="screen tab-page" id="levels" aria-label="Levels">
+    <header class="topbar">
+      <button class="coin-pill" data-coin-pill aria-label="Coins, open shop"><i data-lucide="coins"></i><span class="coin-amt">0</span></button>
+      <h2 class="page-title">Levels</h2>
+      <span class="star-pill" id="starTotal" aria-label="Total stars"></span>
+    </header>
+    <div class="levels-scroll" id="levelsScroll">
+      <div class="levels-map" id="levelsMap"></div>
+    </div>
+  </section>
+
+  <!-- ================= PROFILE ================= -->
+  <section class="screen tab-page" id="profile" aria-label="Profile">
+    <header class="topbar">
+      <button class="coin-pill" data-coin-pill aria-label="Coins, open shop"><i data-lucide="coins"></i><span class="coin-amt">0</span></button>
+      <h2 class="page-title">Profile</h2>
+      <button class="icon-btn" data-open-settings aria-label="Settings"><i data-lucide="settings"></i></button>
+    </header>
+    <div class="page-scroll" id="profileScroll">
+      <div class="profile-card glass">
+        <button class="pf-avatar" id="pfAvatar" aria-label="Change avatar"><span class="pf-av"></span><span class="edit-dot"><i data-lucide="pencil"></i></span></button>
+        <div class="pf-main">
+          <div class="pf-name-row" id="pfNameRow"><b id="pfName">Player</b><button class="icon-btn" id="pfEdit" aria-label="Edit name"><i data-lucide="pencil"></i></button></div>
+          <form class="pf-name-form" id="pfNameForm" hidden novalidate>
+            <div class="form-row" data-field="profile">
+              <div class="input-wrap"><input id="pfNameInput" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" aria-label="Your name" aria-describedby="pfNameErr"><span class="count"></span></div>
+              <div class="err" id="pfNameErr" aria-live="polite"></div>
+            </div>
+          </form>
+          <div class="pf-level">Lv <span id="pfLevel">1</span><div class="xp-bar" role="progressbar" aria-label="XP" id="pfXpBarWrap"><i id="pfXpBar"></i></div></div>
+          <div class="pf-xp" id="pfXp">0 / 100 XP</div>
+        </div>
+      </div>
+      <div class="tile-grid" style="margin-top:12px" id="quickTiles"></div>
+
+      <h3 class="sec-title">Stats <small>vs computer + campaign</small></h3>
+      <div class="tile-grid" id="statTiles"></div>
+      <div class="mode-stats" id="modeStats"></div>
+
+      <h3 class="sec-title">Achievements <small id="achCount"></small></h3>
+      <div class="empty-state" id="achEmpty" hidden><i data-lucide="trophy"></i><span>No achievements yet. Win your first game!</span></div>
+      <div class="ach-grid" id="achGrid"></div>
+
+      <h3 class="sec-title" id="shopTitle">Shop <small>spend your coins</small></h3>
+      <div class="seg shop-tabs" data-group="shop" data-key="tab" role="radiogroup" aria-label="Shop section">
+        <span class="seg-thumb"></span>
+        <button type="button" role="radio" data-val="boost">Boosts</button>
+        <button type="button" role="radio" data-val="board">Boards</button>
+        <button type="button" role="radio" data-val="skin">Skins</button>
+        <button type="button" role="radio" data-val="avatar">Avatars</button>
+      </div>
+      <div class="shop-grid" id="shopGrid"></div>
+
+      <div class="pf-actions">
+        <button class="btn3d ghost" data-open-settings><i data-lucide="settings"></i>Settings</button>
+        <button class="btn3d danger" id="resetProgressBtn"><i data-lucide="rotate-ccw"></i>Reset progress</button>
+      </div>
+      <div class="footer" style="margin-top:14px">Made by <b>Mubashar Akram</b></div>
+    </div>
+  </section>
+
+  <nav class="bottom-nav" id="bottomNav" aria-label="Main">
+    <button class="nav-btn" data-tab="home" aria-current="page"><i data-lucide="house"></i>Home</button>
+    <button class="nav-btn" data-tab="levels"><i data-lucide="map"></i>Levels</button>
+    <button class="nav-btn" data-tab="profile"><i data-lucide="user"></i>Profile</button>
+  </nav>
 </main>
 
-<!-- ================= NAMES POPUP ================= -->
-<div class="overlay modal" id="namesModal" role="dialog" aria-modal="true" aria-labelledby="namesTitle">
-  <form class="modal-card names-card" id="namesForm" novalidate>
-    <button type="button" class="icon-btn close-x" id="namesClose" aria-label="Close"><i data-lucide="x"></i></button>
-    <div class="result-icon names"><i data-lucide="users"></i></div>
-    <h2 id="namesTitle">Who's playing?</h2>
-    <p id="namesSub">Max 12 characters each</p>
-    <div class="field" id="field1">
-      <label for="name1"><span class="fmark"></span><span class="flabel">Player 1</span></label>
+<!-- ================= SHEETS ================= -->
+<div class="overlay" id="sheetBackdrop"></div>
+
+<!-- vs Computer -->
+<form class="sheet" id="cpuSheet" role="dialog" aria-modal="true" aria-labelledby="cpuTitle" novalidate>
+  <div class="sheet-grab">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h3 id="cpuTitle">vs Computer</h3>
+      <button type="button" class="icon-btn" data-close-sheet aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+  </div>
+  <div class="sheet-body">
+    <div class="form-row">
+      <div class="lbl">Difficulty</div>
+      <div class="seg" data-group="cpu" data-key="difficulty" role="radiogroup" aria-label="Difficulty">
+        <span class="seg-thumb"></span>
+        <button type="button" role="radio" data-val="easy">Easy</button>
+        <button type="button" role="radio" data-val="medium">Medium</button>
+        <button type="button" role="radio" data-val="hard">Hard</button>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="form-row">
+        <div class="lbl" id="cpuMarkLbl">Play as</div>
+        <div class="seg" data-group="cpu" data-key="p1Mark" role="radiogroup" aria-labelledby="cpuMarkLbl">
+          <span class="seg-thumb"></span>
+          <button type="button" role="radio" data-val="X" aria-label="X" class="mark-opt"></button>
+          <button type="button" role="radio" data-val="O" aria-label="O" class="mark-opt"></button>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="lbl" id="cpuStartLbl">First move</div>
+        <div class="seg" data-group="cpu" data-key="starter" role="radiogroup" aria-labelledby="cpuStartLbl">
+          <span class="seg-thumb"></span>
+          <button type="button" role="radio" data-val="p1">You</button>
+          <button type="button" role="radio" data-val="p2">Machine</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-row" data-field="solo">
+      <label class="lbl" for="cpuName">Your name <small>(optional)</small></label>
       <div class="input-wrap">
-        <input id="name1" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" aria-describedby="err1">
+        <input id="cpuName" type="text" maxlength="12" placeholder="You" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="go" aria-describedby="cpuNameErr">
         <span class="count"></span>
       </div>
-      <div class="err" id="err1" aria-live="polite"></div>
+      <div class="err" id="cpuNameErr" aria-live="polite"></div>
     </div>
-    <div class="field" id="field2">
-      <label for="name2"><span class="fmark"></span><span class="flabel">Player 2</span></label>
+  </div>
+  <div class="sheet-foot">
+    <button type="submit" class="btn3d big" id="cpuStart"><i data-lucide="play"></i>Start</button>
+  </div>
+</form>
+
+<!-- vs Player -->
+<form class="sheet" id="pvpSheet" role="dialog" aria-modal="true" aria-labelledby="pvpTitle" novalidate>
+  <div class="sheet-grab">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h3 id="pvpTitle">vs Player</h3>
+      <button type="button" class="icon-btn" data-close-sheet aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+  </div>
+  <div class="sheet-body">
+    <div class="form-row" data-field="p1">
+      <label class="lbl" for="p1Name"><span class="fmark" data-for="p1"></span>Player 1 name</label>
       <div class="input-wrap">
-        <input id="name2" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="go" aria-describedby="err2">
+        <input id="p1Name" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" aria-describedby="p1NameErr">
         <span class="count"></span>
       </div>
-      <div class="err" id="err2" aria-live="polite"></div>
+      <div class="err" id="p1NameErr" aria-live="polite"></div>
     </div>
-    <button type="submit" class="btn3d" id="namesStart"><i data-lucide="play"></i>Start game</button>
-  </form>
+    <div class="form-row" data-field="p2">
+      <label class="lbl" for="p2Name"><span class="fmark" data-for="p2"></span>Player 2 name</label>
+      <div class="input-wrap">
+        <input id="p2Name" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="go" aria-describedby="p2NameErr">
+        <span class="count"></span>
+      </div>
+      <div class="err" id="p2NameErr" aria-live="polite"></div>
+    </div>
+    <div class="two-col">
+      <div class="form-row">
+        <div class="lbl" id="pvpMarkLbl">Player 1 is</div>
+        <div class="seg" data-group="pvp" data-key="p1Mark" role="radiogroup" aria-labelledby="pvpMarkLbl">
+          <span class="seg-thumb"></span>
+          <button type="button" role="radio" data-val="X" aria-label="X" class="mark-opt"></button>
+          <button type="button" role="radio" data-val="O" aria-label="O" class="mark-opt"></button>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="lbl" id="pvpStartLbl">First move</div>
+        <div class="seg" data-group="pvp" data-key="starter" role="radiogroup" aria-labelledby="pvpStartLbl">
+          <span class="seg-thumb"></span>
+          <button type="button" role="radio" data-val="p1">Player 1</button>
+          <button type="button" role="radio" data-val="p2">Player 2</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sheet-foot">
+    <button type="submit" class="btn3d big" id="pvpStart"><i data-lucide="play"></i>Start</button>
+  </div>
+</form>
+
+<!-- Settings -->
+<div class="sheet" id="settingsSheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="sheet-grab">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h3 id="settingsTitle">Settings</h3>
+      <button type="button" class="icon-btn" data-close-sheet aria-label="Close settings"><i data-lucide="x"></i></button>
+    </div>
+  </div>
+  <div class="sheet-body">
+    <div class="set-list">
+      <div class="set-row set-theme">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="ri"><i data-lucide="palette"></i></span>
+          <span class="rt">Theme<small>Auto follows the time of day</small></span>
+        </div>
+        <div class="seg" data-group="settings" data-key="theme" role="radiogroup" aria-label="Theme">
+          <span class="seg-thumb"></span>
+          <button type="button" role="radio" data-val="auto">Auto</button>
+          <button type="button" role="radio" data-val="light">Light</button>
+          <button type="button" role="radio" data-val="dark">Dark</button>
+        </div>
+      </div>
+      <button type="button" class="set-row" role="switch" id="soundToggle">
+        <span class="ri"><i data-lucide="volume-2"></i></span>
+        <span class="rt">Sound<small>Tap, win and lose effects</small></span>
+        <span class="switch"></span>
+      </button>
+      <button type="button" class="set-row" role="switch" id="vibeToggle">
+        <span class="ri"><i data-lucide="vibrate"></i></span>
+        <span class="rt">Vibration<small>Haptic feedback on supported phones</small></span>
+        <span class="switch"></span>
+      </button>
+      <div class="reset-box">
+        <button type="button" class="btn3d danger" id="resetScores"><i data-lucide="trash-2"></i>Reset all scores</button>
+        <div class="reset-confirm" id="resetConfirm" hidden>
+          <p>Reset every score on every board? This can't be undone.</p>
+          <div class="row">
+            <button type="button" class="btn3d ghost" id="resetCancel">Cancel</button>
+            <button type="button" class="btn3d danger" id="resetYes">Reset</button>
+          </div>
+        </div>
+        <div class="reset-done" id="resetDone" aria-live="polite"></div>
+      </div>
+      <div class="set-row set-theme">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="ri"><i data-lucide="hard-drive-download"></i></span>
+          <span class="rt">Progress backup<small>Save a code to restore coins, levels and items</small></span>
+        </div>
+        <div class="backup-row">
+          <button type="button" class="btn3d ghost" id="exportBtn"><i data-lucide="download"></i>Export</button>
+          <button type="button" class="btn3d ghost" id="importOpen"><i data-lucide="upload"></i>Import</button>
+        </div>
+        <div id="exportBox" hidden style="margin-top:10px">
+          <textarea class="code-box" id="exportCode" readonly aria-label="Your progress code"></textarea>
+          <button type="button" class="btn3d small" id="copyCode" style="width:100%;margin-top:8px"><i data-lucide="copy"></i>Copy code</button>
+        </div>
+        <div id="importBox" hidden style="margin-top:10px">
+          <textarea class="code-box" id="importCode" placeholder="Paste your progress code here" aria-label="Progress code to import"></textarea>
+          <div class="backup-row" id="importConfirm" hidden>
+            <button type="button" class="btn3d ghost" id="importCancel">Cancel</button>
+            <button type="button" class="btn3d danger" id="importYes">Replace progress</button>
+          </div>
+          <button type="button" class="btn3d small" id="importCheck" style="width:100%;margin-top:8px"><i data-lucide="upload"></i>Import code</button>
+        </div>
+        <div class="backup-msg" id="backupMsg" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Avatar picker -->
+<div class="sheet" id="avatarSheet" role="dialog" aria-modal="true" aria-labelledby="avatarTitle">
+  <div class="sheet-grab">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h3 id="avatarTitle">Choose avatar</h3>
+      <button type="button" class="icon-btn" data-close-sheet aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+  </div>
+  <div class="sheet-body">
+    <div class="avatar-grid" id="avatarGrid"></div>
+    <p class="sheet-note">Want more? <button type="button" class="link-btn" id="avatarShopLink">Get avatars in the Shop</button></p>
+  </div>
+</div>
+
+<!-- Reset progress confirm -->
+<div class="sheet" id="resetSheet" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+  <div class="sheet-grab">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h3 id="resetTitle">Reset progress?</h3>
+      <button type="button" class="icon-btn" data-close-sheet aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+  </div>
+  <div class="sheet-body">
+    <p class="sheet-note">This clears your coins, campaign levels and stars, shop items, stats and achievements. Settings stay. This can't be undone.</p>
+  </div>
+  <div class="sheet-foot backup-row" style="margin-top:0">
+    <button type="button" class="btn3d ghost" data-close-sheet>Cancel</button>
+    <button type="button" class="btn3d danger" id="resetProgressYes">Reset</button>
+  </div>
 </div>
 
 <!-- ================= RESULT POPUP ================= -->
@@ -743,40 +1243,48 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
   </div>
 </div>
 
-<!-- ================= SETTINGS SHEET ================= -->
-<div class="overlay" id="sheetBackdrop"></div>
-<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-  <div class="sheet-handle"></div>
-  <div class="sheet-head">
-    <h3 id="sheetTitle">Settings</h3>
-    <button class="icon-btn" id="closeSheet" aria-label="Close settings"><i data-lucide="x"></i></button>
-  </div>
-  <div class="set-list">
-    <button class="set-row" role="switch" id="soundToggle">
-      <span class="ri"><i data-lucide="volume-2"></i></span>
-      <span class="rt">Sound<small>Tap, win and lose effects</small></span>
-      <span class="switch"></span>
-    </button>
-    <button class="set-row" role="switch" id="vibeToggle">
-      <span class="ri"><i data-lucide="vibrate"></i></span>
-      <span class="rt">Vibration<small>Haptic feedback on supported phones</small></span>
-      <span class="switch"></span>
-    </button>
-    <div class="set-row set-theme">
-      <div style="display:flex;align-items:center;gap:12px">
-        <span class="ri"><i data-lucide="palette"></i></span>
-        <span class="rt">Theme<small>Auto follows the time of day</small></span>
-      </div>
-      <div class="seg" data-key="theme" role="radiogroup" aria-label="Theme">
-        <span class="seg-thumb"></span>
-        <button role="radio" data-val="auto">Auto</button>
-        <button role="radio" data-val="light">Light</button>
-        <button role="radio" data-val="dark">Dark</button>
-      </div>
+<!-- ================= LEAVE GAME CONFIRM ================= -->
+<div class="overlay modal" id="leaveModal" role="alertdialog" aria-modal="true" aria-labelledby="leaveTitle" aria-describedby="leaveSub">
+  <div class="modal-card">
+    <div class="result-icon warn"><i data-lucide="log-out"></i></div>
+    <h2 id="leaveTitle">Leave game?</h2>
+    <p id="leaveSub">This game is still going. Your progress will be lost.</p>
+    <div class="modal-actions two">
+      <button class="btn3d ghost" id="leaveStay">Stay</button>
+      <button class="btn3d danger" id="leaveGo">Leave</button>
     </div>
-    <button class="btn3d danger" id="resetScores"><i data-lucide="trash-2"></i><span>Reset all scores</span></button>
   </div>
 </div>
+
+<!-- ================= LEVEL START ================= -->
+<div class="overlay modal" id="levelModal" role="dialog" aria-modal="true" aria-labelledby="lmTitle">
+  <div class="modal-card level-card">
+    <button class="icon-btn close-x" id="lmClose" aria-label="Close" style="position:absolute;top:12px;right:12px"><i data-lucide="x"></i></button>
+    <div class="lm-badge" id="lmBadge" hidden><span><i data-lucide="crown"></i>Boss level</span></div>
+    <h2 id="lmTitle">Level 1</h2>
+    <p class="lm-sub" id="lmSub"></p>
+    <div class="lm-chips" id="lmChips"></div>
+    <div class="lm-box"><b>Goal</b><span id="lmGoal"></span></div>
+    <div class="lm-box"><b>Stars</b><ul id="lmStars"></ul></div>
+    <div class="lm-box"><b>Reward</b><span id="lmReward"></span></div>
+    <button class="btn3d big" id="lmPlay"><i data-lucide="play"></i>Play</button>
+  </div>
+</div>
+
+<!-- ================= CAMPAIGN RESULT ================= -->
+<div class="overlay modal" id="campaignModal" role="dialog" aria-modal="true" aria-labelledby="cmTitle">
+  <div class="modal-card" id="cmCard">
+    <div class="cm-top"><span class="coin-pill" data-coin-pill><i data-lucide="coins"></i><span class="coin-amt">0</span></span></div>
+    <div class="cm-stars" id="cmStars"></div>
+    <div class="result-icon lose" id="cmFailIcon" hidden><i data-lucide="frown"></i></div>
+    <h2 id="cmTitle">Level clear!</h2>
+    <p id="cmSub"></p>
+    <div class="cm-rewards" id="cmRewards"></div>
+    <div class="modal-actions" id="cmActions"></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
 
 <canvas id="confetti"></canvas>
 
@@ -1126,6 +1634,9 @@ function createEngine() {
       // on big boards "random" means random near the action
       const pool = sz <= 5 ? free : candidates(g.near1);
 
+      // Campaign: a number is "AI skill", the chance of playing its best move this turn
+      if (typeof level === 'number') level = Math.random() < level ? 'hard' : 'easy';
+
       if (level === 'easy') {
         const block = findWin(2);
         if (block >= 0 && Math.random() < 0.3) return block;
@@ -1248,6 +1759,8 @@ const Sound = (() => {
     lose() { if (on()) [392, 330, 262].forEach((f, i) => tone(f, i * 0.12, 0.22, 'triangle', 0.14)); },
     draw() { if (on()) { tone(440, 0, 0.14, 'sine', 0.12); tone(440, 0.16, 0.18, 'sine', 0.12); } },
     error() { if (on()) tone(220, 0, 0.12, 'square', 0.05); },
+    coin() { if (on()) { tone(988, 0, 0.05, 'square', 0.04); tone(1319, 0.05, 0.09, 'square', 0.04); } },
+    star(i) { if (on()) tone(660 + i * 220, 0, 0.14, 'triangle', 0.14); },
   };
 })();
 
@@ -1303,13 +1816,20 @@ const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
 const renderIcons = () => { if (window.lucide) window.lucide.createIcons(); };
 const NAME_MAX = 12;
-const DEFAULT_NAMES = { p1: 'Player 1', p2: 'Player 2', solo: 'You' };
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const App = {
   settings: { sound: true, vibration: true, theme: 'auto' },
+  // the game being played (size = level picked in the carousel)
   prefs: { mode: 'computer', size: 3, difficulty: 'medium', p1Mark: 'X', starter: 'p1' },
-  names: { ...DEFAULT_NAMES },
-  scores: { computer: {}, friend: {} },   // scores[mode][size] = { p1, p2, draw }
+  // last choices made in each mode's sheet
+  choices: {
+    cpu: { difficulty: 'medium', p1Mark: 'X', starter: 'p1' },
+    pvp: { p1Mark: 'X', starter: 'p1' },
+  },
+  names: { p1: 'Player 1', p2: 'Player 2', solo: 'You' },
+  scores: { computer: {}, friend: {}, campaign: {} },   // scores[mode][size or level] = { p1, p2, draw }
+  flags: { zoomHint: false },
   board: [], history: [], over: false, thinking: false, aiToken: 0, lastWin: null,
   screen: 'splash',
 };
@@ -1318,25 +1838,40 @@ const App = {
   Object.assign(App.settings, saved.settings);
   Object.assign(App.prefs, saved.prefs);
   Object.assign(App.names, saved.names);
-  if (saved.scores) App.scores = { computer: saved.scores.computer || {}, friend: saved.scores.friend || {} };
+  Object.assign(App.flags, saved.flags);
+  if (saved.choices) {
+    Object.assign(App.choices.cpu, saved.choices.cpu);
+    Object.assign(App.choices.pvp, saved.choices.pvp);
+  } else if (saved.prefs) { // older save: reuse its single set of choices
+    const { difficulty, p1Mark, starter } = App.prefs;
+    Object.assign(App.choices.cpu, { difficulty, p1Mark, starter });
+    Object.assign(App.choices.pvp, { p1Mark, starter });
+  }
+  if (saved.scores) App.scores = { computer: saved.scores.computer || {}, friend: saved.scores.friend || {}, campaign: saved.scores.campaign || {} };
   if (!Logic.SIZES.includes(App.prefs.size)) App.prefs.size = 3;
 })();
-const persist = () => Store.save({ settings: App.settings, prefs: App.prefs, names: App.names, scores: App.scores });
+const persist = () => Store.save({
+  settings: App.settings, prefs: Campaign.savedPrefs() || App.prefs, choices: App.choices,
+  names: App.names, scores: App.scores, flags: App.flags,
+});
 
 /* ---------- Derived helpers ---------- */
-const vsAI = () => App.prefs.mode === 'computer';
+const vsAI = () => App.prefs.mode !== 'friend'; // vs Computer and Campaign
 const p2Mark = () => Logic.other(App.prefs.p1Mark);
 const startMark = () => (App.prefs.starter === 'p1' ? App.prefs.p1Mark : p2Mark());
 const markForMove = n => (n % 2 === 0 ? startMark() : Logic.other(startMark()));
 const currentMark = () => markForMove(App.history.length);
 const ownerOf = mark => (mark === App.prefs.p1Mark ? 'p1' : 'p2');
 const isAITurn = () => vsAI() && ownerOf(currentMark()) === 'p2';
-const nameOf = who => (vsAI() ? (who === 'p1' ? App.names.solo : 'Machine') : App.names[who]);
-const isDefaultYou = () => vsAI() && App.names.solo === 'You';
+const nameOf = who => (App.prefs.mode === 'campaign' ? (who === 'p1' ? Save.data.profile.name : 'Machine')
+  : vsAI() ? (who === 'p1' ? App.names.solo : 'Machine') : App.names[who]);
+const isDefaultYou = () => App.prefs.mode === 'computer' && App.names.solo === 'You';
+const sizeLabel = n => `${n}×${n}`;
 /** Scores are kept per mode AND per board size. */
 function scoreBook() {
   const book = App.scores[App.prefs.mode];
-  return (book[App.prefs.size] = book[App.prefs.size] || { p1: 0, p2: 0, draw: 0 });
+  const key = App.prefs.mode === 'campaign' ? 'L' + Campaign.levelId : App.prefs.size;
+  return (book[key] = book[key] || { p1: 0, p2: 0, draw: 0 });
 }
 
 /** SVG for an X or O. Board cells get the stroke-draw animation from CSS. */
@@ -1347,9 +1882,10 @@ function markSVG(mark, cls = '') {
 }
 const miniMark = mark => markSVG(mark, 'mini-mark');
 const escapeHTML = s => s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
 /* =========================================================================
-   PART G: THEME + SCREENS + SEGMENTED CONTROLS
+   PART G: THEME + SCREENS + SEGMENTED CONTROLS + MODALS
    ========================================================================= */
 function resolvedTheme() {
   if (App.settings.theme !== 'auto') return App.settings.theme;
@@ -1360,11 +1896,10 @@ function applyTheme() {
   const t = resolvedTheme();
   document.documentElement.dataset.theme = t;
   $('meta[name="theme-color"]').setAttribute('content', t === 'light' ? '#fde8dc' : '#1b1838');
-  setSeg($('.seg[data-key="theme"]'), App.settings.theme);
 }
 setInterval(() => { if (App.settings.theme === 'auto') applyTheme(); }, 5 * 60 * 1000);
 
-const ORDER = { splash: 0, home: 1, game: 2 };
+const ORDER = { splash: 0, home: 1, levels: 2, profile: 3, game: 4 };
 function go(name) {
   if (name === App.screen) return;
   const from = $('#' + App.screen), to = $('#' + name);
@@ -1374,6 +1909,7 @@ function go(name) {
   to.classList.remove('past');
   to.classList.add('active');
   App.screen = name;
+  onScreenChange(name);
 }
 
 function setSeg(seg, val) {
@@ -1383,243 +1919,502 @@ function setSeg(seg, val) {
   seg.style.setProperty('--idx', idx);
   btns.forEach((b, i) => b.setAttribute('aria-checked', String(i === idx)));
 }
+const segOf = (group, key) => $(`.seg[data-group="${group}"][data-key="${key}"]`);
+
+const openModal = id => $('#' + id).classList.add('open');
+const closeModal = id => $('#' + id).classList.remove('open');
+const isModalOpen = id => $('#' + id).classList.contains('open');
 
 /* =========================================================================
-   PART H: HOME SCREEN
+   PART H: LEVEL CAROUSEL (home screen)
    ========================================================================= */
-const chipsEl = $('#sizeChips');
-function buildChips() {
-  chipsEl.innerHTML = Logic.SIZES.map(s =>
-    `<button class="chip" role="radio" data-size="${s}" aria-label="${s} by ${s}, ${Logic.winLength(s)} in a row"><b>${s}×${s}</b><small>${Logic.winLength(s)} in a row</small></button>`
-  ).join('');
-}
-function scrollChipIntoView(smooth) {
-  const chip = chipsEl.querySelector(`[data-size="${App.prefs.size}"]`);
-  if (!chip) return;
-  const left = chip.offsetLeft - (chipsEl.clientWidth - chip.offsetWidth) / 2;
-  chipsEl.scrollTo({ left, behavior: smooth ? 'smooth' : 'auto' });
-}
-function renderHome() {
-  const p = App.prefs;
-  $$('.mode-card').forEach(c => c.setAttribute('aria-checked', String(c.dataset.mode === p.mode)));
-  $$('.chip').forEach(c => c.setAttribute('aria-checked', String(+c.dataset.size === p.size)));
-  ['difficulty', 'p1Mark', 'starter'].forEach(k => setSeg($(`.seg[data-key="${k}"]`), p[k]));
-  $('#difficultyBlock').classList.toggle('closed', !vsAI());
-  $('#markLabel').textContent = vsAI() ? 'You play as' : 'Player 1 is';
-  $('#starterP1').textContent = vsAI() ? 'You' : 'Player 1';
-  $('#starterP2').textContent = vsAI() ? 'Machine' : 'Player 2';
-}
+const Level = (() => {
+  const SIZES = Logic.SIZES, LAST = SIZES.length - 1;
+  const stage = $('#lvStage'), preview = $('#lvPreview'), label = $('#lvLabel');
+  const dotsEl = $('#lvDots'), prevBtn = $('#lvPrev'), nextBtn = $('#lvNext');
+  const index = () => SIZES.indexOf(App.prefs.size);
 
-/* =========================================================================
-   PART I: NAMES POPUP (inline validation)
-   ========================================================================= */
-const nameFields = [
-  { field: $('#field1'), input: $('#name1'), err: $('#err1') },
-  { field: $('#field2'), input: $('#name2'), err: $('#err2') },
-];
-
-/** Returns an error message for field idx, or '' when it is valid. */
-function nameError(idx) {
-  const v = nameFields[idx].input.value.trim();
-  if (!v) return "Name can't be empty";
-  if (v.length > NAME_MAX) return `Max ${NAME_MAX} characters`;
-  if (!vsAI() && idx === 1 && v.toLowerCase() === nameFields[0].input.value.trim().toLowerCase()) return 'Pick a different name';
-  return '';
-}
-function validateNames() {
-  const count = vsAI() ? 1 : 2;
-  let ok = true;
-  for (let i = 0; i < count; i++) {
-    const f = nameFields[i], e = nameError(i);
-    f.field.querySelector('.count').textContent = `${f.input.value.trim().length}/${NAME_MAX}`;
-    f.field.classList.toggle('invalid', !!e);
-    f.input.setAttribute('aria-invalid', String(!!e));
-    f.err.textContent = e;
-    if (e) ok = false;
+  /**
+   * Small animated demo board as SVG: X marks a winning line of the right
+   * length for this size, O marks sit next to it, then the win line draws.
+   */
+  function demoSVG(n) {
+    const k = Logic.winLength(n);
+    const g = n <= 4 ? 4 : n <= 8 ? 2.5 : 1.6;       // gap in viewBox units
+    const c = (100 - (n - 1) * g) / n, step = c + g;  // cell size in viewBox units
+    const at = (r, col) => [col * step + c / 2, r * step + c / 2];
+    let svg = `<svg viewBox="0 0 100 100">`;
+    for (let r = 0; r < n; r++) for (let col = 0; col < n; col++) {
+      svg += `<rect class="pv-cell" x="${(col * step).toFixed(2)}" y="${(r * step).toFixed(2)}" width="${c.toFixed(2)}" height="${c.toFixed(2)}" rx="${(c * 0.22).toFixed(2)}"/>`;
+    }
+    // odd sizes: diagonal win, even sizes: middle row win
+    const line = [], os = [];
+    if (n % 2) {
+      const s0 = Math.floor((n - k) / 2);
+      for (let i = 0; i < k; i++) line.push([s0 + i, s0 + i]);
+      for (let i = 0; i < k - 1; i++) os.push([s0 + i, s0 + i + 1]);
+    } else {
+      const r = Math.floor((n - 1) / 2), c0 = Math.floor((n - k) / 2);
+      for (let i = 0; i < k; i++) line.push([r, c0 + i]);
+      for (let i = 0; i < k - 1; i++) os.push([r + 1, c0 + i]);
+    }
+    const h = c * 0.28, sw = (c * 0.15).toFixed(2);
+    let delay = 120;
+    for (let i = 0; i < k; i++) {
+      const [x, y] = at(...line[i]);
+      svg += `<g class="pv-mark" style="animation-delay:${delay}ms"><path class="pv-x" stroke-width="${sw}" d="M${x - h} ${y - h}L${x + h} ${y + h}M${x + h} ${y - h}L${x - h} ${y + h}"/></g>`;
+      delay += 110;
+      if (i < k - 1) {
+        const [ox, oy] = at(...os[i]);
+        svg += `<g class="pv-mark" style="animation-delay:${delay}ms"><circle class="pv-o" stroke-width="${sw}" cx="${ox}" cy="${oy}" r="${h * 1.05}"/></g>`;
+        delay += 110;
+      }
+    }
+    let [x1, y1] = at(...line[0]), [x2, y2] = at(...line[k - 1]);
+    const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy), ext = c * 0.32;
+    x1 -= dx / len * ext; y1 -= dy / len * ext; x2 += dx / len * ext; y2 += dy / len * ext;
+    svg += `<line class="pv-win x" pathLength="100" stroke-width="${(c * 0.12).toFixed(2)}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="animation-delay:${delay + 60}ms"/>`;
+    return svg + '</svg>';
   }
-  $('#namesStart').disabled = !ok;
-  return ok;
+
+  function build() {
+    dotsEl.innerHTML = SIZES.map((s, i) =>
+      `<button class="dot" data-i="${i}" aria-label="${sizeLabel(s)}, ${Logic.winLength(s)} in a row"><span></span></button>`
+    ).join('');
+  }
+  /** Label, dots and arrows (instant). */
+  function renderMeta() {
+    const n = App.prefs.size, i = index();
+    label.innerHTML = `${sizeLabel(n)} <span>· ${Logic.winLength(n)} in a row</span>`;
+    dotsEl.querySelectorAll('.dot').forEach((d, j) => d.setAttribute('aria-current', String(j === i)));
+    prevBtn.disabled = i === 0;
+    nextBtn.disabled = i === LAST;
+  }
+  function renderPreview() { preview.innerHTML = demoSVG(App.prefs.size); }
+  function render() { renderMeta(); renderPreview(); }
+
+  /** Slides to level `to`. dragX = where the preview currently is (after a swipe). */
+  function changeTo(to, dragX = 0) {
+    to = clamp(to, 0, LAST);
+    const from = index();
+    if (to === from) { snapBack(dragX); return; }
+    const dir = to > from ? 1 : -1;
+    App.prefs.size = SIZES[to];
+    persist(); renderMeta();
+    Sound.click(); haptic(8);
+    preview.getAnimations().forEach(a => a.cancel());
+    preview.style.transform = '';
+    if (reduceMotion.matches || !preview.animate) { renderPreview(); return; }
+    const out = preview.animate(
+      [{ transform: `translateX(${dragX}px)`, opacity: 1 }, { transform: `translateX(${-dir * 90}px)`, opacity: 0 }],
+      { duration: 140, easing: 'ease-in' });
+    out.onfinish = () => {
+      renderPreview();
+      preview.animate(
+        [{ transform: `translateX(${dir * 90}px)`, opacity: 0 }, { transform: 'translateX(0)', opacity: 1 }],
+        { duration: 200, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    };
+  }
+  function snapBack(x) {
+    preview.style.transform = '';
+    if (x && preview.animate) preview.animate([{ transform: `translateX(${x}px)` }, { transform: 'translateX(0)' }], { duration: 200, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  }
+
+  /* Swipe left / right. Vertical moves are left to the browser (touch-action: pan-y). */
+  let sx = 0, sy = 0, dx = 0, axis = null, active = false;
+  stage.addEventListener('pointerdown', e => {
+    active = true; axis = null; dx = 0; sx = e.clientX; sy = e.clientY;
+  });
+  stage.addEventListener('pointermove', e => {
+    if (!active) return;
+    const mx = e.clientX - sx, my = e.clientY - sy;
+    if (!axis && Math.hypot(mx, my) > 8) {
+      axis = Math.abs(mx) > Math.abs(my) ? 'x' : 'y';
+      if (axis === 'x') stage.setPointerCapture(e.pointerId);
+    }
+    if (axis !== 'x') return;
+    const atEdge = (mx > 0 && index() === 0) || (mx < 0 && index() === LAST);
+    dx = atEdge ? mx * 0.25 : mx; // rubber band at the ends
+    preview.style.transform = `translateX(${dx}px)`;
+  });
+  const end = () => {
+    if (!active) return;
+    active = false;
+    if (axis !== 'x') return;
+    if (dx < -50) changeTo(index() + 1, dx);
+    else if (dx > 50) changeTo(index() - 1, dx);
+    else snapBack(dx);
+  };
+  stage.addEventListener('pointerup', end);
+  stage.addEventListener('pointercancel', end);
+
+  prevBtn.addEventListener('click', () => changeTo(index() - 1));
+  nextBtn.addEventListener('click', () => changeTo(index() + 1));
+  dotsEl.addEventListener('click', e => {
+    const d = e.target.closest('.dot');
+    if (d) changeTo(+d.dataset.i);
+  });
+  return { build, render, step: d => changeTo(index() + d) };
+})();
+
+/* =========================================================================
+   PART I: BOTTOM SHEETS (swipe down, backdrop, Escape; keyboard aware)
+   ========================================================================= */
+const Sheets = (() => {
+  const back = $('#sheetBackdrop');
+  let stack = [];
+  function open(id) {
+    const el = $('#' + id);
+    if (stack.includes(el)) return;
+    stack.push(el);
+    el.style.zIndex = 21 + stack.length;
+    el.classList.add('open');
+    back.classList.add('open');
+  }
+  function close(el = stack[stack.length - 1]) {
+    if (!el) return;
+    stack = stack.filter(s => s !== el);
+    el.classList.remove('open');
+    el.style.transform = '';
+    if (el.contains(document.activeElement)) document.activeElement.blur();
+    if (!stack.length) back.classList.remove('open');
+    if (el.id === 'settingsSheet') hideResetConfirm();
+  }
+  // Drag the handle / header down to close
+  $$('.sheet').forEach(el => {
+    const grab = el.querySelector('.sheet-grab');
+    let y0 = null, dy = 0;
+    grab.addEventListener('pointerdown', e => {
+      if (e.target.closest('button')) return;
+      y0 = e.clientY; dy = 0;
+      grab.setPointerCapture(e.pointerId);
+      el.style.transition = 'none';
+    });
+    grab.addEventListener('pointermove', e => {
+      if (y0 === null) return;
+      dy = Math.max(0, e.clientY - y0);
+      el.style.transform = `translateY(${dy}px)`;
+    });
+    const end = () => {
+      if (y0 === null) return;
+      y0 = null;
+      el.style.transition = '';
+      if (dy > 80) close(el); else el.style.transform = '';
+    };
+    grab.addEventListener('pointerup', end);
+    grab.addEventListener('pointercancel', end);
+    el.querySelectorAll('[data-close-sheet]').forEach(b => b.addEventListener('click', () => { Sound.click(); close(el); }));
+    // keep a focused input visible above the on-screen keyboard
+    el.querySelectorAll('input').forEach(inp => inp.addEventListener('focus', () => {
+      setTimeout(() => inp.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
+    }));
+  });
+  back.addEventListener('click', () => close());
+
+  // Track the visual viewport so sheets sit above the keyboard and never overflow
+  const vv = window.visualViewport;
+  function trackViewport() {
+    if (!vv) return;
+    const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    document.documentElement.style.setProperty('--kb', kb + 'px');
+    document.documentElement.style.setProperty('--vvh', vv.height + 'px');
+  }
+  if (vv) { vv.addEventListener('resize', trackViewport); vv.addEventListener('scroll', trackViewport); trackViewport(); }
+
+  return { open, close, isOpen: () => stack.length > 0 };
+})();
+
+/* ---------- Name validation (inline, under each field) ---------- */
+function setFieldState(row, value, error) {
+  row.querySelector('.count').textContent = `${value.length}/${NAME_MAX}`;
+  row.classList.toggle('invalid', !!error);
+  row.querySelector('input').setAttribute('aria-invalid', String(!!error));
+  row.querySelector('.err').textContent = error;
 }
-function openNames() {
-  const ai = vsAI();
-  $('#namesTitle').textContent = ai ? "What's your name?" : "Who's playing?";
-  $('#namesSub').textContent = `Max ${NAME_MAX} characters`;
-  $('#field2').hidden = ai;
-  nameFields[0].field.querySelector('.flabel').textContent = ai ? 'Your name' : 'Player 1';
-  nameFields[0].field.querySelector('.fmark').innerHTML = miniMark(App.prefs.p1Mark);
-  nameFields[1].field.querySelector('.fmark').innerHTML = miniMark(p2Mark());
-  nameFields[0].input.value = ai ? App.names.solo : App.names.p1;
-  nameFields[1].input.value = App.names.p2;
-  nameFields[0].input.enterKeyHint = ai ? 'go' : 'next';
-  validateNames();
-  $('#namesModal').classList.add('open');
+
+/* vs Computer sheet: name is optional (empty = "You") */
+function validateCpu(save) {
+  const v = $('#cpuName').value.trim();
+  const err = v.length > NAME_MAX ? `Max ${NAME_MAX} characters` : '';
+  setFieldState($('[data-field="solo"]'), v, err);
+  $('#cpuStart').disabled = !!err;
+  if (save === true && !err) { App.names.solo = v || 'You'; persist(); } // remember even without Start
+  return !err;
 }
-function closeNames() {
-  $('#namesModal').classList.remove('open');
-  if (document.activeElement) document.activeElement.blur();
+function openCpuSheet() {
+  const c = App.choices.cpu;
+  $('#cpuTitle').textContent = `vs Computer · ${sizeLabel(App.prefs.size)}`;
+  setSeg(segOf('cpu', 'difficulty'), c.difficulty);
+  setSeg(segOf('cpu', 'p1Mark'), c.p1Mark);
+  setSeg(segOf('cpu', 'starter'), c.starter);
+  $('#cpuName').value = App.names.solo === 'You' ? '' : App.names.solo;
+  validateCpu();
+  Sheets.open('cpuSheet');
 }
-function submitNames(e) {
-  e.preventDefault();
-  if (!validateNames()) { Sound.error(); haptic(40); return; }
-  const n1 = nameFields[0].input.value.trim(), n2 = nameFields[1].input.value.trim();
-  if (vsAI()) App.names.solo = n1;
-  else { App.names.p1 = n1; App.names.p2 = n2; }
+
+/* vs Player sheet: both names required and different */
+function pvpErrors() {
+  const a = $('#p1Name').value.trim(), b = $('#p2Name').value.trim();
+  const check = v => (!v ? "Name can't be empty" : v.length > NAME_MAX ? `Max ${NAME_MAX} characters` : '');
+  let e2 = check(b);
+  if (!e2 && a && a.toLowerCase() === b.toLowerCase()) e2 = 'Pick a different name';
+  return { a, b, e1: check(a), e2 };
+}
+function validatePvp(save) {
+  const { a, b, e1, e2 } = pvpErrors();
+  setFieldState($('[data-field="p1"]'), a, e1);
+  setFieldState($('[data-field="p2"]'), b, e2);
+  $('#pvpStart').disabled = !!(e1 || e2);
+  if (save === true) { // remember valid names even without Start
+    if (!e1) App.names.p1 = a;
+    if (!e2) App.names.p2 = b;
+    persist();
+  }
+  return !(e1 || e2);
+}
+function renderPvpMarks() {
+  const m1 = App.choices.pvp.p1Mark;
+  $('[data-for="p1"]').innerHTML = miniMark(m1);
+  $('[data-for="p2"]').innerHTML = miniMark(Logic.other(m1));
+}
+function openPvpSheet() {
+  const c = App.choices.pvp;
+  $('#pvpTitle').textContent = `vs Player · ${sizeLabel(App.prefs.size)}`;
+  setSeg(segOf('pvp', 'p1Mark'), c.p1Mark);
+  setSeg(segOf('pvp', 'starter'), c.starter);
+  $('#p1Name').value = App.names.p1;
+  $('#p2Name').value = App.names.p2;
+  renderPvpMarks();
+  validatePvp();
+  Sheets.open('pvpSheet');
+}
+
+/** Copies the sheet's choices into the game config and starts playing. */
+function startFromSheet(mode) {
+  const c = mode === 'computer' ? App.choices.cpu : App.choices.pvp;
+  Object.assign(App.prefs, { mode, p1Mark: c.p1Mark, starter: c.starter });
+  if (mode === 'computer') App.prefs.difficulty = c.difficulty;
   persist();
-  closeNames();
+  Sheets.close();
   Sound.click(); haptic(15);
   go('game');
   startGame();
 }
 
+/* ---------- Settings sheet ---------- */
+function renderSettings() {
+  $('#soundToggle').setAttribute('aria-checked', String(App.settings.sound));
+  $('#vibeToggle').setAttribute('aria-checked', String(App.settings.vibration));
+  setSeg(segOf('settings', 'theme'), App.settings.theme);
+}
+function showResetConfirm() {
+  $('#resetScores').hidden = true;
+  $('#resetConfirm').hidden = false;
+  $('#resetDone').textContent = '';
+  haptic(15);
+}
+function hideResetConfirm() {
+  $('#resetScores').hidden = false;
+  $('#resetConfirm').hidden = true;
+}
+function resetScores() {
+  App.scores = { computer: {}, friend: {}, campaign: {} };
+  persist();
+  if (App.screen === 'game') renderPlayers();
+  hideResetConfirm();
+  $('#resetDone').textContent = 'All scores cleared';
+  Sound.click(); haptic([10, 30, 10]);
+  setTimeout(() => { $('#resetDone').textContent = ''; }, 2000);
+}
+
 /* =========================================================================
-   PART J: BOARD VIEW (sizing, pinch-to-zoom, pan)
+   PART J: BOARD VIEW (fit to width, pinch zoom + pan on 9x9 and up)
    ========================================================================= */
-const vpEl = $('#viewport'), boardEl = $('#board');
-const GAPS = { 3: 10, 4: 9, 5: 8, 6: 6, 7: 5, 8: 4, 9: 4, 10: 4 }; // 11x11 and 12x12 use 3px
-const BIG_CELL = 52;     // cell size at zoom 1 on 9x9+ (comfortably over 44px tap target)
-const MIN_VISUAL = 28;   // cells never look smaller than this
-const View = { s: 1, tx: 0, ty: 0, min: 1, max: 1, cell: 0, gap: 0, pad: 0, bw: 0, zoomable: false, pannable: false };
+const areaEl = $('#boardArea'), vpEl = $('#viewport'), boardEl = $('#board');
+const GAPS = { 3: 10, 4: 9, 5: 8, 6: 6, 7: 5, 8: 4, 9: 4 }; // 10x10 and up use 3px
+const ZOOM_FROM = 9, MAX_ZOOM = 2;
+const View = { s: 1, tx: 0, ty: 0, cell: 0, gap: 0, step: 0, bw: 0, m: 0, mMin: 0, sMax: 1, zoomable: false };
 
 /**
- * Sets cell size, gap and radius as CSS variables from JS.
- * 3x3..8x8 fit the screen; 9x9+ use 52px cells scaled down to fit (pinch to zoom in).
- * refit = true resets zoom (new game); false keeps it (resize, URL bar show/hide).
+ * cellSize = floor((available - total gaps) / size), set as a CSS variable.
+ * The viewport is sized to exactly n whole cells, so nothing is ever cut.
+ * Runs on every resize and orientation change and resets the zoom.
  */
-function layoutBoard(refit) {
+function layoutBoard() {
   const n = App.prefs.size;
   if (!boardEl.children.length) return;
-  const W = vpEl.clientWidth, H = vpEl.clientHeight;
+  const W = areaEl.clientWidth, H = areaEl.clientHeight;
   if (!W || !H) return;
-  const gap = GAPS[n] || 3, pad = Math.max(6, gap);
-  const BORDER = 2; // board has a 1px border on each side
-  const fitCell = Math.floor((Math.min(W, H) - BORDER - 2 * pad - (n - 1) * gap) / n);
-  let cell;
-  if (n <= 8) { cell = Math.max(MIN_VISUAL, Math.min(fitCell, 120)); View.zoomable = false; }
-  else { cell = BIG_CELL; View.zoomable = true; }
-  Object.assign(View, { cell, gap, pad });
-  View.bw = n * cell + (n - 1) * gap + 2 * pad + BORDER;
+  const avail = Math.min(W, H);
+  let gap = GAPS[n] || 3;
+  const cell = clamp(Math.floor((avail - (n - 1) * gap) / n), 8, 140);
+  // rounding the cell down leaves a few spare pixels: spread them into the gaps
+  if (cell < 140) gap += Math.floor((avail - n * cell - (n - 1) * gap) / (n - 1));
+  const step = cell + gap, bw = n * cell + (n - 1) * gap;
+  Object.assign(View, { cell, gap, step, bw, zoomable: n >= ZOOM_FROM });
+  // Zoom levels are "show m x m whole cells"; the smallest m keeps zoom <= 2x
+  View.mMin = View.zoomable ? Math.ceil((bw / MAX_ZOOM + gap) / step) : n;
+  View.sMax = bw / (View.mMin * step - gap);
+
+  const cr = Math.max(4, Math.round(cell * 0.22)) + 'px';
+  vpEl.style.width = vpEl.style.height = bw + 'px';
+  vpEl.style.setProperty('--cr', cr);
   boardEl.style.setProperty('--n', n);
   boardEl.style.setProperty('--cell', cell + 'px');
   boardEl.style.setProperty('--gap', gap + 'px');
-  boardEl.style.setProperty('--pad', pad + 'px');
-  boardEl.style.setProperty('--cr', Math.max(5, Math.round(cell * 0.22)) + 'px');
-
-  if (View.zoomable) {
-    const fit = Math.min(W / View.bw, H / View.bw);
-    View.min = Math.min(1, Math.max(fit, MIN_VISUAL / BIG_CELL));
-    View.max = 1.25;
-  } else {
-    View.min = View.max = 1;
-  }
-  if (refit) {
-    View.s = View.min;
-    View.tx = (W - View.bw * View.s) / 2;
-    View.ty = (H - View.bw * View.s) / 2;
-  } else {
-    View.s = Math.min(View.max, Math.max(View.min, View.s));
-  }
-  clampView();
-  View.pannable = View.zoomable || View.bw > W || View.bw > H;
-  vpEl.classList.toggle('pannable', View.pannable);
-  $('#zoomCtrls').hidden = !View.zoomable;
-  applyView(false);
+  vpEl.classList.toggle('zoomable', View.zoomable);
+  resetView(false);
   if (App.over && App.lastWin) drawWinLine(App.lastWin, false);
 }
 
-/** Keeps the board inside the viewport, centred on any axis where it is smaller. */
-function clampView() {
-  const W = vpEl.clientWidth, H = vpEl.clientHeight, sz = View.bw * View.s;
-  View.tx = sz <= W ? (W - sz) / 2 : Math.min(0, Math.max(W - sz, View.tx));
-  View.ty = sz <= H ? (H - sz) / 2 : Math.min(0, Math.max(H - sz, View.ty));
-}
 function applyView(smooth) {
   boardEl.classList.toggle('smooth', !!smooth);
-  boardEl.style.transform = `translate(${View.tx}px, ${View.ty}px) scale(${View.s})`;
+  boardEl.style.transform = View.s === 1 && !View.tx && !View.ty ? '' : `translate(${View.tx}px, ${View.ty}px) scale(${View.s})`;
 }
-/** Zooms to scale s while keeping viewport point (cx, cy) under the finger / cursor. */
-function zoomAt(s, cx, cy, smooth) {
-  const ns = Math.min(View.max, Math.max(View.min, s));
+function resetView(smooth) {
+  Object.assign(View, { s: 1, tx: 0, ty: 0, m: App.prefs.size });
+  applyView(smooth);
+}
+/** Board edges never leave the viewport edges: no empty space past the board. */
+function clampPan() {
+  const lim = View.bw - View.bw * View.s;
+  View.tx = clamp(View.tx, lim, 0);
+  View.ty = clamp(View.ty, lim, 0);
+}
+
+/**
+ * After a gesture: pick the nearest zoom where m x m whole cells exactly fill
+ * the viewport (s = bw / (m*step - gap)), then snap pan to whole cells.
+ * With that zoom, a pan of j cells puts cell j's edge exactly on the viewport edge.
+ */
+function snapView(smooth) {
+  if (!View.zoomable) return;
+  const n = App.prefs.size, { bw, step, gap } = View;
+  let m = n, best = Infinity;
+  for (let k = n; k >= View.mMin; k--) {
+    const d = Math.abs(bw / (k * step - gap) - View.s);
+    if (d < best) { best = d; m = k; }
+  }
+  if (m === n) { resetView(smooth); return; }
+  // keep the board point at the viewport centre roughly where it is
+  const cx = (bw / 2 - View.tx) / View.s, cy = (bw / 2 - View.ty) / View.s;
+  const s = bw / (m * step - gap), half = bw / (2 * s);
+  const j = clamp(Math.round((cx - half) / step), 0, n - m);
+  const i = clamp(Math.round((cy - half) / step), 0, n - m);
+  Object.assign(View, { s, m, tx: -j * step * s, ty: -i * step * s });
+  applyView(smooth);
+}
+/** Zoom to s keeping viewport point (cx, cy) still. */
+function zoomAt(s, cx, cy) {
+  const ns = clamp(s, 1, View.sMax);
   const px = (cx - View.tx) / View.s, py = (cy - View.ty) / View.s;
   View.s = ns;
   View.tx = cx - px * ns; View.ty = cy - py * ns;
-  clampView(); applyView(smooth);
+  clampPan(); applyView(false);
 }
-const zoomBy = f => zoomAt(View.s * f, vpEl.clientWidth / 2, vpEl.clientHeight / 2, true);
-function fitView() {
-  View.s = View.min;
-  View.tx = (vpEl.clientWidth - View.bw * View.s) / 2;
-  View.ty = (vpEl.clientHeight - View.bw * View.s) / 2;
-  clampView(); applyView(true);
-}
-/** Pans so cell i is on screen (e.g. the AI played somewhere you are not looking). */
+/** When zoomed in, pan by whole cells so cell i is on screen (e.g. the AI's move). */
 function ensureVisible(i) {
-  if (!View.pannable) return;
-  const n = App.prefs.size, step = View.cell + View.gap;
-  const x = (View.pad + (i % n) * step + View.cell / 2) * View.s + View.tx;
-  const y = (View.pad + Math.floor(i / n) * step + View.cell / 2) * View.s + View.ty;
-  const W = vpEl.clientWidth, H = vpEl.clientHeight, m = View.cell * View.s;
-  if (x > m && x < W - m && y > m && y < H - m) return;
-  View.tx += W / 2 - x; View.ty += H / 2 - y;
-  clampView(); applyView(true);
+  if (!View.zoomable || View.s === 1) return;
+  const n = App.prefs.size, { step, s, m } = View, unit = step * s;
+  let j = Math.round(-View.tx / unit), r = Math.round(-View.ty / unit);
+  const col = i % n, row = Math.floor(i / n);
+  if (col < j) j = col; else if (col > j + m - 1) j = col - m + 1;
+  if (row < r) r = row; else if (row > r + m - 1) r = row - m + 1;
+  View.tx = -j * unit; View.ty = -r * unit;
+  applyView(true);
 }
 
-/* Pointer gestures: 1 finger drags (pan), 2 fingers pinch (zoom). A plain tap still places a mark. */
-const Gesture = { pts: new Map(), moved: false, suppress: false, start: null };
+/* Gestures. Any drag over 8px is not a tap. 9x9+: two fingers pinch, one finger pans when zoomed. */
+const G = { pts: new Map(), start: null, origin: null, moved: false, pinched: false, suppress: false };
 function gestureBase() {
-  const pts = Array.from(Gesture.pts.values());
-  const rect = vpEl.getBoundingClientRect();
+  const pts = Array.from(G.pts.values()), rect = vpEl.getBoundingClientRect();
   if (pts.length >= 2) {
     const [a, b] = pts;
-    Gesture.start = {
+    G.start = {
       dist: Math.hypot(a.x - b.x, a.y - b.y) || 1,
       mx: (a.x + b.x) / 2 - rect.left, my: (a.y + b.y) / 2 - rect.top,
       s: View.s, tx: View.tx, ty: View.ty,
     };
   } else if (pts.length === 1) {
-    Gesture.start = { x: pts[0].x, y: pts[0].y, tx: View.tx, ty: View.ty };
+    G.start = { x: pts[0].x, y: pts[0].y, tx: View.tx, ty: View.ty };
   }
 }
 vpEl.addEventListener('pointerdown', e => {
-  if (!Gesture.pts.size) { Gesture.moved = false; Gesture.suppress = false; }
-  if (!View.pannable) return;
-  Gesture.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  if (Gesture.pts.size === 2) { Gesture.moved = true; Gesture.suppress = true; }
+  if (!G.pts.size) {
+    Object.assign(G, { moved: false, pinched: false, suppress: false, origin: { x: e.clientX, y: e.clientY } });
+  }
+  G.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (G.pts.size === 2 && View.zoomable) { G.pinched = true; G.suppress = true; }
   gestureBase();
 });
 vpEl.addEventListener('pointermove', e => {
-  if (!Gesture.pts.has(e.pointerId)) return;
-  Gesture.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  const st = Gesture.start, pts = Array.from(Gesture.pts.values());
-  if (pts.length >= 2 && View.zoomable && st.dist) {
+  if (!G.pts.has(e.pointerId)) return;
+  G.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  const pts = Array.from(G.pts.values()), st = G.start;
+  if (!G.moved && pts.length === 1 && Math.hypot(e.clientX - G.origin.x, e.clientY - G.origin.y) > 8) {
+    G.moved = true; G.suppress = true; // a drag, not a tap
+    if (View.zoomable) vpEl.setPointerCapture(e.pointerId);
+  }
+  if (!View.zoomable) return;
+  if (pts.length >= 2 && st.dist) {
     const [a, b] = pts, rect = vpEl.getBoundingClientRect();
-    const ns = Math.min(View.max, Math.max(View.min, st.s * Math.hypot(a.x - b.x, a.y - b.y) / st.dist));
+    const ns = clamp(st.s * Math.hypot(a.x - b.x, a.y - b.y) / st.dist, 1, View.sMax);
     const mx = (a.x + b.x) / 2 - rect.left, my = (a.y + b.y) / 2 - rect.top;
     const px = (st.mx - st.tx) / st.s, py = (st.my - st.ty) / st.s; // board point under the start midpoint
     View.s = ns; View.tx = mx - px * ns; View.ty = my - py * ns;
-    clampView(); applyView(false);
-  } else if (pts.length === 1 && st.x !== undefined) {
-    const dx = pts[0].x - st.x, dy = pts[0].y - st.y;
-    if (!Gesture.moved && Math.hypot(dx, dy) > 8) {
-      Gesture.moved = true; Gesture.suppress = true;
-      vpEl.setPointerCapture(e.pointerId); // capture only once it is a drag, so taps still reach cells
-    }
-    if (Gesture.moved) { View.tx = st.tx + dx; View.ty = st.ty + dy; clampView(); applyView(false); }
+    clampPan(); applyView(false);
+  } else if (pts.length === 1 && G.moved && View.s > 1 && st.x !== undefined) {
+    View.tx = st.tx + (pts[0].x - st.x); View.ty = st.ty + (pts[0].y - st.y);
+    clampPan(); applyView(false);
   }
 });
 function endPointer(e) {
-  if (!Gesture.pts.delete(e.pointerId)) return;
-  gestureBase(); // carry on smoothly with the remaining finger
+  if (!G.pts.delete(e.pointerId)) return;
+  if (G.pts.size) { gestureBase(); return; } // keep going with the other finger
+  if (View.zoomable && (G.moved || G.pinched)) snapView(true);
 }
 vpEl.addEventListener('pointerup', endPointer);
 vpEl.addEventListener('pointercancel', endPointer);
+let wheelSnap = 0;
 vpEl.addEventListener('wheel', e => {
   if (!View.zoomable) return;
   e.preventDefault();
   const rect = vpEl.getBoundingClientRect();
-  zoomAt(View.s * Math.exp(-e.deltaY * 0.0015), e.clientX - rect.left, e.clientY - rect.top, false);
+  zoomAt(View.s * Math.exp(-e.deltaY * 0.0015), e.clientX - rect.left, e.clientY - rect.top);
+  clearTimeout(wheelSnap);
+  wheelSnap = setTimeout(() => snapView(true), 160);
 }, { passive: false });
-if (window.ResizeObserver) new ResizeObserver(() => layoutBoard(false)).observe(vpEl);
-else window.addEventListener('resize', () => layoutBoard(false));
+
+/* Taps: a short tap on an empty cell plays; two quick taps anywhere else reset the zoom. */
+let lastTap = null;
+areaEl.addEventListener('click', e => {
+  if (G.suppress) return; // it was a drag or pinch
+  const cell = e.target.closest('.cell');
+  if (cell && tryPlace(+cell.dataset.i)) { lastTap = null; return; }
+  if (!View.zoomable) return;
+  const now = performance.now();
+  if (lastTap && now - lastTap.t < 350 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 40) {
+    lastTap = null;
+    if (View.s > 1) { resetView(true); haptic(10); }
+  } else {
+    lastTap = { t: now, x: e.clientX, y: e.clientY };
+  }
+});
+
+if (window.ResizeObserver) new ResizeObserver(() => layoutBoard()).observe(areaEl);
+else window.addEventListener('resize', layoutBoard);
+window.addEventListener('orientationchange', () => setTimeout(layoutBoard, 200));
+
+let hintTimer = 0;
+function maybeShowZoomHint() {
+  if (App.prefs.size < ZOOM_FROM || App.flags.zoomHint) return;
+  App.flags.zoomHint = true;
+  persist();
+  const hint = $('#zoomHint');
+  hint.classList.add('show');
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => hint.classList.remove('show'), 3000);
+}
 
 /* =========================================================================
    PART K: GAME RENDERING
@@ -1636,13 +2431,13 @@ function buildBoard() {
   void boardEl.offsetWidth; // restart the fade-in
   boardEl.classList.add('enter');
   App.lastWin = null;
-  layoutBoard(true);
+  layoutBoard();
 }
 
 function paintCell(i, mark, animate) {
   const cell = boardEl.children[i], n = App.prefs.size;
   cell.className = 'cell' + (mark ? ` filled ${mark.toLowerCase()}` : '') + (animate ? '' : ' instant');
-  cell.innerHTML = mark ? markSVG(mark) : '';
+  cell.innerHTML = mark ? cellMark(mark) : '';
   cell.setAttribute('aria-label', `Row ${Math.floor(i / n) + 1}, column ${(i % n) + 1}, ${mark || 'empty'}`);
 }
 function markLastMove() {
@@ -1665,9 +2460,10 @@ function renderPlayers() {
     nameEl.title = name;
     card.querySelector('.pscore').textContent = s[who];
     card.querySelector('.badge').innerHTML = miniMark(mark);
-    // Avatar: bot for the machine, user icon for the default "You", else the first letter
+    // Avatar: computer icon for the machine, user icon for the default "You", else the first letter
     const av = card.querySelector('.av');
-    if (vsAI() && who === 'p2') av.innerHTML = '<i data-lucide="bot"></i>';
+    if (vsAI() && who === 'p2') av.innerHTML = '<i data-lucide="monitor"></i>';
+    else if (App.prefs.mode === 'campaign') av.innerHTML = `<i data-lucide="${Save.data.equipped.avatar}"></i>`;
     else if (vsAI() && isDefaultYou()) av.innerHTML = '<i data-lucide="user"></i>';
     else av.textContent = name.charAt(0).toUpperCase();
   });
@@ -1691,9 +2487,10 @@ function renderTurn() {
   $('#cardP2').classList.toggle('active', !App.over && who === 'p2');
   const n = App.prefs.size;
   $('#statusLine').classList.toggle('thinking', App.thinking);
-  $('#statusText').textContent = App.thinking ? 'Thinking...' : `${n}×${n} · ${Logic.winLength(n)} in a row`;
+  $('#statusText').textContent = App.thinking ? 'Thinking...' : Campaign.statusText() || `${sizeLabel(n)} · ${Logic.winLength(n)} in a row`;
   boardEl.classList.toggle('locked', App.thinking || App.over);
   $('#undoBtn').disabled = !canUndo();
+  Campaign.onTurn(); // move timer (campaign levels only)
 }
 
 /** Win line in board coordinates, so it pans and zooms with the board. */
@@ -1708,7 +2505,7 @@ function drawWinLine(line, animate = true) {
   x1 -= dx / len * ext; y1 -= dy / len * ext; x2 += dx / len * ext; y2 += dy / len * ext;
   const total = len + ext * 2;
   ln.setAttribute('x1', x1); ln.setAttribute('y1', y1); ln.setAttribute('x2', x2); ln.setAttribute('y2', y2);
-  ln.style.strokeWidth = Math.max(4, View.cell * 0.12);
+  ln.style.strokeWidth = Math.max(3, View.cell * 0.12);
   svg.setAttribute('class', 'win-line ' + App.board[line[0]].toLowerCase());
   ln.style.strokeDasharray = total;
   if (animate) {
@@ -1731,16 +2528,19 @@ function cancelAI() {
 
 function startGame() {
   cancelAI();
+  Campaign.onStart();
   App.over = false;
   App.history = [];
   App.board = Array(App.prefs.size ** 2).fill(null);
   buildBoard();
   renderPlayers();
   renderTurn();
+  maybeShowZoomHint();
   if (isAITurn()) scheduleAI();
 }
 
 function place(i) {
+  Campaign.clearHint();
   const mark = currentMark();
   App.board[i] = mark;
   App.history.push(i);
@@ -1751,8 +2551,15 @@ function place(i) {
   const line = Logic.winFrom(App.board, App.prefs.size, i); // O(k): checks from the last move only
   if (line) return endGame(mark, line);
   if (App.history.length === App.board.length) return endGame(null, null);
+  if (Campaign.outOfMoves()) return endGame(null, null, 'moves');
   renderTurn();
   if (isAITurn()) scheduleAI();
+}
+/** Places a mark if this cell can be played right now. Returns true if it did. */
+function tryPlace(i) {
+  if (App.over || App.thinking || App.board[i] || isAITurn()) return false;
+  place(i);
+  return true;
 }
 
 /**
@@ -1774,16 +2581,7 @@ function scheduleAI() {
   }, 60);
 }
 
-function onCellTap(e) {
-  if (Gesture.suppress) return; // that was a drag or pinch, not a tap
-  const cell = e.target.closest('.cell');
-  if (!cell) return;
-  const i = +cell.dataset.i;
-  if (App.over || App.thinking || App.board[i] || isAITurn()) return;
-  place(i);
-}
-
-function endGame(mark, line) {
+function endGame(mark, line, reason) {
   App.over = true;
   App.thinking = false;
   const s = scoreBook();
@@ -1810,10 +2608,15 @@ function endGame(mark, line) {
   else if (outcome === 'lose') { Sound.lose(); haptic(90); }
   else { Sound.draw(); haptic([20, 30, 20]); }
 
+  // progress hooks: campaign rewards right away, stats for the other modes
+  const campaign = App.prefs.mode === 'campaign';
+  if (campaign) Campaign.finish(outcome, reason);
+  else Progress.onGameEnd(winnerWho, outcome);
+
   const token = App.aiToken;
   setTimeout(() => {
     if (token !== App.aiToken || !App.over || App.screen !== 'game') return;
-    showResult(outcome, winnerWho);
+    if (campaign) Campaign.showResult(); else showResult(outcome, winnerWho);
   }, 750);
 }
 
@@ -1825,6 +2628,7 @@ function canUndo() {
 }
 function undo() {
   if (!canUndo()) return;
+  if (!Campaign.payUndo()) return; // campaign: costs a token or coins
   cancelAI();
   let keep = App.history.length - 1;
   if (vsAI()) while (keep >= 0 && ownerOf(markForMove(keep)) !== 'p1') keep--;
@@ -1832,6 +2636,19 @@ function undo() {
   markLastMove();
   Sound.click(); haptic(10);
   renderTurn();
+}
+
+/* ---------- Leaving a game ---------- */
+const gameInProgress = () => App.history.length > 0 && !App.over;
+function leaveGame() {
+  cancelAI();
+  closeModal('leaveModal');
+  closeModal('resultModal');
+  closeModal('campaignModal');
+  const fromCampaign = App.prefs.mode === 'campaign';
+  if (fromCampaign) Campaign.onLeave();
+  Level.render();
+  go(fromCampaign ? 'levels' : 'home');
 }
 
 /* ---------- Result popup ---------- */
@@ -1852,122 +2669,1206 @@ function showResult(outcome, winnerWho) {
   renderIcons();
   $('#resultTitle').textContent = title;
   $('#resultSub').textContent = sub;
-  $('#resultModal').classList.add('open');
+  openModal('resultModal');
   card.classList.remove('shake');
   if (outcome === 'win') Confetti.fire();
   if (outcome === 'lose') setTimeout(() => { void card.offsetWidth; card.classList.add('shake'); }, 220);
 }
-const hideResult = () => $('#resultModal').classList.remove('open');
 
-/* ---------- Settings sheet ---------- */
-function renderSettings() {
-  $('#soundToggle').setAttribute('aria-checked', String(App.settings.sound));
-  $('#vibeToggle').setAttribute('aria-checked', String(App.settings.vibration));
-  setSeg($('.seg[data-key="theme"]'), App.settings.theme);
-}
-function openSheet() { renderSettings(); $('#sheetBackdrop').classList.add('open'); $('#sheet').classList.add('open'); }
-function closeSheet() { $('#sheetBackdrop').classList.remove('open'); $('#sheet').classList.remove('open'); }
-let resetArmed = null;
-function resetScores() {
-  const label = $('#resetScores span');
-  if (!resetArmed) { // first tap asks to confirm
-    label.textContent = 'Tap again to confirm';
-    resetArmed = setTimeout(() => { label.textContent = 'Reset all scores'; resetArmed = null; }, 2500);
-    haptic(15);
-    return;
+/* =========================================================================
+   PART N: LEVELS CONFIG (200 campaign levels generated from a chapter table)
+   ========================================================================= */
+const Levels = (() => {
+  // [first level, last level, board size, win length, chapter name]
+  const TABLE = [
+    [1, 15, 3, 3, 'Warm Up'],
+    [16, 35, 4, 4, 'First Steps'],
+    [36, 60, 5, 4, 'Wide Open'],
+    [61, 85, 6, 4, 'Six Sense'],
+    [86, 105, 7, 5, 'High Five'],
+    [106, 125, 8, 5, 'Eight Lanes'],
+    [126, 145, 9, 5, 'Nine Lives'],
+    [146, 165, 10, 5, 'Big Ten'],
+    [166, 185, 11, 5, 'Eleventh Hour'],
+    [186, 200, 12, 5, 'Grand Master'],
+  ];
+  const TOTAL = 200;
+  const CHAPTERS = TABLE.map(([from, to, size, win, name], index) => ({ index, from, to, size, win, name, count: to - from + 1 }));
+  // The table must agree with the engine's own win rule for each size
+  CHAPTERS.forEach(c => { if (Logic.winLength(c.size) !== c.win) console.warn('Win rule mismatch in chapter', c.name); });
+
+  const cache = [];
+  const chapterOf = n => CHAPTERS.find(c => n >= c.from && n <= c.to);
+  const isBoss = n => n % 10 === 0;
+
+  /**
+   * Builds level n. Inside a chapter, t goes 0 -> 1 and difficulty rises with it:
+   * AI skill 40% -> 90% (never 100%), AI starts first in the later part,
+   * every 4th level has a move timer, some levels have a hard move limit.
+   * Boss levels (every 10th): top skill for the chapter + a move timer.
+   */
+  function get(n) {
+    if (cache[n]) return cache[n];
+    const ch = chapterOf(n), i = n - ch.from, t = ch.count > 1 ? i / (ch.count - 1) : 0;
+    const boss = isBoss(n);
+    const par = ch.win + Math.floor(ch.size / 3);       // your moves allowed for 2 and 3 stars
+    const lv = {
+      id: n, chapter: ch.index, size: ch.size, winLength: ch.win, boss, par,
+      aiSkill: boss ? 0.9 : Math.round((0.4 + 0.5 * t) * 100) / 100,
+      firstMove: boss || t >= 0.6 ? 'ai' : 'player',
+      timeLimit: boss ? 12 : i % 4 === 3 ? Math.round(20 - 10 * t) : 0,   // seconds per move, 0 = none
+      moveLimit: !boss && i % 5 === 2 ? par : 0,                           // run out of moves = fail
+      reward: (10 + Math.floor(n / 5)) * (boss ? 3 : 1),                  // first clear coins
+    };
+    return (cache[n] = lv);
   }
-  clearTimeout(resetArmed); resetArmed = null;
-  App.scores = { computer: {}, friend: {} };
-  persist();
-  renderPlayers();
-  label.textContent = 'Scores cleared';
-  Sound.click(); haptic([10, 30, 10]);
-  setTimeout(() => { label.textContent = 'Reset all scores'; }, 1500);
+  return { TOTAL, CHAPTERS, get, chapterOf, isBoss };
+})();
+
+/* =========================================================================
+   PART O: SHOP CATALOG + ACHIEVEMENT DEFINITIONS (pure data)
+   ========================================================================= */
+const Shop = (() => {
+  const ITEMS = {
+    boost: [
+      { id: 'hint', name: 'Hint', desc: 'Shows a good move', icon: 'lightbulb', price: 20, consumable: true },
+      { id: 'undo', name: 'Undo', desc: 'Take back a move in a level', icon: 'undo-2', price: 10, consumable: true },
+    ],
+    board: [
+      { id: 'classic', name: 'Classic', price: 0 },
+      { id: 'neon', name: 'Neon', price: 100 },
+      { id: 'pastel', name: 'Pastel', price: 150 },
+      { id: 'wood', name: 'Wood', price: 200 },
+      { id: 'galaxy', name: 'Galaxy', price: 300 },
+    ],
+    skin: [
+      { id: 'classic', name: 'Classic', price: 0 },
+      { id: 'emoji', name: 'Emoji', price: 100 },
+      { id: 'glow', name: 'Glow', price: 150 },
+      { id: 'pixel', name: 'Pixel', price: 300 },
+    ],
+    avatar: [
+      { id: 'user', name: 'Player', price: 0 },
+      { id: 'cat', name: 'Cat', price: 50 },
+      { id: 'dog', name: 'Dog', price: 75 },
+      { id: 'bird', name: 'Bird', price: 75 },
+      { id: 'ghost', name: 'Ghost', price: 100 },
+      { id: 'rocket', name: 'Rocket', price: 120 },
+      { id: 'crown', name: 'Crown', price: 150 },
+    ],
+  };
+  const item = (type, id) => ITEMS[type].find(i => i.id === id);
+  const ids = type => ITEMS[type].map(i => i.id);
+  return { ITEMS, item, ids };
+})();
+
+const ACHIEVEMENTS = [
+  { id: 'first_win', name: 'First Win', desc: 'Win a game vs the computer', icon: 'trophy', reward: 20, test: d => d.stats.all.wins >= 1 },
+  { id: 'wins_25', name: 'Getting Good', desc: 'Win 25 games', icon: 'medal', reward: 50, test: d => d.stats.all.wins >= 25 },
+  { id: 'streak_10', name: 'On Fire', desc: 'Win 10 games in a row', icon: 'flame', reward: 100, test: d => d.stats.all.best >= 10 },
+  { id: 'chapter_1', name: 'Warmed Up', desc: 'Clear Chapter 1', icon: 'flag', reward: 50, test: d => chapterDone(d, 0) },
+  { id: 'boss_1', name: 'Boss Slayer', desc: 'Beat a boss level', icon: 'crown', reward: 40, test: d => Object.keys(d.levels).some(n => Levels.isBoss(+n)) },
+  { id: 'perfect_ch', name: 'Perfectionist', desc: 'Get 3 stars on every level of a chapter', icon: 'sparkles', reward: 150, test: d => Levels.CHAPTERS.some(c => chapterDone(d, c.index, 3)) },
+  { id: 'stars_100', name: 'Star Collector', desc: 'Collect 100 stars', icon: 'star', reward: 80, test: d => totalStars(d) >= 100 },
+  { id: 'reach_50', name: 'Halfway Hero', desc: 'Reach level 50', icon: 'footprints', reward: 60, test: d => d.unlockedLevel >= 50 },
+  { id: 'reach_100', name: 'Centurion', desc: 'Reach level 100', icon: 'mountain', reward: 120, test: d => d.unlockedLevel >= 100 },
+  { id: 'beat_200', name: 'Grand Champion', desc: 'Beat level 200', icon: 'gem', reward: 300, test: d => !!d.levels[200] },
+  { id: 'daily_7', name: 'Loyal Player', desc: 'Claim the daily reward 7 days in a row', icon: 'calendar-check', reward: 50, test: d => d.daily.streak >= 7 },
+  { id: 'shopper', name: 'Shopper', desc: 'Buy something in the shop', icon: 'shopping-bag', reward: 20, test: d => d.purchases >= 1 },
+  { id: 'rich', name: 'Coin Hoarder', desc: 'Earn 1000 coins in total', icon: 'coins', reward: 50, test: d => d.coinsEarned >= 1000 },
+];
+function chapterDone(d, ci, minStars = 1) {
+  const c = Levels.CHAPTERS[ci];
+  for (let n = c.from; n <= c.to; n++) if (!d.levels[n] || d.levels[n].stars < minStars) return false;
+  return true;
+}
+function totalStars(d) {
+  let s = 0;
+  for (const k in d.levels) s += d.levels[k].stars;
+  return s;
+}
+
+/* =========================================================================
+   PART P: SAVE DATA (one localStorage key, versioned, export / import)
+   ========================================================================= */
+const Save = (() => {
+  const KEY = 'ttt_save_v1', VERSION = 1;
+  const modeStats = () => ({ played: 0, wins: 0, losses: 0, draws: 0, streak: 0, best: 0 });
+
+  function fresh() {
+    return {
+      version: VERSION,
+      profile: { name: 'Player', avatar: 'user' },
+      coins: 0, coinsEarned: 0, xp: 0, purchases: 0,
+      levels: {},                 // "37": { stars: 2, completed: true }
+      unlockedLevel: 1,
+      owned: { board: ['classic'], skin: ['classic'], avatar: ['user'] },
+      inventory: { hint: 0, undo: 0 },
+      equipped: { board: 'classic', skin: 'classic', avatar: 'user' },
+      stats: { computer: modeStats(), friend: modeStats(), campaign: modeStats(), all: modeStats() },
+      achievements: {},          // id -> time unlocked
+      daily: { last: '', streak: 0 },
+    };
+  }
+  const int = (v, lo, hi, d) => (Number.isFinite(v) ? clamp(Math.floor(v), lo, hi) : d);
+
+  /** Copies only valid fields over a fresh save, so broken data can never crash the game. */
+  function sanitize(d) {
+    const out = fresh();
+    if (!d || typeof d !== 'object') return out;
+    if (d.profile && typeof d.profile.name === 'string' && d.profile.name.trim()) out.profile.name = d.profile.name.trim().slice(0, NAME_MAX);
+    out.coins = int(d.coins, 0, 1e9, 0);
+    out.coinsEarned = int(d.coinsEarned, out.coins, 1e9, out.coins);
+    out.xp = int(d.xp, 0, 1e9, 0);
+    out.purchases = int(d.purchases, 0, 1e6, 0);
+    if (d.levels && typeof d.levels === 'object') {
+      for (const [k, v] of Object.entries(d.levels)) {
+        const n = +k, stars = v ? int(v.stars, 0, 3, 0) : 0;
+        if (n >= 1 && n <= Levels.TOTAL && stars) out.levels[n] = { stars, completed: true };
+      }
+    }
+    for (const type of ['board', 'skin', 'avatar']) {
+      const valid = Shop.ids(type);
+      if (d.owned && Array.isArray(d.owned[type])) out.owned[type] = [...new Set([...out.owned[type], ...d.owned[type].filter(x => valid.includes(x))])];
+      if (d.equipped && out.owned[type].includes(d.equipped[type])) out.equipped[type] = d.equipped[type];
+    }
+    out.profile.avatar = out.equipped.avatar;
+    if (d.inventory) { out.inventory.hint = int(d.inventory.hint, 0, 999, 0); out.inventory.undo = int(d.inventory.undo, 0, 999, 0); }
+    if (d.stats) for (const m of Object.keys(out.stats)) if (d.stats[m]) for (const k of Object.keys(out.stats[m])) out.stats[m][k] = int(d.stats[m][k], 0, 1e9, 0);
+    if (d.achievements && typeof d.achievements === 'object') {
+      for (const id of Object.keys(d.achievements)) if (ACHIEVEMENTS.some(a => a.id === id)) out.achievements[id] = int(d.achievements[id], 0, 1e15, Date.now());
+    }
+    if (d.daily) { out.daily.last = typeof d.daily.last === 'string' ? d.daily.last : ''; out.daily.streak = int(d.daily.streak, 0, 7, 0); }
+    // step by step: the next level after the highest cleared one is always open
+    const maxDone = Math.max(0, ...Object.keys(out.levels).map(Number));
+    out.unlockedLevel = clamp(Math.max(int(d.unlockedLevel, 1, Levels.TOTAL, 1), maxDone + 1), 1, Levels.TOTAL);
+    return out;
+  }
+  /** Upgrades older saves. Add steps here, e.g. if (d.version === 1) { ...; d.version = 2; } */
+  function migrate(d) {
+    if (!d || typeof d !== 'object' || !Number.isFinite(d.version) || d.version > VERSION) return fresh();
+    return sanitize(d);
+  }
+  function load() {
+    try { return migrate(JSON.parse(localStorage.getItem(KEY))); } catch (e) { return fresh(); }
+  }
+  let data = load();
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* storage blocked */ } }
+
+  /* ---- Export / import as a short text code ---- */
+  const b64enc = str => btoa(unescape(encodeURIComponent(str)));
+  const b64dec = str => decodeURIComponent(escape(atob(str)));
+  function checksum(str) {
+    let h = 5381;
+    for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
+    return h.toString(36).slice(-5);
+  }
+  function exportCode() {
+    const d = data, maxLv = Math.max(0, ...Object.keys(d.levels).map(Number));
+    let stars = '';
+    for (let n = 1; n <= maxLv; n++) stars += d.levels[n] ? d.levels[n].stars : 0;
+    const compact = {
+      v: VERSION, n: d.profile.name, c: d.coins, ce: d.coinsEarned, x: d.xp, p: d.purchases,
+      u: d.unlockedLevel, s: stars, o: d.owned, i: d.inventory, e: d.equipped, st: d.stats,
+      a: Object.keys(d.achievements), d: [d.daily.last, d.daily.streak],
+    };
+    const body = b64enc(JSON.stringify(compact));
+    return `TTT1-${body}-${checksum(body)}`;
+  }
+  /** Returns { data } on success or { error } with a message for the user. */
+  function decode(code) {
+    const m = /^TTT1-([A-Za-z0-9+/=]+)-([0-9a-z]+)$/.exec(String(code).replace(/\s+/g, ''));
+    if (!m) return { error: "That doesn't look like a progress code." };
+    if (checksum(m[1]) !== m[2]) return { error: 'This code is incomplete or has a typo.' };
+    try {
+      const c = JSON.parse(b64dec(m[1])), levels = {};
+      String(c.s || '').split('').forEach((ch, i) => { if (+ch) levels[i + 1] = { stars: +ch, completed: true }; });
+      const achievements = {};
+      (c.a || []).forEach(id => { achievements[id] = Date.now(); });
+      return {
+        data: migrate({
+          version: c.v, profile: { name: c.n }, coins: c.c, coinsEarned: c.ce, xp: c.x, purchases: c.p,
+          unlockedLevel: c.u, levels, owned: c.o, inventory: c.i, equipped: c.e, stats: c.st,
+          achievements, daily: { last: (c.d || [])[0], streak: (c.d || [])[1] },
+        }),
+      };
+    } catch (e) {
+      return { error: 'This code could not be read.' };
+    }
+  }
+  function replace(d) { data = d; save(); }
+  function reset() { data = fresh(); save(); }
+  return { get data() { return data; }, save, exportCode, decode, replace, reset };
+})();
+
+/* =========================================================================
+   PART Q: ECONOMY (coins, shop purchases, daily reward)
+   ========================================================================= */
+const COIN_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#f5b301" stroke="#b45309" stroke-width="2"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2"/></svg>';
+
+const Economy = (() => {
+  let shown = null, raf = 0;
+  const pills = () => $$('[data-coin-pill] .coin-amt');
+  /** Updates every coin counter. With `from`, the number counts up. */
+  function render(from) {
+    const to = Save.data.coins;
+    cancelAnimationFrame(raf);
+    if (from === undefined || from === to || reduceMotion.matches) {
+      shown = to;
+      pills().forEach(el => { el.textContent = to; });
+      return;
+    }
+    const t0 = performance.now(), dur = 650;
+    const step = now => {
+      const k = Math.min(1, (now - t0) / dur);
+      shown = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+      pills().forEach(el => { el.textContent = shown; });
+      if (k < 1) raf = requestAnimationFrame(step);
+      else $$('[data-coin-pill]').forEach(p => { p.classList.remove('bump'); void p.offsetWidth; p.classList.add('bump'); });
+    };
+    raf = requestAnimationFrame(step);
+  }
+  function add(n, opts = {}) {
+    if (n <= 0) return;
+    const before = Save.data.coins;
+    Save.data.coins += n;
+    Save.data.coinsEarned += n;
+    Save.save();
+    if (!opts.silent) { render(before); Sound.coin(); }
+  }
+  const canAfford = n => Save.data.coins >= n;
+  function spend(n) {
+    if (!canAfford(n)) return false;
+    Save.data.coins -= n;
+    Save.save();
+    render();
+    return true;
+  }
+  /** Small coins fly from one element to the nearest visible coin counter. */
+  function fly(fromEl, count, toEl) {
+    if (reduceMotion.matches || !fromEl) return;
+    const target = toEl || $$('[data-coin-pill]').find(p => p.offsetParent && p.getBoundingClientRect().width);
+    if (!target) return;
+    const a = fromEl.getBoundingClientRect(), b = target.getBoundingClientRect();
+    const n = Math.min(10, Math.max(3, Math.ceil(count / 5)));
+    for (let i = 0; i < n; i++) {
+      const c = document.createElement('div');
+      c.className = 'flying-coin';
+      c.innerHTML = COIN_SVG;
+      const x0 = a.left + a.width / 2 - 11 + (Math.random() - 0.5) * 40, y0 = a.top + a.height / 2 - 11;
+      c.style.left = x0 + 'px'; c.style.top = y0 + 'px';
+      document.body.appendChild(c);
+      const dx = b.left + 10 - x0, dy = b.top + b.height / 2 - 11 - y0;
+      const anim = c.animate(
+        [{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${dx}px, ${dy}px) scale(.7)`, opacity: .9 }],
+        { duration: 280, delay: i * 60, easing: 'cubic-bezier(.5,0,.75,0)', fill: 'backwards' });
+      anim.onfinish = () => { c.remove(); if (i % 2 === 0) Sound.coin(); };
+    }
+  }
+  /** Buys an item. Returns '' on success or a message. */
+  function buy(type, id) {
+    const it = Shop.item(type, id), d = Save.data;
+    if (!it) return 'Unknown item';
+    if (!it.consumable && d.owned[type].includes(id)) return 'Already owned';
+    if (!spend(it.price)) return `Need ${it.price - d.coins} more coins`;
+    if (it.consumable) d.inventory[id]++;
+    else d.owned[type].push(id);
+    d.purchases++;
+    Save.save();
+    Sound.coin(); haptic([10, 30, 10]);
+    Achievements.check();
+    return '';
+  }
+  function equip(type, id) {
+    const d = Save.data;
+    if (!d.owned[type].includes(id)) return;
+    d.equipped[type] = id;
+    if (type === 'avatar') d.profile.avatar = id;
+    Save.save();
+    applyCosmetics();
+  }
+  return { render, add, spend, canAfford, fly, buy, equip };
+})();
+
+const Daily = (() => {
+  const REWARDS = [20, 25, 30, 35, 40, 45, 50]; // day 1..7, day 7+ stays at 50
+  const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  function status() {
+    const now = new Date(), today = ymd(now);
+    const yesterday = ymd(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
+    const dd = Save.data.daily;
+    if (dd.last === today) return { available: false, day: dd.streak };
+    const day = dd.last === yesterday ? Math.min(7, dd.streak + 1) : 1; // missed a day = start again
+    return { available: true, day, amount: REWARDS[day - 1], today };
+  }
+  function claim() {
+    const st = status();
+    if (!st.available) return null;
+    Save.data.daily = { last: st.today, streak: st.day };
+    Save.save();
+    return st;
+  }
+  return { status, claim };
+})();
+
+/* =========================================================================
+   PART R: PROFILE, STATS, XP, ACHIEVEMENTS
+   ========================================================================= */
+const Progress = (() => {
+  const XP_WIN = 10;
+  /** Level from total XP: level L needs 100 + 50*(L-1) XP to reach L+1. */
+  function levelInfo(xp) {
+    let lv = 1, need = 100, rest = xp;
+    while (rest >= need) { rest -= need; lv++; need = 100 + 50 * (lv - 1); }
+    return { lv, into: rest, need };
+  }
+  /** result is 'win' | 'lose' | 'draw' from the player's (Player 1) side. */
+  function record(mode, result) {
+    const st = Save.data.stats;
+    [st[mode], mode === 'friend' ? null : st.all].forEach(s => {
+      if (!s) return;
+      s.played++;
+      if (result === 'win') { s.wins++; s.streak++; s.best = Math.max(s.best, s.streak); }
+      else { if (result === 'lose') s.losses++; else s.draws++; s.streak = 0; }
+    });
+  }
+  /** Returns true if the player levelled up. */
+  function addXP(n) {
+    const before = levelInfo(Save.data.xp).lv;
+    Save.data.xp += n;
+    return levelInfo(Save.data.xp).lv > before;
+  }
+  /** Hook from endGame() for vs Computer and vs Player (campaign has its own). */
+  function onGameEnd(winnerWho, outcome) {
+    const mode = App.prefs.mode;
+    if (mode === 'campaign') return;
+    const result = mode === 'friend' ? (winnerWho === 'p1' ? 'win' : winnerWho === 'p2' ? 'lose' : 'draw') : outcome;
+    record(mode, result);
+    if (mode === 'computer' && result === 'win') addXP(XP_WIN);
+    Save.save();
+    Achievements.check();
+  }
+  return { levelInfo, record, addXP, onGameEnd, XP_WIN };
+})();
+
+const Achievements = (() => {
+  /** Unlocks anything newly earned, pays its coins and shows a toast. */
+  function check() {
+    const d = Save.data, fresh = ACHIEVEMENTS.filter(a => !d.achievements[a.id] && a.test(d));
+    fresh.forEach((a, i) => {
+      d.achievements[a.id] = Date.now();
+      Economy.add(a.reward, { silent: true });
+      setTimeout(() => Toast.show(`Achievement: ${a.name} (+${a.reward} coins)`, a.icon), 400 + i * 700);
+    });
+    if (fresh.length) { Save.save(); Economy.render(); }
+    return fresh;
+  }
+  return { check };
+})();
+
+/* =========================================================================
+   PART S: CAMPAIGN (runs a level through the normal game with a config)
+   ========================================================================= */
+const HINT_PRICE = 20, UNDO_PRICE = 10;
+const Campaign = (() => {
+  let cfg = null, level = null, homePrefs = null, usedHelp = false;
+  let timer = 0, timerLeft = 0, timerMove = -1, hintCell = -1, result = null;
+
+  const active = () => App.prefs.mode === 'campaign' && !!cfg;
+  const playerMoves = () => App.history.filter((_, n) => ownerOf(markForMove(n)) === 'p1').length;
+
+  /**
+   * Starts any game from a config object using the existing engine:
+   * { size, winLength, aiSkill, firstMove: 'player' | 'ai', moveLimit, timeLimit }
+   */
+  function startWithConfig(c, lv) {
+    if (Logic.winLength(c.size) !== c.winLength) throw new Error(`winLength ${c.winLength} does not match the ${c.size}x${c.size} rule`);
+    if (!homePrefs) homePrefs = { ...App.prefs }; // keep the home screen's choices safe
+    cfg = c; level = lv;
+    Object.assign(App.prefs, { mode: 'campaign', size: c.size, difficulty: c.aiSkill, p1Mark: 'X', starter: c.firstMove === 'ai' ? 'p2' : 'p1' });
+    closeModal('campaignModal');
+    go('game');
+    startGame();
+  }
+  function start(n) {
+    const lv = Levels.get(n);
+    if (n > Save.data.unlockedLevel) return;
+    startWithConfig({ size: lv.size, winLength: lv.winLength, aiSkill: lv.aiSkill, firstMove: lv.firstMove, moveLimit: lv.moveLimit, timeLimit: lv.timeLimit }, lv);
+  }
+  /** Back to normal mode settings when leaving a level. */
+  function onLeave() {
+    stopTimer(); clearHint();
+    if (homePrefs) { Object.assign(App.prefs, homePrefs); homePrefs = null; }
+    cfg = null;
+  }
+  const savedPrefs = () => homePrefs;
+
+  /* ---- hooks called by the existing game flow ---- */
+  function onStart() {
+    stopTimer(); clearHint();
+    usedHelp = false; timerMove = -1; result = null;
+    renderExtras();
+  }
+  function onTurn() {
+    if (!active() || App.over) { stopTimer(); return; }
+    if (App.thinking || isAITurn()) { stopTimer(); timerMove = -1; return; }
+    if (cfg.timeLimit && (!timer || timerMove !== App.history.length)) startTimer();
+  }
+  function outOfMoves() {
+    if (!active() || !cfg.moveLimit) return false;
+    const lastByPlayer = ownerOf(markForMove(App.history.length - 1)) === 'p1';
+    return lastByPlayer && playerMoves() >= cfg.moveLimit;
+  }
+  function statusText() {
+    if (!active()) return '';
+    const pm = playerMoves();
+    const parts = [`Level ${level.id}`, cfg.moveLimit ? `Moves ${pm}/${cfg.moveLimit}` : `Moves ${pm}`];
+    if (timer) parts.push(`${timerLeft}s`);
+    return parts.join(' · ');
+  }
+
+  /* ---- move timer: when it runs out, a random move is played for you ---- */
+  function startTimer() {
+    stopTimer();
+    timerMove = App.history.length;
+    timerLeft = cfg.timeLimit;
+    timer = setInterval(tick, 1000);
+    paintStatus();
+  }
+  function stopTimer() {
+    if (timer) clearInterval(timer);
+    timer = 0;
+    $('#statusLine').classList.remove('urgent');
+  }
+  function tick() {
+    timerLeft--;
+    if (timerLeft <= 3 && timerLeft > 0) { Sound.click(); haptic(8); }
+    if (timerLeft > 0) { paintStatus(); return; }
+    stopTimer();
+    if (!active() || App.over || isAITurn()) return;
+    Toast.show("Time's up! A random move was played.", 'timer');
+    const move = Engine.AI.chooseMove(App.board, App.prefs.size, App.prefs.p1Mark, 'easy');
+    tryPlace(move);
+  }
+  function paintStatus() {
+    if (App.thinking) return;
+    $('#statusText').textContent = statusText();
+    $('#statusLine').classList.toggle('urgent', !!timer && timerLeft <= 3);
+  }
+
+  /* ---- paid helpers ---- */
+  /** Uses an owned token, else pays coins. Returns false (and says why) if it can't. */
+  function payFor(kind, price) {
+    const inv = Save.data.inventory;
+    if (inv[kind] > 0) { inv[kind]--; Save.save(); return true; }
+    if (Economy.spend(price)) return true;
+    Toast.show(`Need ${price - Save.data.coins} more coins for ${kind === 'hint' ? 'a hint' : 'an undo'}`, 'coins');
+    Sound.error(); haptic(40);
+    return false;
+  }
+  function payUndo() {
+    if (!active()) return true;
+    if (!payFor('undo', UNDO_PRICE)) return false;
+    usedHelp = true;
+    renderExtras();
+    return true;
+  }
+  function hint() {
+    if (!active() || App.over || App.thinking || isAITurn()) return;
+    if (!payFor('hint', HINT_PRICE)) return;
+    usedHelp = true;
+    renderExtras();
+    Sound.click();
+    const len = App.history.length;
+    AIRunner.run(App.board.slice(), App.prefs.size, App.prefs.p1Mark, 'hard', move => {
+      if (App.history.length !== len || App.over || move === undefined) return;
+      clearHint();
+      hintCell = move;
+      boardEl.children[move].classList.add('hint');
+      ensureVisible(move);
+    });
+  }
+  function clearHint() {
+    if (hintCell >= 0 && boardEl.children[hintCell]) boardEl.children[hintCell].classList.remove('hint');
+    hintCell = -1;
+  }
+  /** Hint button + price chips are only shown in campaign levels. */
+  function renderExtras() {
+    const on = active(), inv = Save.data.inventory;
+    const chip = (kind, price) => (inv[kind] > 0 ? ` ×${inv[kind]}` : `<i data-lucide="coins"></i>${price}`);
+    $('#hintBtn').hidden = !on;
+    $('#undoPrice').hidden = !on;
+    $('#gameActions').classList.toggle('has-hint', on);
+    if (on) {
+      $('#hintPrice').innerHTML = chip('hint', HINT_PRICE);
+      $('#undoPrice').innerHTML = chip('undo', UNDO_PRICE);
+      renderIcons();
+    }
+  }
+
+  /* ---- end of a level: stars, coins, XP, unlocks ---- */
+  function finish(outcome, reason) {
+    stopTimer(); clearHint();
+    const d = Save.data, n = level.id, won = outcome === 'win';
+    Progress.record('campaign', won ? 'win' : outcome === 'draw' && reason !== 'moves' ? 'draw' : 'lose');
+    if (!won) {
+      result = { won: false, reason: reason || outcome };
+      Save.save(); Achievements.check();
+      return;
+    }
+    const pm = playerMoves(), limit = cfg.moveLimit || level.par;
+    let stars = 1;
+    if (pm <= limit) stars = 2;
+    if (stars === 2 && !usedHelp) stars = 3;
+    const prev = d.levels[n] ? d.levels[n].stars : 0, first = !prev;
+    const newStars = Math.max(0, stars - prev);
+    const base = first ? level.reward : 2;         // replays only pay 2 coins (no farming)
+    const starCoins = newStars * 5;                // +5 per new star only
+    const xp = Progress.XP_WIN + 5 + Math.floor(n / 10);  // win XP + campaign level bonus
+    const before = d.coins;
+    d.levels[n] = { stars: Math.max(prev, stars), completed: true };
+    if (n === d.unlockedLevel && n < Levels.TOTAL) d.unlockedLevel = n + 1;
+    Economy.add(base + starCoins, { silent: true });
+    const levelUp = Progress.addXP(xp);
+    Save.save();
+    result = { won: true, stars, newStars, base, starCoins, xp, first, before, levelUp, pm, limit, usedHelp };
+    Achievements.check();
+  }
+
+  function showResult() {
+    if (!result) return;
+    const n = level.id, r = result, card = $('#cmCard');
+    const starsEl = $('#cmStars'), rewards = $('#cmRewards'), actions = $('#cmActions');
+    $('#cmFailIcon').hidden = r.won;
+    starsEl.hidden = !r.won;
+    card.classList.remove('shake');
+    let coinsBefore = Save.data.coins;
+    if (r.won) {
+      coinsBefore = r.before;
+      starsEl.innerHTML = [0, 1, 2].map(i => starSVG(i < r.stars, i < r.stars ? `star-pop" style="animation-delay:${250 + i * 220}ms` : '')).join('');
+      for (let i = 0; i < r.stars; i++) setTimeout(() => Sound.star(i), 250 + i * 220);
+      $('#cmTitle').textContent = `Level ${n} clear!`;
+      $('#cmSub').textContent = r.stars === 3 ? `Perfect! Won in ${r.pm} moves.`
+        : r.stars === 2 ? `Won in ${r.pm} moves. No undo or hint for the 3rd star.`
+        : `Win in ${r.limit} moves or fewer for more stars.`;
+      rewards.innerHTML =
+        `<div><span>${r.first ? (Levels.isBoss(n) ? 'Boss first clear ×3' : 'First clear') : 'Replay'}</span><b>+${r.base} <i data-lucide="coins"></i></b></div>` +
+        (r.starCoins ? `<div><span>New stars ×${r.newStars}</span><b>+${r.starCoins} <i data-lucide="coins"></i></b></div>` : '') +
+        `<div><span>XP${r.levelUp ? ' · Level up!' : ''}</span><b>+${r.xp} XP</b></div>`;
+      const next = n < Levels.TOTAL ? `<button class="btn3d" data-cm="next"><i data-lucide="play"></i>Next level</button>` : '';
+      actions.className = 'modal-actions ' + (next ? 'three' : 'two');
+      actions.innerHTML = next + `<button class="btn3d ghost" data-cm="retry"><i data-lucide="rotate-ccw"></i>Replay</button><button class="btn3d ghost" data-cm="back"><i data-lucide="map"></i>Levels</button>`;
+      Confetti.fire();
+    } else {
+      $('#cmTitle').textContent = 'Level failed';
+      $('#cmSub').textContent = r.reason === 'moves' ? 'Out of moves. Try to win faster.'
+        : r.reason === 'draw' ? "It's a draw. You need a win to clear the level."
+        : 'The machine won this time.';
+      rewards.innerHTML = '';
+      actions.className = 'modal-actions two';
+      actions.innerHTML = `<button class="btn3d ghost" data-cm="back"><i data-lucide="map"></i>Back</button><button class="btn3d" data-cm="retry"><i data-lucide="rotate-ccw"></i>Retry</button>`;
+      setTimeout(() => { void card.offsetWidth; card.classList.add('shake'); }, 220);
+    }
+    renderIcons();
+    $$('#cmCard .coin-amt').forEach(el => { el.textContent = coinsBefore; });
+    openModal('campaignModal');
+    if (r.won) {
+      const pill = $('#cmCard [data-coin-pill]');
+      setTimeout(() => {
+        Economy.fly(rewards, r.base + r.starCoins, pill);
+        setTimeout(() => Economy.render(coinsBefore), 300);
+      }, 900);
+    } else {
+      Economy.render();
+    }
+  }
+  function onResultAction(act) {
+    Sound.click();
+    const n = level.id;
+    if (act === 'next') start(Math.min(n + 1, Save.data.unlockedLevel));
+    else if (act === 'retry') start(n);
+    else { closeModal('campaignModal'); leaveGame(); }
+  }
+  return {
+    start, startWithConfig, onLeave, savedPrefs, onStart, onTurn, outOfMoves, statusText,
+    payUndo, hint, clearHint, renderExtras, finish, showResult, onResultAction, active,
+    get levelId() { return level ? level.id : 0; },
+  };
+})();
+
+/* =========================================================================
+   PART T: SKINS + SMALL UI HELPERS
+   ========================================================================= */
+const STAR_PATH = 'M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z';
+const starSVG = (on, cls = '') => `<svg viewBox="0 0 24 24" class="${cls}" aria-hidden="true"><path class="${on ? 'star-on' : 'star-off'}" d="${STAR_PATH}"/></svg>`;
+const LOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+const CROWN_SVG = '<svg class="crown" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg>';
+
+/** Mark for a board cell, drawn with the equipped X/O skin. */
+function cellMark(mark) {
+  const skin = Save.data.equipped.skin;
+  if (skin === 'glow') return markSVG(mark, 'skin-glow');
+  if (skin === 'emoji') return `<span class="emoji-mark pop" aria-hidden="true">${mark === 'X' ? '❌' : '⭕'}</span>`;
+  if (skin === 'pixel') return pixelSVG(mark);
+  return markSVG(mark);
+}
+function pixelSVG(mark) {
+  const px = [];
+  if (mark === 'X') for (let i = 1; i <= 5; i++) px.push([i, i], [6 - i, i]);
+  else {
+    for (let i = 2; i <= 4; i++) px.push([i, 1], [i, 5], [1, i], [5, i]);
+  }
+  return `<svg viewBox="0 0 7 7" class="pixel pop" aria-hidden="true">${px.map(([x, y]) => `<rect x="${x}" y="${y}" width="1" height="1"/>`).join('')}</svg>`;
+}
+function applyCosmetics() {
+  document.documentElement.dataset.board = Save.data.equipped.board;
+}
+
+const Toast = (() => {
+  const wrap = $('#toasts');
+  function show(text, icon = 'sparkles') {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = `<i data-lucide="${icon}"></i><span></span>`;
+    t.querySelector('span').textContent = text;
+    wrap.appendChild(t);
+    renderIcons();
+    while (wrap.children.length > 3) wrap.firstChild.remove();
+    setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 260); }, 2600);
+  }
+  return { show };
+})();
+
+/* =========================================================================
+   PART U: PAGES (bottom nav, home cards, levels map, profile + shop)
+   ========================================================================= */
+const TABS = ['home', 'levels', 'profile'];
+/** Called by go() on every screen change. */
+function onScreenChange(name) {
+  document.body.dataset.screen = name;
+  $$('.nav-btn').forEach(b => {
+    if (b.dataset.tab === name) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
+  Economy.render();
+  if (name === 'home') HomeCards.render();
+  if (name === 'levels') LevelsMap.show();
+  if (name === 'profile') ProfileUI.render();
+}
+
+/* ---------- Home: continue campaign + daily reward ---------- */
+const HomeCards = (() => {
+  function render() {
+    const d = Save.data, u = d.unlockedLevel, allDone = !!d.levels[Levels.TOTAL];
+    const lv = Levels.get(u), ch = Levels.chapterOf(u);
+    $('#ccLabel').textContent = allDone ? 'Campaign complete!' : 'Continue Campaign';
+    $('#ccTitle').textContent = allDone ? 'Replay any level for stars' : `Level ${u} · ${sizeLabel(lv.size)}${lv.boss ? ' · Boss' : ''}`;
+    $('#continueCard').setAttribute('aria-label', allDone ? 'Campaign complete, open levels' : `Continue campaign, level ${u}, ${ch.name}`);
+    const st = Daily.status();
+    $('#dailyCard').hidden = !st.available;
+    if (st.available) $('#dailyText').textContent = `Day ${st.day} · ${st.amount} coins${st.day > 1 ? ' · streak!' : ''}`;
+  }
+  function claim() {
+    const st = Daily.claim();
+    if (!st) return;
+    const btn = $('#dailyClaim');
+    Economy.fly(btn, st.amount);
+    setTimeout(() => {
+      Economy.add(st.amount);
+      Toast.show(`Day ${st.day} reward: +${st.amount} coins`, 'gift');
+      Achievements.check();
+      render();
+    }, 300);
+    haptic([10, 30, 10]);
+  }
+  function open() {
+    Sound.click(); haptic(10);
+    if (Save.data.levels[Levels.TOTAL]) go('levels');
+    else LevelStart.open(Save.data.unlockedLevel);
+  }
+  return { render, claim, open };
+})();
+
+/* ---------- Level start popup ---------- */
+const LevelStart = (() => {
+  let current = 0;
+  function open(n) {
+    const lv = Levels.get(n), ch = Levels.chapterOf(n), d = Save.data;
+    current = n;
+    const best = d.levels[n] ? d.levels[n].stars : 0, limit = lv.moveLimit || lv.par;
+    $('#lmBadge').hidden = !lv.boss;
+    $('#lmTitle').textContent = `Level ${n}`;
+    $('#lmSub').textContent = `Chapter ${ch.index + 1} · ${ch.name}`;
+    const chip = (icon, text) => `<span class="lm-chip"><i data-lucide="${icon}"></i>${text}</span>`;
+    $('#lmChips').innerHTML =
+      chip('grid-3x3', sizeLabel(lv.size)) + chip('target', `${lv.winLength} in a row`) +
+      chip('cpu', `AI ${Math.round(lv.aiSkill * 100)}%`) +
+      chip(lv.firstMove === 'ai' ? 'monitor' : 'user', lv.firstMove === 'ai' ? 'AI starts' : 'You start') +
+      (lv.timeLimit ? chip('timer', `${lv.timeLimit}s per move`) : '') +
+      (lv.moveLimit ? chip('footprints', `Max ${lv.moveLimit} moves`) : '');
+    $('#lmGoal').textContent = `Get ${lv.winLength} in a row before the machine.` +
+      (lv.moveLimit ? ` You only have ${lv.moveLimit} moves.` : '') + ' A draw or loss fails the level.';
+    const row = (k, text) => `<li><span class="stars">${[0, 1, 2].map(i => starSVG(i < k)).join('')}</span>${text}</li>`;
+    $('#lmStars').innerHTML = row(1, 'Win') + row(2, `Win in ${limit} moves or fewer`) + row(3, 'Same, with no undo or hint');
+    $('#lmReward').innerHTML = best
+      ? `Replay: +2 coins, +5 per new star. Best so far: ${[0, 1, 2].map(i => starSVG(i < best)).join('')}`.replace(/<svg /g, '<svg style="width:18px;height:18px;vertical-align:-3px" ')
+      : `First clear: +${lv.reward} coins${lv.boss ? ' (boss ×3)' : ''}, +5 per star`;
+    renderIcons();
+    openModal('levelModal');
+  }
+  function play() {
+    closeModal('levelModal');
+    Sound.click(); haptic(15);
+    Campaign.start(current);
+  }
+  return { open, play };
+})();
+
+/* ---------- Levels page: lazy, zig-zag path map ---------- */
+const LevelsMap = (() => {
+  const ROW = 96, scroller = $('#levelsScroll'), map = $('#levelsMap');
+  const ZIG = [0, .55, 1, .55, 0, -.55, -1, -.55];
+  const rendered = new Set();
+  let built = false, width = 0, io = null;
+
+  const amp = () => Math.max(40, Math.min(110, (width - 100) / 2));
+  const xOf = n => width / 2 + ZIG[(n - 1) % ZIG.length] * amp();
+  const yOf = (c, n) => (n - c.from) * ROW + ROW / 2;
+  function stateOf(n) {
+    const d = Save.data;
+    if (d.levels[n]) return 'done';
+    return n <= d.unlockedLevel ? 'current' : 'locked';
+  }
+
+  function build() {
+    width = map.clientWidth || 340;
+    map.innerHTML = Levels.CHAPTERS.map(c => `
+      <section class="chapter" data-ch="${c.index}">
+        <div class="ch-card glass"></div>
+        <div class="ch-nodes" style="height:${c.count * ROW}px">${skeleton(c)}</div>
+      </section>`).join('');
+    // Only build a chapter's nodes when it scrolls near the screen
+    io = new IntersectionObserver(entries => entries.forEach(e => {
+      if (e.isIntersecting) renderChapter(+e.target.parentElement.dataset.ch);
+    }), { root: scroller, rootMargin: '700px 0px' });
+    map.querySelectorAll('.ch-nodes').forEach(el => io.observe(el));
+    new ResizeObserver(() => {
+      if (Math.abs(map.clientWidth - width) < 2) return;
+      width = map.clientWidth;
+      rendered.forEach(renderChapter);
+    }).observe(map);
+    built = true;
+  }
+  function skeleton(c) {
+    let h = '';
+    for (let n = c.from; n <= c.to; n++) h += `<span class="skel" style="left:${xOf(n)}px;top:${yOf(c, n)}px"></span>`;
+    return h;
+  }
+  function renderCards() {
+    const d = Save.data;
+    Levels.CHAPTERS.forEach(c => {
+      let got = 0;
+      for (let n = c.from; n <= c.to; n++) got += d.levels[n] ? d.levels[n].stars : 0;
+      const max = c.count * 3, locked = c.from > d.unlockedLevel;
+      const card = map.children[c.index].querySelector('.ch-card');
+      card.classList.toggle('locked', locked);
+      card.innerHTML = `
+        <span class="ch-num">Chapter ${c.index + 1}${locked ? ' · locked' : ''}</span>
+        <span class="ch-stars">${starSVG(true)}${got}/${max}</span>
+        <h3>${c.name}</h3>
+        <span class="ch-meta">${sizeLabel(c.size)} · ${c.win} in a row · levels ${c.from}-${c.to}</span>
+        <span class="ch-bar"><i style="width:${(got / max) * 100}%"></i></span>`;
+    });
+    $('#starTotal').innerHTML = `${starSVG(true)}${totalStars(d)}/${Levels.TOTAL * 3}`;
+  }
+  function renderChapter(ci) {
+    const c = Levels.CHAPTERS[ci], d = Save.data, box = map.children[ci].querySelector('.ch-nodes');
+    const H = c.count * ROW;
+    let path = '', nodes = '';
+    for (let n = c.from; n <= c.to; n++) {
+      const x = xOf(n), y = yOf(c, n), st = stateOf(n), boss = Levels.isBoss(n);
+      if (n < c.to) {
+        const x2 = xOf(n + 1), y2 = yOf(c, n + 1);
+        path += `<path class="${d.levels[n] ? 'done' : ''}" d="M${x} ${y} C${x} ${y + ROW / 2} ${x2} ${y2 - ROW / 2} ${x2} ${y2}"/>`;
+      }
+      const stars = st === 'done' ? d.levels[n].stars : 0;
+      const label = st === 'locked' ? 'locked' : st === 'done' ? `${stars} of 3 stars` : 'ready to play';
+      nodes += `<button class="node ${st}${boss ? ' boss' : ''}" data-level="${n}" style="left:${x}px;top:${y}px" aria-label="Level ${n}${boss ? ', boss' : ''}, ${label}">` +
+        (boss ? CROWN_SVG : '') +
+        (st === 'locked' ? LOCK_SVG : `<span>${n}</span>`) +
+        (st === 'done' ? `<span class="node-stars">${[0, 1, 2].map(i => starSVG(i < stars)).join('')}</span>` : '') +
+        `</button>`;
+    }
+    box.innerHTML = `<svg class="ch-path" viewBox="0 0 ${width} ${H}" preserveAspectRatio="none" aria-hidden="true">${path}</svg>${nodes}`;
+    rendered.add(ci);
+  }
+  /** Scrolls so the current level sits in the middle of the screen. */
+  function scrollToCurrent() {
+    const n = Save.data.unlockedLevel, c = Levels.chapterOf(n);
+    const box = map.children[c.index].querySelector('.ch-nodes');
+    const y = map.offsetTop + box.offsetTop + yOf(c, n);
+    scroller.scrollTop = Math.max(0, y - scroller.clientHeight / 2);
+  }
+  function show() {
+    if (!built) build();
+    renderCards();
+    rendered.forEach(renderChapter); // progress may have changed
+    requestAnimationFrame(scrollToCurrent);
+  }
+  function refresh() { if (built) { renderCards(); rendered.forEach(renderChapter); } }
+
+  map.addEventListener('click', e => {
+    const node = e.target.closest('.node');
+    if (!node) return;
+    const n = +node.dataset.level;
+    if (node.classList.contains('locked')) {
+      node.classList.remove('shake'); void node.offsetWidth; node.classList.add('shake');
+      Sound.error(); haptic(30);
+      Toast.show(`Clear level ${Save.data.unlockedLevel} first`, 'lock');
+      return;
+    }
+    Sound.click(); haptic(10);
+    LevelStart.open(n);
+  });
+  return { show, refresh };
+})();
+
+/* ---------- Profile page + shop ---------- */
+const ProfileUI = (() => {
+  let shopTab = 'boost';
+
+  function render() {
+    const d = Save.data, info = Progress.levelInfo(d.xp);
+    $('#pfAvatar .pf-av').innerHTML = `<i data-lucide="${d.equipped.avatar}"></i>`;
+    $('#pfName').textContent = d.profile.name;
+    $('#pfLevel').textContent = info.lv;
+    $('#pfXpBar').style.width = `${(info.into / info.need) * 100}%`;
+    $('#pfXpBarWrap').setAttribute('aria-valuenow', Math.round((info.into / info.need) * 100));
+    $('#pfXp').textContent = `${info.into} / ${info.need} XP to level ${info.lv + 1}`;
+    const tile = (icon, value, label, cls = '') => `<div class="tile glass ${cls}"><i data-lucide="${icon}"></i><b>${value}</b><small>${label}</small></div>`;
+    $('#quickTiles').innerHTML =
+      tile('coins', d.coins, 'Coins', 'gold') + tile('star', totalStars(d), 'Stars', 'gold') +
+      tile('flag', d.levels[Levels.TOTAL] ? Levels.TOTAL : d.unlockedLevel, 'Highest level');
+    const a = d.stats.all, decided = a.wins + a.losses + a.draws;
+    $('#statTiles').innerHTML =
+      tile('gamepad-2', a.played, 'Played') + tile('trophy', a.wins, 'Wins') + tile('x', a.losses, 'Losses') +
+      tile('equal', a.draws, 'Draws') + tile('percent', decided ? Math.round((a.wins / decided) * 100) + '%' : '-', 'Win rate') +
+      tile('flame', a.best, 'Best streak');
+    const ms = (icon, name, s, labels) => `<div class="mode-stat glass"><span class="ms-icon"><i data-lucide="${icon}"></i></span><span class="ms-text"><b>${name}</b><small>${s.played} played · ${s.wins} ${labels[0]} · ${s.losses} ${labels[1]} · ${s.draws} draws</small></span></div>`;
+    $('#modeStats').innerHTML =
+      ms('monitor', 'vs Computer', d.stats.computer, ['wins', 'losses']) +
+      ms('users', 'vs Player', d.stats.friend, ['P1 wins', 'P2 wins']) +
+      ms('map', 'Campaign', d.stats.campaign, ['wins', 'fails']);
+    renderAchievements();
+    renderShop();
+    renderIcons();
+  }
+
+  function renderAchievements() {
+    const d = Save.data, got = ACHIEVEMENTS.filter(a => d.achievements[a.id]).length;
+    $('#achCount').textContent = `${got}/${ACHIEVEMENTS.length}`;
+    $('#achEmpty').hidden = got > 0;
+    $('#achGrid').innerHTML = ACHIEVEMENTS.map(a => {
+      const on = !!d.achievements[a.id];
+      return `<div class="ach glass ${on ? '' : 'locked'}"><span class="a-icon"><i data-lucide="${on ? a.icon : 'lock'}"></i></span><span class="a-text"><b>${a.name}</b><small>${a.desc} · ${a.reward} coins</small></span></div>`;
+    }).join('');
+  }
+
+  function preview(type, it) {
+    if (type === 'boost') return `<div class="si-boost"><i data-lucide="${it.icon}"></i></div>`;
+    if (type === 'avatar') return `<div class="si-avatar"><i data-lucide="${it.id}"></i></div>`;
+    const cell = (m, extra = '') => `<div class="cell${m ? ' filled ' + m.toLowerCase() : ''} instant"${extra}>${m ? (type === 'skin' ? skinMark(it.id, m) : markSVG(m)) : ''}</div>`;
+    if (type === 'board') return `<div class="si-board" data-board="${it.id}">${['X', '', 'O', '', 'X', '', 'O', '', 'X'].map(m => cell(m)).join('')}</div>`;
+    return `<div class="si-marks">${cell('X')}${cell('O')}</div>`;
+  }
+  function skinMark(skin, m) {
+    if (skin === 'glow') return markSVG(m, 'skin-glow');
+    if (skin === 'emoji') return `<span class="emoji-mark">${m === 'X' ? '❌' : '⭕'}</span>`;
+    if (skin === 'pixel') return pixelSVG(m);
+    return markSVG(m);
+  }
+  function renderShop() {
+    const d = Save.data;
+    setSeg($('.seg[data-group="shop"]'), shopTab);
+    $('#shopGrid').innerHTML = Shop.ITEMS[shopTab].map(it => {
+      const owned = !it.consumable && d.owned[shopTab].includes(it.id);
+      const equipped = owned && d.equipped[shopTab] === it.id;
+      const short = it.price - d.coins;
+      let btn, msg = '';
+      if (equipped) btn = `<button class="btn3d small ghost" disabled>Equipped</button>`;
+      else if (owned) btn = `<button class="btn3d small" data-act="equip" data-id="${it.id}">Equip</button>`;
+      else {
+        btn = `<button class="btn3d small gold" data-act="buy" data-id="${it.id}" ${short > 0 ? 'disabled' : ''} aria-label="Buy ${it.name} for ${it.price} coins"><i data-lucide="coins"></i>${it.price}</button>`;
+        if (short > 0) msg = `Need ${short} more coins`;
+      }
+      const desc = it.consumable ? `${it.desc} · you have ${d.inventory[it.id]}` : '';
+      return `<div class="shop-item glass ${equipped ? 'equipped' : ''}">
+        ${!owned && !it.consumable ? '<span class="si-lock" aria-label="Locked"><i data-lucide="lock"></i></span>' : ''}
+        ${preview(shopTab, it)}
+        <span class="si-name">${it.name}</span>${desc ? `<span class="si-desc">${desc}</span>` : ''}
+        ${btn}<span class="si-msg">${msg}</span>
+      </div>`;
+    }).join('');
+    renderIcons();
+  }
+  function setTab(tab) { shopTab = tab; renderShop(); }
+  function onShopClick(e) {
+    const b = e.target.closest('button[data-act]');
+    if (!b) return;
+    const it = Shop.item(shopTab, b.dataset.id);
+    if (b.dataset.act === 'buy') {
+      const fail = Economy.buy(shopTab, it.id);
+      if (fail) { Toast.show(fail, 'coins'); return; }
+      Toast.show(it.consumable ? `Bought 1 ${it.name}` : `Unlocked ${it.name}!`, 'shopping-bag');
+      if (!it.consumable) Economy.equip(shopTab, it.id);
+    } else {
+      Economy.equip(shopTab, it.id);
+      Sound.click(); haptic(8);
+    }
+    render();
+  }
+
+  /* inline name editing with validation */
+  const nameErr = v => (!v ? "Name can't be empty" : v.length > NAME_MAX ? `Max ${NAME_MAX} characters` : '');
+  function editName() {
+    $('#pfNameRow').hidden = true;
+    $('#pfNameForm').hidden = false;
+    const inp = $('#pfNameInput');
+    inp.value = Save.data.profile.name;
+    validateName();
+    inp.focus(); inp.select();
+  }
+  function validateName() {
+    const v = $('#pfNameInput').value.trim(), e = nameErr(v);
+    setFieldState($('[data-field="profile"]'), v, e);
+    return !e;
+  }
+  function saveName(keep) {
+    if (keep && validateName()) {
+      Save.data.profile.name = $('#pfNameInput').value.trim();
+      Save.save();
+      Sound.click();
+    }
+    $('#pfNameForm').hidden = true;
+    $('#pfNameRow').hidden = false;
+    render();
+  }
+
+  function openAvatars() {
+    const d = Save.data;
+    $('#avatarGrid').innerHTML = d.owned.avatar.map(id =>
+      `<button class="avatar-opt" data-id="${id}" aria-pressed="${d.equipped.avatar === id}" aria-label="${Shop.item('avatar', id).name}"><i data-lucide="${id}"></i></button>`).join('');
+    renderIcons();
+    Sheets.open('avatarSheet');
+  }
+
+  function init() {
+    $('#shopGrid').addEventListener('click', onShopClick);
+    $('#pfEdit').addEventListener('click', editName);
+    $('#pfNameInput').addEventListener('input', validateName);
+    $('#pfNameInput').addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); saveName(false); } });
+    $('#pfNameInput').addEventListener('blur', () => { if (!$('#pfNameForm').hidden) saveName(true); });
+    $('#pfNameForm').addEventListener('submit', e => { e.preventDefault(); if (validateName()) $('#pfNameInput').blur(); else { Sound.error(); haptic(30); } });
+    $('#pfAvatar').addEventListener('click', () => { Sound.click(); openAvatars(); });
+    $('#avatarGrid').addEventListener('click', e => {
+      const b = e.target.closest('.avatar-opt');
+      if (!b) return;
+      Economy.equip('avatar', b.dataset.id);
+      Sound.click(); haptic(8);
+      Sheets.close();
+      render();
+    });
+    $('#avatarShopLink').addEventListener('click', () => { Sheets.close(); openShop('avatar'); });
+  }
+  return { render, init, setTab };
+})();
+
+/** Opens the profile page scrolled to the shop. */
+function openShop(tab) {
+  if (tab) ProfileUI.setTab(tab);
+  go('profile');
+  setTimeout(() => $('#shopTitle').scrollIntoView({ block: 'start', behavior: reduceMotion.matches ? 'auto' : 'smooth' }), 280);
+}
+
+/* ---------- Settings: export / import progress ---------- */
+const Backup = (() => {
+  let pending = null;
+  const msg = (text, ok) => { const m = $('#backupMsg'); m.textContent = text; m.className = 'backup-msg ' + (ok ? 'ok' : 'bad'); };
+  function reset() {
+    pending = null;
+    $('#exportBox').hidden = true; $('#importBox').hidden = true; $('#importConfirm').hidden = true;
+    $('#importCheck').hidden = false; $('#importCode').value = ''; $('#backupMsg').textContent = '';
+  }
+  function exportNow() {
+    reset();
+    $('#exportCode').value = Save.exportCode();
+    $('#exportBox').hidden = false;
+    Sound.click();
+  }
+  async function copy() {
+    const box = $('#exportCode');
+    try { await navigator.clipboard.writeText(box.value); msg('Copied! Keep it somewhere safe.', true); }
+    catch (e) { box.select(); try { document.execCommand('copy'); msg('Copied! Keep it somewhere safe.', true); } catch (e2) { msg('Select the code and copy it by hand.', false); } }
+  }
+  function check() {
+    const res = Save.decode($('#importCode').value);
+    if (res.error) { msg(res.error, false); Sound.error(); return; }
+    pending = res.data;
+    msg(`Code OK: level ${pending.unlockedLevel}, ${pending.coins} coins. This replaces your current progress.`, true);
+    $('#importConfirm').hidden = false; $('#importCheck').hidden = true;
+  }
+  function apply() {
+    if (!pending) return;
+    Save.replace(pending);
+    reset();
+    afterProgressChange();
+    msg('Progress restored.', true);
+    Toast.show('Progress restored', 'check');
+  }
+  function init() {
+    $('#exportBtn').addEventListener('click', exportNow);
+    $('#copyCode').addEventListener('click', copy);
+    $('#importOpen').addEventListener('click', () => { reset(); $('#importBox').hidden = false; $('#importCode').focus(); });
+    $('#importCheck').addEventListener('click', check);
+    $('#importCode').addEventListener('input', () => { pending = null; $('#importConfirm').hidden = true; $('#importCheck').hidden = false; $('#backupMsg').textContent = ''; });
+    $('#importCancel').addEventListener('click', reset);
+    $('#importYes').addEventListener('click', apply);
+  }
+  return { init, reset };
+})();
+
+/** Re-renders everything that shows saved progress. */
+function afterProgressChange() {
+  applyCosmetics();
+  Economy.render();
+  HomeCards.render();
+  LevelsMap.refresh();
+  if (App.screen === 'profile') ProfileUI.render();
+}
+
+/** Wires up all the new pages. Called from init(). */
+function initProgressUI() {
+  applyCosmetics();
+  Economy.render();
+  ProfileUI.init();
+  Backup.init();
+  $$('.nav-btn').forEach(b => b.addEventListener('click', () => {
+    if (App.screen === b.dataset.tab) return;
+    Sound.click(); haptic(8);
+    go(b.dataset.tab);
+  }));
+  $$('[data-coin-pill]').forEach(p => { if (p.tagName === 'BUTTON') p.addEventListener('click', () => { Sound.click(); openShop('boost'); }); });
+  $('#continueCard').addEventListener('click', HomeCards.open);
+  $('#dailyClaim').addEventListener('click', HomeCards.claim);
+  $('#lmPlay').addEventListener('click', LevelStart.play);
+  $('#lmClose').addEventListener('click', () => { Sound.click(); closeModal('levelModal'); });
+  $('#cmActions').addEventListener('click', e => { const b = e.target.closest('[data-cm]'); if (b) Campaign.onResultAction(b.dataset.cm); });
+  $('#hintBtn').addEventListener('click', Campaign.hint);
+  $('#resetProgressBtn').addEventListener('click', () => { Sound.click(); Sheets.open('resetSheet'); });
+  $('#resetProgressYes').addEventListener('click', () => {
+    Save.reset();
+    Sheets.close();
+    afterProgressChange();
+    Toast.show('Progress reset. Fresh start!', 'rotate-ccw');
+    Sound.click(); haptic([10, 30, 10]);
+  });
 }
 
 /* =========================================================================
    PART M: EVENT WIRING
    ========================================================================= */
 function init() {
-  buildChips();
+  initProgressUI();
+  Level.build();
   $$('.mark-opt').forEach(b => { b.innerHTML = miniMark(b.dataset.val); });
   renderIcons();
   applyTheme();
-  renderHome();
   renderSettings();
 
   const leaveSplash = () => {
     if (App.screen !== 'splash') return;
+    Level.render(); // render on arrival so the demo animation plays
     go('home');
-    requestAnimationFrame(() => scrollChipIntoView(false));
   };
+  Level.render();
   $('#splash').addEventListener('click', leaveSplash);
   setTimeout(leaveSplash, 1700);
 
-  $$('.mode-card').forEach(card => card.addEventListener('click', () => {
-    App.prefs.mode = card.dataset.mode;
-    persist(); renderHome(); Sound.click(); haptic(8);
+  // Mode buttons open that mode's sheet (they don't start the game)
+  $$('.mode-btn').forEach(btn => btn.addEventListener('click', () => {
+    Sound.click(); haptic(10);
+    if (btn.dataset.mode === 'computer') openCpuSheet(); else openPvpSheet();
   }));
 
-  chipsEl.addEventListener('click', e => {
-    const chip = e.target.closest('.chip');
-    if (!chip) return;
-    App.prefs.size = +chip.dataset.size;
-    persist(); renderHome(); scrollChipIntoView(true);
-    Sound.click(); haptic(8);
-  });
-
+  // All segmented controls: sheet choices and theme
   $$('.seg').forEach(seg => seg.addEventListener('click', e => {
     const btn = e.target.closest('button');
     if (!btn) return;
-    const key = seg.dataset.key, val = btn.dataset.val;
-    if (key === 'theme') { App.settings.theme = val; applyTheme(); }
-    else { App.prefs[key] = val; renderHome(); }
+    const group = seg.dataset.group, key = seg.dataset.key, val = btn.dataset.val;
+    if (group === 'settings') { App.settings.theme = val; applyTheme(); }
+    else if (group === 'shop') { ProfileUI.setTab(val); Sound.click(); return; }
+    else App.choices[group][key] = val;
+    if (group === 'pvp' && key === 'p1Mark') { App.choices.pvp.p1Mark = val; renderPvpMarks(); }
     setSeg(seg, val);
     persist(); Sound.click(); haptic(8);
   }));
 
-  $('#themeToggle').addEventListener('click', () => {
-    App.settings.theme = resolvedTheme() === 'dark' ? 'light' : 'dark';
-    applyTheme(); persist(); Sound.click(); haptic(8);
+  // vs Computer sheet
+  $('#cpuName').addEventListener('input', () => validateCpu(true));
+  $('#cpuSheet').addEventListener('submit', e => {
+    e.preventDefault();
+    if (!validateCpu()) { Sound.error(); haptic(40); return; }
+    App.names.solo = $('#cpuName').value.trim() || 'You';
+    startFromSheet('computer');
   });
 
-  // Play opens the names popup first (two names vs friend, your name vs computer)
-  $('#playBtn').addEventListener('click', () => { Sound.click(); haptic(12); openNames(); });
-  $('#namesForm').addEventListener('submit', submitNames);
-  $('#namesClose').addEventListener('click', () => { Sound.click(); closeNames(); });
-  nameFields.forEach(f => f.input.addEventListener('input', validateNames));
-  nameFields[0].input.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !vsAI()) { e.preventDefault(); nameFields[1].input.focus(); }
+  // vs Player sheet
+  ['#p1Name', '#p2Name'].forEach(id => $(id).addEventListener('input', () => validatePvp(true)));
+  $('#p1Name').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#p2Name').focus(); } });
+  $('#pvpSheet').addEventListener('submit', e => {
+    e.preventDefault();
+    if (!validatePvp()) { Sound.error(); haptic(40); return; }
+    const { a, b } = pvpErrors();
+    App.names.p1 = a; App.names.p2 = b;
+    startFromSheet('friend');
   });
 
-  boardEl.addEventListener('click', onCellTap);
+  // Settings
+  $$('[data-open-settings]').forEach(b => b.addEventListener('click', () => {
+    Sound.click(); haptic(8);
+    renderSettings(); hideResetConfirm(); $('#resetDone').textContent = ''; Backup.reset();
+    Sheets.open('settingsSheet');
+  }));
+  $('#soundToggle').addEventListener('click', () => { App.settings.sound = !App.settings.sound; renderSettings(); persist(); Sound.click(); });
+  $('#vibeToggle').addEventListener('click', () => { App.settings.vibration = !App.settings.vibration; renderSettings(); persist(); haptic(20); });
+  $('#resetScores').addEventListener('click', showResetConfirm);
+  $('#resetCancel').addEventListener('click', () => { Sound.click(); hideResetConfirm(); });
+  $('#resetYes').addEventListener('click', resetScores);
+
+  // Game screen
   $('#undoBtn').addEventListener('click', undo);
   $('#restartBtn').addEventListener('click', () => { Sound.click(); haptic(12); startGame(); });
   $('#backBtn').addEventListener('click', () => {
-    cancelAI();
     Sound.click(); haptic(8);
-    renderHome(); go('home');
+    if (gameInProgress()) openModal('leaveModal'); else leaveGame();
   });
-  $('#zoomIn').addEventListener('click', () => { zoomBy(1.3); haptic(8); });
-  $('#zoomOut').addEventListener('click', () => { zoomBy(1 / 1.3); haptic(8); });
-  $('#zoomFit').addEventListener('click', () => { fitView(); haptic(8); });
+  $('#leaveStay').addEventListener('click', () => { Sound.click(); closeModal('leaveModal'); });
+  $('#leaveGo').addEventListener('click', () => { Sound.click(); leaveGame(); });
+  $('#againBtn').addEventListener('click', () => { closeModal('resultModal'); Sound.click(); startGame(); });
+  $('#homeBtn').addEventListener('click', () => { Sound.click(); leaveGame(); });
 
-  $('#againBtn').addEventListener('click', () => { hideResult(); Sound.click(); startGame(); });
-  $('#homeBtn').addEventListener('click', () => { hideResult(); Sound.click(); renderHome(); go('home'); });
-
-  $$('[data-open-settings]').forEach(b => b.addEventListener('click', () => { Sound.click(); haptic(8); openSheet(); }));
-  $('#closeSheet').addEventListener('click', closeSheet);
-  $('#sheetBackdrop').addEventListener('click', closeSheet);
+  // Keyboard: Escape closes the top layer; arrow keys change level on home
   document.addEventListener('keydown', e => {
-    if (e.key !== 'Escape') return;
-    closeSheet();
-    if ($('#namesModal').classList.contains('open')) closeNames();
+    if (e.key === 'Escape') {
+      if (isModalOpen('leaveModal')) closeModal('leaveModal');
+      else if (isModalOpen('levelModal')) closeModal('levelModal');
+      else if (Sheets.isOpen()) Sheets.close();
+      return;
+    }
+    if (App.screen === 'home' && !Sheets.isOpen() && !e.target.closest('input, textarea')) {
+      if (e.key === 'ArrowLeft') Level.step(-1);
+      if (e.key === 'ArrowRight') Level.step(1);
+    }
   });
-
-  $('#soundToggle').addEventListener('click', () => { App.settings.sound = !App.settings.sound; renderSettings(); persist(); Sound.click(); });
-  $('#vibeToggle').addEventListener('click', () => { App.settings.vibration = !App.settings.vibration; renderSettings(); persist(); haptic(20); });
-  $('#resetScores').addEventListener('click', resetScores);
 }
 
 init();
