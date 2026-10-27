@@ -1,100 +1,1547 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tic-Tac-Toe — vs. the Machine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#120f33">
+<title>Tic Tac Toe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================
+   1. DESIGN TOKENS
+   ========================================================= */
+:root {
+  --radius-sm: 12px;
+  --radius: 18px;
+  --radius-lg: 26px;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
+  --fast: 120ms;
+  --med: 260ms;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --primary: #7c5cff;
+  --primary-2: #5b3df5;
+  --primary-edge: #3f26b8;
+  --accent: #fbbf24;
+  --danger: #f43f5e;
+}
+
+/* Dark theme (default) */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-1: #0d0b26;
+  --bg-2: #1a1446;
+  --bg-3: #2b1352;
+  --blob-1: rgba(34, 211, 238, .22);
+  --blob-2: rgba(244, 114, 182, .22);
+  --text: #f4f4ff;
+  --muted: #a7aad6;
+  --glass: rgba(255, 255, 255, .07);
+  --glass-strong: rgba(255, 255, 255, .11);
+  --glass-border: rgba(255, 255, 255, .14);
+  --cell: rgba(255, 255, 255, .06);
+  --cell-border: rgba(255, 255, 255, .12);
+  --cell-active: rgba(255, 255, 255, .14);
+  --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  --edge: rgba(0, 0, 0, .45);
+  --track: rgba(255, 255, 255, .18);
+  --sheet: rgba(24, 20, 60, .92);
+  --x: #22d3ee;
+  --x-glow: rgba(34, 211, 238, .75);
+  --o: #f472b6;
+  --o-glow: rgba(244, 114, 182, .75);
+}
+
+/* Light theme */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg-1: #eef2ff;
+  --bg-2: #fdf2f8;
+  --bg-3: #e0f2fe;
+  --blob-1: rgba(34, 211, 238, .30);
+  --blob-2: rgba(244, 114, 182, .28);
+  --text: #1e1b4b;
+  --muted: #545a85;
+  --glass: rgba(255, 255, 255, .55);
+  --glass-strong: rgba(255, 255, 255, .75);
+  --glass-border: rgba(255, 255, 255, .85);
+  --cell: rgba(255, 255, 255, .55);
+  --cell-border: rgba(255, 255, 255, .95);
+  --cell-active: rgba(255, 255, 255, .9);
+  --shadow: 0 10px 30px rgba(76, 64, 160, .16);
+  --edge: rgba(91, 80, 170, .28);
+  --track: rgba(30, 27, 75, .18);
+  --sheet: rgba(255, 255, 255, .94);
+  --x: #0891b2;
+  --x-glow: rgba(8, 145, 178, .45);
+  --o: #db2777;
+  --o-glow: rgba(219, 39, 119, .4);
+}
+
+/* =========================================================
+   2. BASE
+   ========================================================= */
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: 'Fredoka', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--text);
+  background: linear-gradient(160deg, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-3) 100%);
+  background-attachment: fixed;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  transition: background-color var(--med) ease, color var(--med) ease;
+}
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+svg.lucide { width: 22px; height: 22px; stroke-width: 2.2; flex-shrink: 0; }
+
+/* Soft background blobs (static, cheap to render) */
+.bg-blob {
+  position: fixed; border-radius: 50%; filter: blur(60px);
+  pointer-events: none; z-index: 0;
+}
+.bg-blob.b1 { width: 280px; height: 280px; background: var(--blob-1); top: -80px; left: -90px; }
+.bg-blob.b2 { width: 320px; height: 320px; background: var(--blob-2); bottom: -110px; right: -110px; }
+
+/* =========================================================
+   3. APP SHELL + SCREEN TRANSITIONS
+   ========================================================= */
+.app {
+  position: relative; z-index: 1;
+  height: 100vh; height: 100dvh;
+  max-width: 520px; margin: 0 auto;
+  overflow: hidden;
+}
+.screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  padding: calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 8px);
+  opacity: 0;
+  transform: translateX(32px);
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--med) var(--ease), transform var(--med) var(--ease), visibility 0s linear var(--med);
+}
+.screen.past { transform: translateX(-32px); }
+.screen.active {
+  opacity: 1; transform: none; visibility: visible; pointer-events: auto;
+  transition-delay: 0s;
+}
+
+/* =========================================================
+   4. SHARED COMPONENTS
+   ========================================================= */
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+/* Top bar */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s2); min-height: 52px; flex-shrink: 0;
+}
+.icon-btn {
+  width: 46px; height: 46px; border-radius: 15px;
+  display: grid; place-items: center;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 0 var(--edge);
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease, background var(--fast) ease;
+}
+.icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--edge); background: var(--glass-strong); }
+
+/* Theme toggle shows sun or moon depending on theme */
+.theme-toggle .i-sun, :root[data-theme="light"] .theme-toggle .i-moon { display: none; }
+:root[data-theme="light"] .theme-toggle .i-sun { display: block; }
+
+/* 3D press-down button */
+.btn3d {
+  --c1: #8f73ff; --c2: var(--primary-2); --bedge: var(--primary-edge);
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
+  min-height: 52px; padding: 0 var(--s5);
+  border-radius: var(--radius);
+  font-weight: 600; font-size: 17px; color: #fff;
+  background: linear-gradient(180deg, var(--c1), var(--c2));
+  box-shadow: 0 6px 0 var(--bedge), 0 12px 22px rgba(60, 30, 180, .3);
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease, filter var(--fast) ease, opacity var(--fast) ease;
+}
+.btn3d:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--bedge), 0 4px 10px rgba(60, 30, 180, .25); }
+.btn3d.ghost {
+  --c1: var(--glass-strong); --c2: var(--glass); --bedge: var(--edge);
+  color: var(--text); border: 1px solid var(--glass-border);
+  box-shadow: 0 6px 0 var(--bedge);
+}
+.btn3d.ghost:active { box-shadow: 0 1px 0 var(--bedge); }
+.btn3d.danger { --c1: #fb7185; --c2: #e11d48; --bedge: #9f1239; box-shadow: 0 6px 0 var(--bedge); }
+.btn3d.danger:active { box-shadow: 0 1px 0 var(--bedge); }
+.btn3d:disabled { opacity: .45; filter: grayscale(.4); pointer-events: none; }
+.btn3d.big { min-height: 62px; font-size: 21px; border-radius: 22px; width: 100%; letter-spacing: .3px; }
+.btn3d.big svg.lucide { width: 26px; height: 26px; fill: currentColor; }
+
+/* Segmented control with sliding thumb */
+.seg {
+  --count: 3; --idx: 0;
+  position: relative;
+  display: grid; grid-template-columns: repeat(var(--count), 1fr);
+  padding: 4px; border-radius: 16px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+}
+.seg-thumb {
+  position: absolute; top: 4px; bottom: 4px; left: 4px;
+  width: calc((100% - 8px) / var(--count));
+  border-radius: 12px;
+  background: linear-gradient(180deg, #8f73ff, var(--primary-2));
+  box-shadow: 0 3px 0 var(--primary-edge), 0 6px 14px rgba(91, 61, 245, .35);
+  transform: translateX(calc(var(--idx) * 100%));
+  transition: transform var(--med) var(--ease);
+}
+.seg button {
+  position: relative; z-index: 1;
+  min-height: 46px; padding: 4px 6px; border-radius: 12px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-weight: 600; font-size: 16px; color: var(--muted);
+  transition: color var(--med) ease, transform var(--fast) ease;
+}
+.seg button:active { transform: scale(.95); }
+.seg button[aria-checked="true"] { color: #fff; }
+.seg button small { font-size: 12px; font-weight: 500; opacity: .85; line-height: 1.1; }
+.seg .mini-mark { width: 22px; height: 22px; }
+
+/* Small X / O marks used in pills, cards and buttons */
+.mini-mark { width: 18px; height: 18px; display: block; }
+.mini-mark path, .mini-mark circle { fill: none; stroke-width: 15; stroke-linecap: round; }
+.mini-mark.x path { stroke: var(--x); }
+.mini-mark.o circle { stroke: var(--o); }
+.seg button[aria-checked="true"] .mini-mark path,
+.seg button[aria-checked="true"] .mini-mark circle { stroke: #fff; }
+
+.section-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 6px 2px;
+}
+.section-label svg.lucide { width: 16px; height: 16px; }
+
+.footer {
+  text-align: center; font-size: 13px; color: var(--muted);
+  padding-top: 6px; flex-shrink: 0;
+}
+.footer b { color: var(--text); font-weight: 600; }
+
+/* =========================================================
+   5. SPLASH SCREEN
+   ========================================================= */
+#splash { align-items: center; justify-content: center; gap: var(--s4); text-align: center; }
+.logo { width: 120px; height: 120px; overflow: visible; }
+.logo .grid-line { stroke: var(--muted); stroke-width: 6; stroke-linecap: round; opacity: .55; }
+.logo .lx { stroke: var(--x); stroke-width: 11; stroke-linecap: round; fill: none; filter: drop-shadow(0 0 6px var(--x-glow)); }
+.logo .lo { stroke: var(--o); stroke-width: 11; stroke-linecap: round; fill: none; filter: drop-shadow(0 0 6px var(--o-glow)); }
+.logo .draw { stroke-dasharray: 100; stroke-dashoffset: 100; }
+#splash.active .logo .draw { animation: draw 280ms var(--ease) forwards; }
+#splash.active .logo .d1 { animation-delay: 100ms; }
+#splash.active .logo .d2 { animation-delay: 180ms; }
+#splash.active .logo .d3 { animation-delay: 260ms; }
+#splash.active .logo .d4 { animation-delay: 340ms; }
+#splash.active .logo .d5 { animation-delay: 520ms; }
+#splash.active .logo .d6 { animation-delay: 600ms; }
+#splash.active .logo .d7 { animation-delay: 760ms; }
+.splash-title {
+  font-size: 40px; font-weight: 700; margin: 0; line-height: 1.05;
+  background: linear-gradient(90deg, var(--x), var(--primary), var(--o));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  opacity: 0; transform: translateY(10px);
+}
+#splash.active .splash-title { animation: rise 280ms var(--ease) 820ms forwards; }
+.splash-sub { color: var(--muted); margin: 0; opacity: 0; }
+#splash.active .splash-sub { animation: rise 280ms var(--ease) 960ms forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes rise { to { opacity: 1; transform: none; } }
+
+/* =========================================================
+   6. HOME SCREEN
+   ========================================================= */
+.home-scroll {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 2px 2px var(--s3);
+  display: flex; flex-direction: column; gap: 14px;
+  scrollbar-width: none;
+  /* soft fade at the bottom edge hints that the list scrolls */
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 18px), transparent);
+  mask-image: linear-gradient(#000 calc(100% - 18px), transparent);
+}
+.home-scroll::-webkit-scrollbar { display: none; }
+.hero { display: flex; align-items: center; gap: var(--s3); padding: 0 2px; }
+.hero .logo { width: 54px; height: 54px; }
+.hero h1 { margin: 0; font-size: 30px; line-height: 1.05; font-weight: 700; }
+.hero h1 span { color: var(--o); }
+.hero h1 em { font-style: normal; color: var(--x); }
+.hero p { margin: 2px 0 0; color: var(--muted); }
+
+.mode-cards { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); }
+.mode-card {
+  position: relative; text-align: left;
+  padding: 14px; border-radius: var(--radius-lg);
+  min-height: 0;
+  display: flex; flex-direction: column; gap: 3px;
+  transition: transform var(--fast) ease, border-color var(--med) ease, box-shadow var(--med) ease;
+}
+.mode-card:active { transform: scale(.97); }
+.mode-card .mc-icon {
+  width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center;
+  margin-bottom: 3px; background: var(--glass-strong); color: var(--muted);
+  transition: background var(--med) ease, color var(--med) ease;
+}
+.mode-card b { font-size: 18px; font-weight: 600; }
+.mode-card span { font-size: 14px; color: var(--muted); }
+.mode-card[aria-checked="true"] {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary), 0 12px 26px rgba(124, 92, 255, .3);
+}
+.mode-card[aria-checked="true"] .mc-icon { background: linear-gradient(180deg, #8f73ff, var(--primary-2)); color: #fff; }
+.mode-card .check {
+  position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--glass-border); transition: all var(--med) ease;
+}
+.mode-card[aria-checked="true"] .check { border-color: var(--primary); background: var(--primary); box-shadow: inset 0 0 0 4px var(--glass-strong); }
+
+/* Smooth collapse for the difficulty row */
+.collapsible { display: grid; grid-template-rows: 1fr; opacity: 1; transition: grid-template-rows var(--med) var(--ease), opacity var(--med) ease; }
+.collapsible > div { overflow: hidden; min-height: 0; }
+.collapsible.closed { grid-template-rows: 0fr; opacity: 0; margin-top: calc(var(--s4) * -1); }
+
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s4) var(--s3); }
+.home-bottom { flex-shrink: 0; padding-top: var(--s2); }
+
+/* =========================================================
+   7. GAME SCREEN
+   ========================================================= */
+.turn-pill {
+  flex: 1; max-width: 220px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 14px; border-radius: 99px;
+  font-weight: 600; font-size: 16px;
+  white-space: nowrap; overflow: hidden;
+}
+.turn-pill .mini-mark { width: 20px; height: 20px; }
+.turn-pill .label { overflow: hidden; text-overflow: ellipsis; }
+.turn-pill.swap { animation: pop 220ms var(--ease); }
+@keyframes pop { 0% { transform: scale(.92); opacity: .5; } 100% { transform: none; opacity: 1; } }
+
+.players {
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--s2);
+  align-items: stretch; margin-top: var(--s3); flex-shrink: 0;
+}
+.player-card {
+  --mc: var(--x); --mg: var(--x-glow);
+  position: relative;
+  display: flex; align-items: center; gap: var(--s2);
+  padding: 10px; border-radius: var(--radius);
+  min-width: 0;
+  transition: transform var(--med) var(--ease);
+}
+.player-card.mark-o { --mc: var(--o); --mg: var(--o-glow); }
+.player-card.right { flex-direction: row-reverse; text-align: right; }
+.player-card::after {
+  content: ''; position: absolute; inset: -1px; border-radius: inherit;
+  border: 2px solid var(--mc); box-shadow: 0 0 18px var(--mg), inset 0 0 12px var(--mg);
+  opacity: 0; transition: opacity var(--med) ease; pointer-events: none;
+}
+.player-card.active { transform: translateY(-2px) scale(1.03); }
+.player-card.active::after { opacity: 1; animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+.avatar {
+  position: relative; width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0;
+  display: grid; place-items: center; color: #fff;
+  background: linear-gradient(160deg, var(--mc), var(--primary-2));
+}
+.avatar .badge {
+  position: absolute; bottom: -5px; right: -5px; width: 20px; height: 20px; border-radius: 7px;
+  display: grid; place-items: center; background: var(--sheet); border: 1px solid var(--glass-border);
+}
+.player-card.right .avatar .badge { right: auto; left: -5px; }
+.avatar .badge .mini-mark { width: 12px; height: 12px; }
+.pinfo { min-width: 0; display: flex; flex-direction: column; }
+.pname { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pscore { font-size: 24px; font-weight: 700; line-height: 1.05; color: var(--mc); }
+.draws {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-width: 52px; padding: 6px; border-radius: var(--radius);
+}
+.draws span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+.draws b { font-size: 22px; font-weight: 700; }
+.bump { animation: bump 260ms var(--ease); }
+@keyframes bump { 50% { transform: scale(1.35); } }
+
+/* "thinking..." indicator, keeps its space so the layout does not jump */
+.status-line {
+  height: 30px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  color: var(--muted); font-size: 16px; flex-shrink: 0;
+  opacity: 0; transition: opacity 180ms ease;
+}
+.status-line.show { opacity: 1; }
+.dots { display: inline-flex; gap: 4px; }
+.dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--o); animation: blink 900ms infinite ease-in-out; }
+.dots i:nth-child(2) { animation-delay: 150ms; }
+.dots i:nth-child(3) { animation-delay: 300ms; }
+@keyframes blink { 0%, 80%, 100% { transform: scale(.6); opacity: .4; } 40% { transform: scale(1); opacity: 1; } }
+
+/* Board */
+.board-area { flex: 1; min-height: 0; display: grid; place-items: center; }
+.board-wrap { position: relative; width: 320px; height: 320px; }
+.board {
+  --n: 3; --gap: 10px; --pad: 12px; --cr: 18px;
+  width: 100%; height: 100%;
+  display: grid; grid-template-columns: repeat(var(--n), 1fr); grid-template-rows: repeat(var(--n), 1fr);
+  gap: var(--gap); padding: var(--pad);
+  border-radius: calc(var(--cr) + var(--pad));
+}
+.board[data-size="4"] { --gap: 8px; --pad: 10px; --cr: 14px; }
+.board[data-size="6"] { --gap: 5px; --pad: 7px; --cr: 10px; }
+.board.enter { animation: boardIn 280ms var(--ease); }
+@keyframes boardIn { from { opacity: 0; transform: scale(.94); } }
+
+/* Cells: plain frosted glass so marks stand out */
+.cell {
+  position: relative; min-width: 0; min-height: 0;
+  border-radius: var(--cr);
+  background: var(--cell);
+  border: 1px solid var(--cell-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12);
+  display: grid; place-items: center;
+  transition: background var(--fast) ease, transform var(--fast) ease, opacity var(--med) ease;
+}
+.cell:active:not(.filled) { transform: scale(.94); background: var(--cell-active); }
+.cell.filled { cursor: default; }
+.cell svg { width: 72%; height: 72%; overflow: visible; }
+.cell path, .cell circle { fill: none; stroke-width: 13; stroke-linecap: round; }
+.cell.x path { stroke: var(--x); filter: drop-shadow(0 0 5px var(--x-glow)); }
+.cell.o circle { stroke: var(--o); filter: drop-shadow(0 0 5px var(--o-glow)); }
+/* SVG stroke draw animation */
+.cell .stroke { stroke-dasharray: 100; stroke-dashoffset: 100; animation: draw 220ms var(--ease) forwards; }
+.cell .stroke.second { animation-delay: 90ms; }
+.cell.instant .stroke { animation: none; stroke-dashoffset: 0; }
+.cell.o circle { transform: rotate(-90deg); transform-origin: 50% 50%; }
+.cell.win { background: var(--cell-active); }
+.cell.win.x { box-shadow: 0 0 16px var(--x-glow); }
+.cell.win.o { box-shadow: 0 0 16px var(--o-glow); }
+.board.done .cell:not(.win) { opacity: .28; }
+
+/* Winning line overlay */
+.win-line { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.win-line line {
+  stroke-width: 9; stroke-linecap: round; stroke: #fff;
+  transition: stroke-dashoffset 280ms var(--ease);
+}
+.win-line.x line { filter: drop-shadow(0 0 8px var(--x)) drop-shadow(0 0 3px var(--x)); }
+.win-line.o line { filter: drop-shadow(0 0 8px var(--o)) drop-shadow(0 0 3px var(--o)); }
+
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); padding-top: var(--s3); flex-shrink: 0; }
+
+/* =========================================================
+   8. RESULT POPUP
+   ========================================================= */
+.overlay {
+  position: fixed; inset: 0; z-index: 20;
+  background: rgba(6, 5, 22, .55);
+  opacity: 0; pointer-events: none; visibility: hidden;
+  transition: opacity var(--med) ease, visibility 0s linear var(--med);
+}
+.overlay.open { opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+.modal { display: grid; place-items: center; padding: 16px; }
+.modal-card {
+  width: min(100%, 360px); max-height: calc(100dvh - 32px); overflow-y: auto;
+  padding: var(--s5) var(--s5) var(--s4); border-radius: 28px; text-align: center;
+  background: var(--sheet); border: 1px solid var(--glass-border); box-shadow: var(--shadow);
+  transform: scale(.9) translateY(12px); transition: transform var(--med) var(--ease);
+}
+.overlay.open .modal-card { transform: none; }
+.result-icon {
+  width: 84px; height: 84px; margin: 0 auto var(--s3); border-radius: 26px;
+  display: grid; place-items: center; color: #fff;
+  background: linear-gradient(160deg, var(--accent), #f97316);
+  box-shadow: 0 6px 0 #b45309, 0 14px 26px rgba(249, 115, 22, .35);
+}
+.result-icon svg.lucide { width: 44px; height: 44px; }
+.result-icon.lose { background: linear-gradient(160deg, #94a3b8, #475569); box-shadow: 0 6px 0 #334155; }
+.result-icon.draw { background: linear-gradient(160deg, #a78bfa, var(--primary-2)); box-shadow: 0 6px 0 var(--primary-edge); }
+.modal-card h2 { margin: 0; font-size: 32px; font-weight: 700; }
+.modal-card p { margin: 6px 0 var(--s5); color: var(--muted); }
+.modal-actions { display: grid; gap: var(--s4); }
+
+/* =========================================================
+   9. SETTINGS BOTTOM SHEET
+   ========================================================= */
+.sheet {
+  position: fixed; z-index: 21; left: 0; right: 0; bottom: 0;
+  max-width: 520px; margin: 0 auto;
+  max-height: 85vh; max-height: 85dvh; overflow-y: auto;
+  padding: 10px var(--s4) calc(env(safe-area-inset-bottom) + var(--s4));
+  border-radius: 28px 28px 0 0;
+  background: var(--sheet); border: 1px solid var(--glass-border); border-bottom: 0;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, .3);
+  transform: translateY(105%); visibility: hidden;
+  transition: transform 280ms var(--ease), visibility 0s linear 280ms;
+}
+.sheet.open { transform: none; visibility: visible; transition-delay: 0s; }
+.sheet-handle { width: 44px; height: 5px; border-radius: 99px; background: var(--track); margin: 0 auto 10px; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--s3); }
+.sheet-head h3 { margin: 0; font-size: 22px; font-weight: 600; }
+.set-list { display: grid; gap: var(--s3); }
+.set-row {
+  width: 100%; min-height: 60px; padding: 10px 14px; border-radius: var(--radius);
+  display: flex; align-items: center; gap: var(--s3); text-align: left;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  transition: transform var(--fast) ease, background var(--fast) ease;
+}
+button.set-row:active { transform: scale(.98); background: var(--glass-strong); }
+.set-row .ri { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--glass-strong); color: var(--primary); }
+.set-row .rt { flex: 1; font-weight: 500; }
+.set-row .rt small { display: block; color: var(--muted); font-size: 13px; font-weight: 400; }
+.set-theme { display: block; }
+.set-theme .seg { margin-top: 10px; }
+.switch {
+  position: relative; width: 52px; height: 32px; border-radius: 99px; flex-shrink: 0;
+  background: var(--track); transition: background var(--med) ease;
+}
+.switch::after {
+  content: ''; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+  transition: transform var(--med) var(--ease);
+}
+[aria-checked="true"] > .switch { background: var(--primary); }
+[aria-checked="true"] > .switch::after { transform: translateX(20px); }
+#resetScores { width: 100%; margin-top: var(--s2); }
+
+/* Confetti canvas sits above everything */
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; }
+
+/* =========================================================
+   10. RESPONSIVE + REDUCED MOTION
+   ========================================================= */
+@media (min-width: 768px) {
+  .screen { padding-left: 24px; padding-right: 24px; }
+  .hero h1 { font-size: 36px; }
+}
+@media (min-width: 1024px) {
+  .app { max-width: 560px; }
+}
+@media (max-width: 350px) {
+  .player-card { padding: 8px; gap: 6px; }
+  .avatar { width: 34px; height: 34px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+}
+</style>
 </head>
 <body>
 
-<div class="card">
-  <div class="masthead">
-    <div class="eyebrow">You vs. an unbeaten mind</div>
-    <h1>Tic-Tac-<em>Toe</em></h1>
-    <p class="tagline">Outsmart the machine, one square at a time</p>
-    <div class="seg mode-seg" id="mode-group">
-      <button class="seg-btn active" data-mode="computer">vs Computer</button>
-      <button class="seg-btn" data-mode="friend">vs Friend</button>
-    </div>
-  </div>
+<div class="bg-blob b1"></div>
+<div class="bg-blob b2"></div>
 
-  <div class="status-row">
-    <span class="pill" id="status-pill"><span class="dot"></span><span id="status-text">Your move</span></span>
-  </div>
+<main class="app">
 
-  <div class="board-wrap">
-    <div class="board" id="board"></div>
-    <div class="win-line" id="win-line"></div>
-  </div>
+  <!-- ================= SPLASH ================= -->
+  <section class="screen active" id="splash" aria-label="Splash">
+    <svg class="logo" viewBox="0 0 120 120" aria-hidden="true">
+      <path class="grid-line draw d1" pathLength="100" d="M44 10 V110"/>
+      <path class="grid-line draw d2" pathLength="100" d="M76 10 V110"/>
+      <path class="grid-line draw d3" pathLength="100" d="M10 44 H110"/>
+      <path class="grid-line draw d4" pathLength="100" d="M10 76 H110"/>
+      <path class="lx draw d5" pathLength="100" d="M16 16 L38 38"/>
+      <path class="lx draw d6" pathLength="100" d="M38 16 L16 38"/>
+      <circle class="lo draw d7" pathLength="100" cx="93" cy="93" r="11" transform="rotate(-90 93 93)"/>
+    </svg>
+    <h1 class="splash-title">Tic Tac Toe</h1>
+    <p class="splash-sub">Tap to start</p>
+  </section>
 
-  <div class="controls">
-    <div class="control-row" id="difficulty-row">
-      <span class="label">Difficulty</span>
-      <div class="seg" id="difficulty-group">
-        <button class="seg-btn" data-level="easy">Easy</button>
-        <button class="seg-btn active" data-level="medium">Medium</button>
-        <button class="seg-btn" data-level="hard">Hard</button>
+  <!-- ================= HOME ================= -->
+  <section class="screen" id="home" aria-label="Home">
+    <header class="topbar">
+      <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Toggle light or dark theme">
+        <i data-lucide="moon" class="i-moon"></i><i data-lucide="sun" class="i-sun"></i>
+      </button>
+      <button class="icon-btn" data-open-settings aria-label="Settings"><i data-lucide="settings"></i></button>
+    </header>
+
+    <div class="home-scroll">
+      <div class="hero">
+        <svg class="logo" viewBox="0 0 120 120" aria-hidden="true">
+          <path class="grid-line" d="M44 10 V110 M76 10 V110 M10 44 H110 M10 76 H110"/>
+          <path class="lx" d="M16 16 L38 38 M38 16 L16 38"/>
+          <circle class="lo" cx="93" cy="93" r="11"/>
+        </svg>
+        <div>
+          <h1><em>Tic</em> Tac <span>Toe</span></h1>
+          <p>Classic game, fresh look</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label"><i data-lucide="gamepad-2"></i>Game mode</div>
+        <div class="mode-cards" role="radiogroup" aria-label="Game mode">
+          <button class="mode-card glass" role="radio" data-mode="computer">
+            <span class="check"></span>
+            <span class="mc-icon"><i data-lucide="bot"></i></span>
+            <b>vs Computer</b><span>Beat the machine</span>
+          </button>
+          <button class="mode-card glass" role="radio" data-mode="friend">
+            <span class="check"></span>
+            <span class="mc-icon"><i data-lucide="users"></i></span>
+            <b>vs Friend</b><span>Pass and play</span>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label"><i data-lucide="grid-3x3"></i>Board size</div>
+        <div class="seg" data-key="size" role="radiogroup" aria-label="Board size">
+          <span class="seg-thumb"></span>
+          <button role="radio" data-val="3">3×3<small>3 in a row</small></button>
+          <button role="radio" data-val="4">4×4<small>4 in a row</small></button>
+          <button role="radio" data-val="6">6×6<small>4 in a row</small></button>
+        </div>
+      </div>
+
+      <div class="collapsible" id="difficultyBlock">
+        <div>
+          <div class="section-label"><i data-lucide="gauge"></i>Difficulty</div>
+          <div class="seg" data-key="difficulty" role="radiogroup" aria-label="Difficulty">
+            <span class="seg-thumb"></span>
+            <button role="radio" data-val="easy">Easy</button>
+            <button role="radio" data-val="medium">Medium</button>
+            <button role="radio" data-val="hard">Hard</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <div class="section-label" id="markLabel">You play as</div>
+          <div class="seg" data-key="p1Mark" role="radiogroup" aria-labelledby="markLabel">
+            <span class="seg-thumb"></span>
+            <button role="radio" data-val="X" aria-label="X" class="mark-opt"></button>
+            <button role="radio" data-val="O" aria-label="O" class="mark-opt"></button>
+          </div>
+        </div>
+        <div>
+          <div class="section-label" id="starterLabel">First move</div>
+          <div class="seg" data-key="starter" role="radiogroup" aria-labelledby="starterLabel">
+            <span class="seg-thumb"></span>
+            <button role="radio" data-val="p1" id="starterP1">You</button>
+            <button role="radio" data-val="p2" id="starterP2">Machine</button>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="btn-row">
-      <button class="reset-btn" id="reset-btn">New Game</button>
-      <button class="reset-scores-btn" id="reset-scores-btn">Reset</button>
-    </div>
-  </div>
 
-  <div class="scoreboard">
-    <div class="score-item x">
-      <div class="num" id="score-x">0</div>
-      <div class="lbl" id="label-x">You</div>
+    <div class="home-bottom">
+      <button class="btn3d big" id="playBtn"><i data-lucide="play"></i>Play</button>
+      <div class="footer">Made by <b>Mubashar Akram</b></div>
     </div>
-    <div class="score-item">
-      <div class="num" id="score-draw">0</div>
-      <div class="lbl">Draws</div>
-    </div>
-    <div class="score-item o">
-      <div class="num" id="score-o">0</div>
-      <div class="lbl" id="label-o">Machine</div>
-    </div>
-  </div>
+  </section>
 
-  <div class="credit">Made by <span>Mubashar Akram</span></div>
-</div>
+  <!-- ================= GAME ================= -->
+  <section class="screen" id="game" aria-label="Game">
+    <header class="topbar">
+      <button class="icon-btn" id="backBtn" aria-label="Back to home"><i data-lucide="arrow-left"></i></button>
+      <div class="turn-pill glass" id="turnPill" aria-live="polite"></div>
+      <button class="icon-btn" data-open-settings aria-label="Settings"><i data-lucide="settings"></i></button>
+    </header>
 
-<div class="modal-overlay" id="names-modal">
+    <div class="players">
+      <div class="player-card glass" id="cardP1">
+        <div class="avatar"><span class="av-icon"></span><span class="badge"></span></div>
+        <div class="pinfo"><span class="pname">You</span><span class="pscore">0</span></div>
+      </div>
+      <div class="draws glass"><span>Draw</span><b id="scoreDraw">0</b></div>
+      <div class="player-card glass right" id="cardP2">
+        <div class="avatar"><span class="av-icon"></span><span class="badge"></span></div>
+        <div class="pinfo"><span class="pname">Machine</span><span class="pscore">0</span></div>
+      </div>
+    </div>
+
+    <div class="status-line" id="thinking" aria-hidden="true">
+      <span class="dots"><i></i><i></i><i></i></span><span>Machine is thinking...</span>
+    </div>
+
+    <div class="board-area" id="boardArea">
+      <div class="board-wrap" id="boardWrap">
+        <div class="board glass" id="board" role="grid" aria-label="Game board"></div>
+        <svg class="win-line" id="winLine" aria-hidden="true"><line x1="0" y1="0" x2="0" y2="0"/></svg>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn3d ghost" id="undoBtn"><i data-lucide="undo-2"></i>Undo</button>
+      <button class="btn3d ghost" id="restartBtn"><i data-lucide="rotate-ccw"></i>Restart</button>
+    </div>
+    <div class="footer">Made by <b>Mubashar Akram</b></div>
+  </section>
+</main>
+
+<!-- ================= RESULT POPUP ================= -->
+<div class="overlay modal" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
   <div class="modal-card">
-    <button class="modal-x-btn" id="names-x-btn" aria-label="Close">✕</button>
-    <div class="eyebrow">Before you begin</div>
-    <h2>Who's playing?</h2>
-    <div class="modal-field">
-      <span class="label">Player 1 (X)</span>
-      <input type="text" id="player1-input" class="name-input" placeholder="Player 1" maxlength="14">
+    <div class="result-icon" id="resultIcon"></div>
+    <h2 id="resultTitle">You Win!</h2>
+    <p id="resultSub">Great moves.</p>
+    <div class="modal-actions">
+      <button class="btn3d" id="againBtn"><i data-lucide="rotate-ccw"></i>Play Again</button>
+      <button class="btn3d ghost" id="homeBtn"><i data-lucide="house"></i>Home</button>
     </div>
-    <div class="modal-field">
-      <span class="label">Player 2 (O)</span>
-      <input type="text" id="player2-input" class="name-input" placeholder="Player 2" maxlength="14">
-    </div>
-    <button class="reset-btn" id="names-start-btn">Start Game</button>
-    <button class="modal-close-btn" id="names-cancel-btn">Close</button>
-    <div class="credit">Made by <span>Mubashar Akram</span></div>
   </div>
 </div>
 
-<div class="modal-overlay" id="result-modal">
-  <div class="modal-card">
-    <div class="result-icon" id="result-icon">🎉</div>
-    <h2 id="result-title">You Win!</h2>
-    <p class="result-sub" id="result-sub">Nice moves.</p>
-    <button class="reset-btn" id="result-play-again-btn">Play Again</button>
-    <button class="modal-close-btn" id="result-close-btn">Close</button>
-    <div class="credit">Made by <span>Mubashar Akram</span></div>
+<!-- ================= SETTINGS SHEET ================= -->
+<div class="overlay" id="sheetBackdrop"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-handle"></div>
+  <div class="sheet-head">
+    <h3 id="sheetTitle">Settings</h3>
+    <button class="icon-btn" id="closeSheet" aria-label="Close settings"><i data-lucide="x"></i></button>
+  </div>
+  <div class="set-list">
+    <button class="set-row" role="switch" id="soundToggle">
+      <span class="ri"><i data-lucide="volume-2"></i></span>
+      <span class="rt">Sound<small>Tap, win and lose effects</small></span>
+      <span class="switch"></span>
+    </button>
+    <button class="set-row" role="switch" id="vibeToggle">
+      <span class="ri"><i data-lucide="vibrate"></i></span>
+      <span class="rt">Vibration<small>Haptic feedback on supported phones</small></span>
+      <span class="switch"></span>
+    </button>
+    <div class="set-row set-theme">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="ri"><i data-lucide="palette"></i></span>
+        <span class="rt">Theme<small>Auto follows the time of day</small></span>
+      </div>
+      <div class="seg" data-key="theme" role="radiogroup" aria-label="Theme">
+        <span class="seg-thumb"></span>
+        <button role="radio" data-val="auto">Auto</button>
+        <button role="radio" data-val="light">Light</button>
+        <button role="radio" data-val="dark">Dark</button>
+      </div>
+    </div>
+    <button class="btn3d danger" id="resetScores"><i data-lucide="trash-2"></i><span>Reset scores</span></button>
   </div>
 </div>
 
-<script src="script.js"></script>
+<canvas id="confetti"></canvas>
 
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script>
+'use strict';
+
+/* =========================================================================
+   PART A: GAME LOGIC (pure functions, no DOM)
+   Board is an array of 'X' | 'O' | null, indexed row * size + col.
+   ========================================================================= */
+const Logic = (() => {
+  const geoCache = {};
+
+  /** Win length: 3x3 needs 3 in a row, 4x4 and 6x6 need 4. */
+  const winLength = size => (size === 3 ? 3 : 4);
+
+  /**
+   * Builds (once per size) every possible winning segment.
+   * Each line is an ordered list of cell indices, so the first and last
+   * index are the two ends (used to draw the win line).
+   */
+  function geometry(size) {
+    if (geoCache[size]) return geoCache[size];
+    const k = winLength(size);
+    const n = size * size;
+    const lines = [];
+    const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]]; // right, down, diag, anti-diag
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        for (const [dr, dc] of dirs) {
+          const er = r + dr * (k - 1), ec = c + dc * (k - 1);
+          if (er < 0 || er >= size || ec < 0 || ec >= size) continue;
+          const line = [];
+          for (let s = 0; s < k; s++) line.push((r + dr * s) * size + (c + dc * s));
+          lines.push(line);
+        }
+      }
+    }
+    // For every cell: which lines pass through it (fast local win checks)
+    const cellLines = Array.from({ length: n }, () => []);
+    lines.forEach(line => line.forEach(i => cellLines[i].push(line)));
+    // For every cell: its 8 neighbours (used to prune AI moves on 6x6)
+    const neighbors = Array.from({ length: n }, (_, i) => {
+      const r = Math.floor(i / size), c = i % size, out = [];
+      for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+        if (!dr && !dc) continue;
+        const rr = r + dr, cc = c + dc;
+        if (rr >= 0 && rr < size && cc >= 0 && cc < size) out.push(rr * size + cc);
+      }
+      return out;
+    });
+    return (geoCache[size] = { size, n, k, lines, cellLines, neighbors });
+  }
+
+  /** Returns { winner, line } if someone won, { draw: true } if full, else null. */
+  function result(board, size) {
+    const { lines } = geometry(size);
+    for (const line of lines) {
+      const v = board[line[0]];
+      if (v && line.every(i => board[i] === v)) return { winner: v, line };
+    }
+    if (board.every(Boolean)) return { draw: true };
+    return null;
+  }
+
+  const other = mark => (mark === 'X' ? 'O' : 'X');
+
+  return { geometry, result, winLength, other };
+})();
+
+/* =========================================================================
+   PART B: AI
+   Internally uses an Int8Array: 0 = empty, 1 = AI, 2 = human.
+   ========================================================================= */
+const AI = (() => {
+  const WIN = 1e6;
+  const W3 = [0, 1, 10];          // score of an open line holding 0..2 marks (3x3)
+  const W4 = [0, 1, 12, 120];     // score of an open line holding 0..3 marks (4 in a row)
+  const DEFENSE = 1.2;            // weigh opponent threats a bit more
+  const TIME_BUDGET = 140;        // ms; plus the UI delay keeps replies under 300ms
+
+  let g, b, empty, deadline, nodes, aborted;
+
+  const randomOf = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  /** True if `p` owns a full line through cell i. */
+  function winsAt(i, p) {
+    for (const line of g.cellLines[i]) {
+      let ok = true;
+      for (const j of line) if (b[j] !== p) { ok = false; break; }
+      if (ok) return true;
+    }
+    return false;
+  }
+
+  /** First empty cell that wins immediately for p, or -1. */
+  function findWinning(p, cells) {
+    for (const i of cells) {
+      b[i] = p;
+      const w = winsAt(i, p);
+      b[i] = 0;
+      if (w) return i;
+    }
+    return -1;
+  }
+
+  /**
+   * Static evaluation from the AI's view. Only "open" lines count
+   * (lines with marks from one player only). More marks = much higher score.
+   * Cost: O(L * k) where L = number of lines.
+   */
+  function evaluate() {
+    const W = g.k === 3 ? W3 : W4;
+    let s = 0;
+    for (const line of g.lines) {
+      let a = 0, h = 0;
+      for (const i of line) { const v = b[i]; if (v === 1) a++; else if (v === 2) h++; }
+      if (a && h) continue;
+      if (a) s += W[a];
+      else if (h) s -= W[h] * DEFENSE;
+    }
+    return s;
+  }
+
+  /** How useful a cell is for both attack and defence. Used for move ordering. */
+  function cellPriority(i) {
+    const W = g.k === 3 ? W3 : W4;
+    let s = 0;
+    for (const line of g.cellLines[i]) {
+      let a = 0, h = 0;
+      for (const j of line) { const v = b[j]; if (v === 1) a++; else if (v === 2) h++; }
+      if (!h) s += W[a] + 1;
+      if (!a) s += W[h] * DEFENSE + 1;
+    }
+    return s;
+  }
+
+  /** Candidate moves. On 6x6 only cells next to existing marks (big speed win). */
+  function candidates() {
+    const out = [];
+    const prune = g.size === 6 && empty < g.n;
+    for (let i = 0; i < g.n; i++) {
+      if (b[i]) continue;
+      if (!prune || g.neighbors[i].some(j => b[j])) out.push(i);
+    }
+    if (!out.length) { // empty 6x6 board: start near the centre
+      const m = g.size / 2;
+      return [(m - 1) * g.size + m - 1, (m - 1) * g.size + m, m * g.size + m - 1, m * g.size + m];
+    }
+    return out;
+  }
+
+  function ordered(moves) {
+    return moves
+      .map(m => ({ m, p: cellPriority(m) }))
+      .sort((x, y) => y.p - x.p)
+      .map(o => o.m);
+  }
+
+  /**
+   * Negamax with alpha-beta pruning.
+   * `player` is the side to move. `last` is the move the opponent just made.
+   * Returns a score from `player`'s point of view.
+   */
+  function negamax(depth, alpha, beta, player, last, ply) {
+    if (last >= 0 && winsAt(last, 3 - player)) return -(WIN - ply); // opponent just won
+    if (empty === 0) return 0;                                       // draw
+    if (depth === 0) return player === 1 ? evaluate() : -evaluate();
+    if ((++nodes & 511) === 0 && performance.now() > deadline) { aborted = true; return 0; }
+
+    let moves = candidates();
+    if (depth > 1) moves = ordered(moves);
+    let best = -Infinity;
+    for (const m of moves) {
+      b[m] = player; empty--;
+      const s = -negamax(depth - 1, -beta, -alpha, 3 - player, m, ply + 1);
+      b[m] = 0; empty++;
+      if (aborted) return 0;
+      if (s > best) best = s;
+      if (s > alpha) alpha = s;
+      if (alpha >= beta) break; // prune
+    }
+    return best;
+  }
+
+  /** 3x3 hard: full minimax search. Unbeatable. Random choice among equal best moves. */
+  function perfect() {
+    deadline = Infinity; aborted = false; nodes = 0;
+    let bestScore = -Infinity, bestMoves = [];
+    for (const m of candidates()) {
+      b[m] = 1; empty--;
+      const s = -negamax(9, -Infinity, Infinity, 2, m, 1); // full window = exact score
+      b[m] = 0; empty++;
+      if (s > bestScore) { bestScore = s; bestMoves = [m]; }
+      else if (s === bestScore) bestMoves.push(m);
+    }
+    return randomOf(bestMoves);
+  }
+
+  /** 4x4 / 6x6 hard: iterative deepening up to depth 4, stops when time runs out. */
+  function deepSearch() {
+    deadline = performance.now() + TIME_BUDGET;
+    aborted = false; nodes = 0;
+    let moves = ordered(candidates());
+    let best = moves[0];
+    for (let depth = 1; depth <= 4; depth++) {
+      let alpha = -Infinity, bestHere = moves[0], bestScore = -Infinity;
+      for (const m of moves) {
+        b[m] = 1; empty--;
+        const s = -negamax(depth - 1, -Infinity, -alpha, 2, m, 1);
+        b[m] = 0; empty++;
+        if (aborted) break;
+        if (s > bestScore) { bestScore = s; bestHere = m; }
+        if (s > alpha) alpha = s;
+      }
+      if (aborted) break;                         // keep result of last full depth
+      best = bestHere;
+      moves = [best, ...moves.filter(m => m !== best)]; // best move first next round
+      if (bestScore > WIN - 100) break;           // forced win found
+    }
+    return best;
+  }
+
+  /** Public entry. Returns the cell index the AI wants to play. */
+  function chooseMove(board, size, aiMark, level) {
+    g = Logic.geometry(size);
+    b = Int8Array.from(board, v => (v === aiMark ? 1 : v ? 2 : 0));
+    empty = b.reduce((n, v) => n + (v === 0), 0);
+    const free = [];
+    for (let i = 0; i < g.n; i++) if (!b[i]) free.push(i);
+
+    if (level === 'easy') return randomOf(free);
+
+    // Always take a win, then always block an immediate loss
+    const win = findWinning(1, free);
+    if (win >= 0) return win;
+    const block = findWinning(2, free);
+    if (block >= 0) return block;
+
+    if (level === 'medium') {
+      if (Math.random() < 0.35) return randomOf(free);
+      let top = -Infinity, picks = [];
+      for (const i of free) {
+        const p = cellPriority(i);
+        if (p > top) { top = p; picks = [i]; } else if (p === top) picks.push(i);
+      }
+      return randomOf(picks);
+    }
+
+    return size === 3 ? perfect() : deepSearch();
+  }
+
+  return { chooseMove };
+})();
+
+/* =========================================================================
+   PART C: STORAGE (localStorage wrapped in try/catch)
+   ========================================================================= */
+const Store = (() => {
+  const KEY = 'ttt.v2';
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
+  }
+  function save(data) {
+    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* storage blocked */ }
+  }
+  return { load, save };
+})();
+
+/* =========================================================================
+   PART D: SOUND (Web Audio API, no files) + HAPTICS
+   ========================================================================= */
+const Sound = (() => {
+  let ctx = null;
+  function audio() {
+    if (!ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ctx = new AC();
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+  /** Plays one short tone with a quick fade out (no clicks). */
+  function tone(freq, at, dur, type = 'sine', vol = 0.14, slideTo) {
+    const c = audio();
+    if (!c) return;
+    const t = c.currentTime + at;
+    const osc = c.createOscillator(), gain = c.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t);
+    if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(gain).connect(c.destination);
+    osc.start(t); osc.stop(t + dur + 0.02);
+  }
+  const on = () => App.settings.sound;
+  return {
+    click() { if (on()) tone(660, 0, 0.05, 'sine', 0.06); },
+    tap(mark) { if (on()) mark === 'X' ? tone(520, 0, 0.09, 'triangle', 0.16, 760) : tone(460, 0, 0.1, 'sine', 0.18, 340); },
+    win() { if (on()) [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.09, 0.18, 'triangle', 0.16)); },
+    lose() { if (on()) [392, 330, 262].forEach((f, i) => tone(f, i * 0.12, 0.22, 'triangle', 0.14)); },
+    draw() { if (on()) { tone(440, 0, 0.14, 'sine', 0.12); tone(440, 0.16, 0.18, 'sine', 0.12); } },
+  };
+})();
+
+function haptic(pattern) {
+  if (!App.settings.vibration || !navigator.vibrate) return;
+  try { navigator.vibrate(pattern); } catch (e) { /* not allowed */ }
+}
+
+/* =========================================================================
+   PART E: CONFETTI (canvas, short burst)
+   ========================================================================= */
+const Confetti = (() => {
+  const cv = document.getElementById('confetti');
+  const ctx = cv.getContext('2d');
+  let parts = [], raf = 0, end = 0;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  function fire() {
+    if (reduce.matches) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const colors = ['#22d3ee', '#f472b6', '#fbbf24', '#7c5cff', '#34d399'];
+    parts = Array.from({ length: 90 }, () => ({
+      x: innerWidth / 2 + (Math.random() - 0.5) * 120,
+      y: innerHeight * 0.38,
+      vx: (Math.random() - 0.5) * 11,
+      vy: -Math.random() * 10 - 4,
+      w: 6 + Math.random() * 5, h: 4 + Math.random() * 4,
+      rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3,
+      c: colors[(Math.random() * colors.length) | 0],
+    }));
+    end = performance.now() + 1500;
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(tick);
+  }
+  function tick(t) {
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    const fade = Math.max(0, Math.min(1, (end - t) / 400));
+    ctx.globalAlpha = fade;
+    for (const p of parts) {
+      p.vy += 0.28; p.vx *= 0.985; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+    if (t < end) raf = requestAnimationFrame(tick);
+    else ctx.clearRect(0, 0, innerWidth, innerHeight);
+  }
+  return { fire };
+})();
+
+/* =========================================================================
+   PART F: UI / APP CONTROLLER
+   ========================================================================= */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const renderIcons = () => { if (window.lucide) window.lucide.createIcons(); };
+
+/** SVG for an X or O. `cls` adds the stroke-animation classes for board cells. */
+function markSVG(mark, cls = '') {
+  return mark === 'X'
+    ? `<svg viewBox="0 0 100 100" class="${cls} x" aria-hidden="true"><path class="stroke" pathLength="100" d="M24 24 L76 76"/><path class="stroke second" pathLength="100" d="M76 24 L24 76"/></svg>`
+    : `<svg viewBox="0 0 100 100" class="${cls} o" aria-hidden="true"><circle class="stroke" pathLength="100" cx="50" cy="50" r="28"/></svg>`;
+}
+const miniMark = mark => markSVG(mark, 'mini-mark');
+
+const App = {
+  saved: Store.load(),
+  settings: { sound: true, vibration: true, theme: 'auto' },
+  prefs: { mode: 'computer', size: 3, difficulty: 'medium', p1Mark: 'X', starter: 'p1' },
+  scores: { computer: { p1: 0, p2: 0, draw: 0 }, friend: { p1: 0, p2: 0, draw: 0 } },
+  // live game state
+  board: [], history: [], over: false, thinking: false, aiToken: 0,
+  screen: 'splash',
+};
+Object.assign(App.settings, App.saved.settings);
+Object.assign(App.prefs, App.saved.prefs);
+if (App.saved.scores) {
+  Object.assign(App.scores.computer, App.saved.scores.computer);
+  Object.assign(App.scores.friend, App.saved.scores.friend);
+}
+
+function persist() {
+  Store.save({ settings: App.settings, prefs: App.prefs, scores: App.scores });
+}
+
+/* ---------- Derived helpers ---------- */
+const p2Mark = () => Logic.other(App.prefs.p1Mark);
+const startMark = () => (App.prefs.starter === 'p1' ? App.prefs.p1Mark : p2Mark());
+/** Mark that plays move number `n` (0-based). */
+const markForMove = n => (n % 2 === 0 ? startMark() : Logic.other(startMark()));
+const currentMark = () => markForMove(App.history.length);
+const ownerOf = mark => (mark === App.prefs.p1Mark ? 'p1' : 'p2');
+const vsAI = () => App.prefs.mode === 'computer';
+const isAITurn = () => vsAI() && ownerOf(currentMark()) === 'p2';
+const nameOf = who => (vsAI() ? (who === 'p1' ? 'You' : 'Machine') : (who === 'p1' ? 'Player 1' : 'Player 2'));
+
+/* ---------- Theme ---------- */
+function resolvedTheme() {
+  if (App.settings.theme !== 'auto') return App.settings.theme;
+  const h = new Date().getHours();
+  return h >= 7 && h < 19 ? 'light' : 'dark';
+}
+function applyTheme() {
+  const t = resolvedTheme();
+  document.documentElement.dataset.theme = t;
+  $('meta[name="theme-color"]').setAttribute('content', t === 'light' ? '#eef2ff' : '#120f33');
+  setSeg($('.seg[data-key="theme"]'), App.settings.theme);
+}
+setInterval(() => { if (App.settings.theme === 'auto') applyTheme(); }, 5 * 60 * 1000);
+
+/* ---------- Screens ---------- */
+const ORDER = { splash: 0, home: 1, game: 2 };
+function go(name) {
+  if (name === App.screen) return;
+  const from = $('#' + App.screen), to = $('#' + name);
+  const forward = ORDER[name] > ORDER[App.screen];
+  from.classList.remove('active');
+  from.classList.toggle('past', forward);
+  to.classList.remove('past');
+  to.classList.add('active');
+  App.screen = name;
+}
+
+/* ---------- Segmented controls ---------- */
+function setSeg(seg, val) {
+  const btns = $$(`.seg[data-key="${seg.dataset.key}"] button`).filter(b => b.parentElement === seg);
+  const idx = Math.max(0, btns.findIndex(b => b.dataset.val === String(val)));
+  seg.style.setProperty('--count', btns.length);
+  seg.style.setProperty('--idx', idx);
+  btns.forEach((b, i) => b.setAttribute('aria-checked', String(i === idx)));
+}
+
+/* ---------- Home screen ---------- */
+function renderHome() {
+  const p = App.prefs;
+  $$('.mode-card').forEach(c => c.setAttribute('aria-checked', String(c.dataset.mode === p.mode)));
+  ['size', 'difficulty', 'p1Mark', 'starter'].forEach(k => setSeg($(`.seg[data-key="${k}"]`), p[k]));
+  $('#difficultyBlock').classList.toggle('closed', !vsAI());
+  $('#markLabel').textContent = vsAI() ? 'You play as' : 'Player 1 is';
+  $('#starterP1').textContent = nameOf('p1');
+  $('#starterP2').textContent = nameOf('p2');
+}
+
+/* ---------- Game screen rendering ---------- */
+const boardEl = $('#board'), wrapEl = $('#boardWrap'), areaEl = $('#boardArea');
+
+/** Sizes the board to fit the free space. Cells never go below 44px unless the screen is narrower. */
+function fitBoard() {
+  const n = App.prefs.size;
+  const cs = getComputedStyle(boardEl);
+  const gap = parseFloat(cs.getPropertyValue('--gap')) || 8;
+  const pad = parseFloat(cs.getPropertyValue('--pad')) || 10;
+  const w = areaEl.clientWidth, h = areaEl.clientHeight;
+  const minSize = n * 44 + (n - 1) * gap + pad * 2;
+  let s = Math.min(w, h, 520);
+  s = Math.max(s, Math.min(minSize, w)); // allow vertical scroll rather than tiny cells
+  wrapEl.style.width = wrapEl.style.height = Math.floor(s) + 'px';
+  if (App.over && App.lastWin) drawWinLine(App.lastWin, false);
+}
+if (window.ResizeObserver) new ResizeObserver(fitBoard).observe(areaEl);
+else window.addEventListener('resize', fitBoard);
+
+function buildBoard() {
+  const n = App.prefs.size;
+  boardEl.dataset.size = n;
+  boardEl.style.setProperty('--n', n);
+  boardEl.classList.remove('done', 'enter');
+  void boardEl.offsetWidth; // restart entry animation
+  boardEl.classList.add('enter');
+  let html = '';
+  for (let i = 0; i < n * n; i++) {
+    html += `<button class="cell" role="gridcell" data-i="${i}" aria-label="Row ${Math.floor(i / n) + 1}, column ${(i % n) + 1}, empty"></button>`;
+  }
+  boardEl.innerHTML = html;
+  hideWinLine();
+  fitBoard();
+}
+
+function paintCell(i, mark, animate) {
+  const cell = boardEl.children[i];
+  const n = App.prefs.size;
+  cell.className = 'cell' + (mark ? ` filled ${mark.toLowerCase()}` : '') + (animate ? '' : ' instant');
+  cell.innerHTML = mark ? markSVG(mark) : '';
+  cell.setAttribute('aria-label', `Row ${Math.floor(i / n) + 1}, column ${(i % n) + 1}, ${mark || 'empty'}`);
+}
+
+function renderPlayers() {
+  const s = App.scores[App.prefs.mode];
+  ['p1', 'p2'].forEach(who => {
+    const card = $(who === 'p1' ? '#cardP1' : '#cardP2');
+    const mark = who === 'p1' ? App.prefs.p1Mark : p2Mark();
+    card.classList.toggle('mark-x', mark === 'X');
+    card.classList.toggle('mark-o', mark === 'O');
+    card.querySelector('.pname').textContent = nameOf(who);
+    card.querySelector('.pscore').textContent = s[who];
+    card.querySelector('.badge').innerHTML = miniMark(mark);
+    const icon = vsAI() ? (who === 'p1' ? 'user' : 'bot') : (who === 'p1' ? 'user' : 'user-round');
+    card.querySelector('.av-icon').innerHTML = `<i data-lucide="${icon}"></i>`;
+  });
+  $('#scoreDraw').textContent = s.draw;
+  renderIcons();
+}
+
+function renderTurn() {
+  const mark = currentMark(), who = ownerOf(mark);
+  const pill = $('#turnPill');
+  let label;
+  if (App.over) label = 'Game over';
+  else if (vsAI()) label = who === 'p1' ? 'Your turn' : "Machine's turn";
+  else label = `${nameOf(who)}'s turn`;
+  pill.innerHTML = (App.over ? '' : miniMark(mark)) + `<span class="label">${label}</span>`;
+  pill.classList.remove('swap'); void pill.offsetWidth; pill.classList.add('swap');
+  $('#cardP1').classList.toggle('active', !App.over && who === 'p1');
+  $('#cardP2').classList.toggle('active', !App.over && who === 'p2');
+  $('#thinking').classList.toggle('show', App.thinking);
+  $('#undoBtn').disabled = !canUndo();
+}
+
+/* ---------- Win line ---------- */
+function drawWinLine(line, animate = true) {
+  const svg = $('#winLine'), ln = svg.querySelector('line');
+  const wr = wrapEl.getBoundingClientRect();
+  const center = i => {
+    const r = boardEl.children[i].getBoundingClientRect();
+    return [r.left - wr.left + r.width / 2, r.top - wr.top + r.height / 2];
+  };
+  let [x1, y1] = center(line[0]), [x2, y2] = center(line[line.length - 1]);
+  // extend a little past the end cells
+  const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
+  const ext = boardEl.children[0].getBoundingClientRect().width * 0.32;
+  x1 -= dx / len * ext; y1 -= dy / len * ext; x2 += dx / len * ext; y2 += dy / len * ext;
+  const total = len + ext * 2;
+  ln.setAttribute('x1', x1); ln.setAttribute('y1', y1); ln.setAttribute('x2', x2); ln.setAttribute('y2', y2);
+  svg.setAttribute('class', 'win-line ' + App.board[line[0]].toLowerCase());
+  ln.style.strokeDasharray = total;
+  if (animate) {
+    ln.style.transition = 'none';
+    ln.style.strokeDashoffset = total;
+    void ln.getBoundingClientRect();
+    ln.style.transition = '';
+  }
+  ln.style.strokeDashoffset = 0;
+}
+function hideWinLine() {
+  const ln = $('#winLine line');
+  ln.style.transition = 'none';
+  ln.style.strokeDasharray = 1; ln.style.strokeDashoffset = 1;
+  App.lastWin = null;
+}
+
+/* ---------- Game flow ---------- */
+function startGame() {
+  App.aiToken++;           // cancel any pending AI move
+  App.thinking = false;
+  App.over = false;
+  App.history = [];
+  App.board = Array(App.prefs.size ** 2).fill(null);
+  buildBoard();
+  renderPlayers();
+  renderTurn();
+  if (isAITurn()) scheduleAI();
+}
+
+function place(i) {
+  const mark = currentMark();
+  App.board[i] = mark;
+  App.history.push(i);
+  paintCell(i, mark, true);
+  Sound.tap(mark);
+  haptic(12);
+  const res = Logic.result(App.board, App.prefs.size);
+  if (res) return endGame(res);
+  renderTurn();
+  if (isAITurn()) scheduleAI();
+}
+
+/** Runs the AI after a short delay so the last mark animates and the UI stays smooth. */
+function scheduleAI() {
+  App.thinking = true;
+  renderTurn();
+  const token = ++App.aiToken;
+  setTimeout(() => {
+    if (token !== App.aiToken || App.over) return;
+    const move = AI.chooseMove(App.board, App.prefs.size, p2Mark(), App.prefs.difficulty);
+    if (token !== App.aiToken) return;
+    App.thinking = false;
+    place(move);
+  }, 150);
+}
+
+function onCellTap(e) {
+  const cell = e.target.closest('.cell');
+  if (!cell) return;
+  const i = +cell.dataset.i;
+  if (App.over || App.thinking || App.board[i] || isAITurn()) return;
+  place(i);
+}
+
+function endGame(res) {
+  App.over = true;
+  App.thinking = false;
+  const s = App.scores[App.prefs.mode];
+  let outcome; // 'win' | 'lose' | 'draw'
+  let winnerWho = null;
+  if (res.winner) {
+    winnerWho = ownerOf(res.winner);
+    s[winnerWho]++;
+    outcome = vsAI() && winnerWho === 'p2' ? 'lose' : 'win';
+    App.lastWin = res.line;
+    res.line.forEach(i => boardEl.children[i].classList.add('win'));
+    boardEl.classList.add('done');
+    drawWinLine(res.line);
+  } else {
+    s.draw++;
+    outcome = 'draw';
+  }
+  persist();
+  renderPlayers();
+  renderTurn();
+  const bumpEl = winnerWho ? $(winnerWho === 'p1' ? '#cardP1 .pscore' : '#cardP2 .pscore') : $('#scoreDraw');
+  bumpEl.classList.remove('bump'); void bumpEl.offsetWidth; bumpEl.classList.add('bump');
+
+  if (outcome === 'win') { Sound.win(); haptic([30, 40, 60]); }
+  else if (outcome === 'lose') { Sound.lose(); haptic(90); }
+  else { Sound.draw(); haptic([20, 30, 20]); }
+
+  const token = App.aiToken;
+  setTimeout(() => {
+    if (token !== App.aiToken || !App.over || App.screen !== 'game') return;
+    showResult(outcome, winnerWho);
+  }, 700);
+}
+
+/* ---------- Undo ---------- */
+function canUndo() {
+  if (App.over || !App.history.length) return false;
+  if (!vsAI()) return true;
+  return App.history.some((_, n) => ownerOf(markForMove(n)) === 'p1');
+}
+function undo() {
+  if (!canUndo()) return;
+  App.aiToken++;
+  App.thinking = false;
+  if (vsAI()) {
+    // remove back to (and including) the last human move
+    let n = App.history.length - 1;
+    while (n >= 0 && ownerOf(markForMove(n)) !== 'p1') n--;
+    App.history.length = n;
+  } else {
+    App.history.pop();
+  }
+  App.board.fill(null);
+  App.history.forEach((i, n) => { App.board[i] = markForMove(n); });
+  App.board.forEach((m, i) => paintCell(i, m, false));
+  Sound.click();
+  haptic(10);
+  renderTurn();
+}
+
+/* ---------- Result popup ---------- */
+function showResult(outcome, winnerWho) {
+  const icon = $('#resultIcon');
+  let title, sub, iconName;
+  if (outcome === 'draw') {
+    title = 'Draw!'; sub = 'Nobody wins this round.'; iconName = 'handshake';
+  } else if (vsAI()) {
+    if (outcome === 'win') { title = 'You Win!'; sub = 'Great moves. You beat the machine.'; iconName = 'trophy'; }
+    else { title = 'You Lose'; sub = 'The machine got you this time.'; iconName = 'frown'; }
+  } else {
+    title = `${nameOf(winnerWho)} Wins!`; sub = 'Nice game. Ready for another?'; iconName = 'trophy';
+  }
+  icon.className = 'result-icon ' + outcome;
+  icon.innerHTML = `<i data-lucide="${iconName}"></i>`;
+  renderIcons();
+  $('#resultTitle').textContent = title;
+  $('#resultSub').textContent = sub;
+  $('#resultModal').classList.add('open');
+  if (outcome === 'win') Confetti.fire();
+  setTimeout(() => $('#againBtn').focus({ preventScroll: true }), 50);
+}
+const hideResult = () => $('#resultModal').classList.remove('open');
+
+/* ---------- Settings sheet ---------- */
+function renderSettings() {
+  $('#soundToggle').setAttribute('aria-checked', String(App.settings.sound));
+  $('#vibeToggle').setAttribute('aria-checked', String(App.settings.vibration));
+  setSeg($('.seg[data-key="theme"]'), App.settings.theme);
+}
+function openSheet() {
+  renderSettings();
+  $('#sheetBackdrop').classList.add('open');
+  $('#sheet').classList.add('open');
+}
+function closeSheet() {
+  $('#sheetBackdrop').classList.remove('open');
+  $('#sheet').classList.remove('open');
+}
+let resetArmed = null;
+function resetScores() {
+  const label = $('#resetScores span');
+  if (!resetArmed) { // first tap asks for confirmation
+    label.textContent = 'Tap again to confirm';
+    resetArmed = setTimeout(() => { label.textContent = 'Reset scores'; resetArmed = null; }, 2500);
+    haptic(15);
+    return;
+  }
+  clearTimeout(resetArmed); resetArmed = null;
+  App.scores = { computer: { p1: 0, p2: 0, draw: 0 }, friend: { p1: 0, p2: 0, draw: 0 } };
+  persist();
+  renderPlayers();
+  label.textContent = 'Scores cleared';
+  Sound.click(); haptic([10, 30, 10]);
+  setTimeout(() => { label.textContent = 'Reset scores'; }, 1500);
+}
+
+/* =========================================================================
+   PART G: EVENT WIRING
+   ========================================================================= */
+function init() {
+  renderIcons();
+  $$('.mark-opt').forEach(b => { b.innerHTML = miniMark(b.dataset.val); });
+  applyTheme();
+  renderHome();
+  renderSettings();
+
+  // Splash: auto continue or tap to skip
+  const leaveSplash = () => { if (App.screen === 'splash') go('home'); };
+  $('#splash').addEventListener('click', leaveSplash);
+  setTimeout(leaveSplash, 1700);
+
+  // Mode cards
+  $$('.mode-card').forEach(card => card.addEventListener('click', () => {
+    App.prefs.mode = card.dataset.mode;
+    persist(); renderHome(); Sound.click(); haptic(8);
+  }));
+
+  // All segmented controls (home prefs + theme)
+  $$('.seg').forEach(seg => seg.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const key = seg.dataset.key, val = btn.dataset.val;
+    if (key === 'theme') { App.settings.theme = val; applyTheme(); }
+    else { App.prefs[key] = key === 'size' ? +val : val; renderHome(); }
+    setSeg(seg, val);
+    persist(); Sound.click(); haptic(8);
+  }));
+
+  $('#themeToggle').addEventListener('click', () => {
+    App.settings.theme = resolvedTheme() === 'dark' ? 'light' : 'dark';
+    applyTheme(); persist(); Sound.click(); haptic(8);
+  });
+
+  $('#playBtn').addEventListener('click', () => {
+    Sound.click(); haptic(15);
+    go('game');
+    startGame();
+  });
+
+  boardEl.addEventListener('click', onCellTap);
+  $('#undoBtn').addEventListener('click', undo);
+  $('#restartBtn').addEventListener('click', () => { Sound.click(); haptic(12); startGame(); });
+  $('#backBtn').addEventListener('click', () => {
+    App.aiToken++; App.thinking = false;
+    Sound.click(); haptic(8);
+    renderHome();
+    go('home');
+  });
+
+  $('#againBtn').addEventListener('click', () => { hideResult(); Sound.click(); startGame(); });
+  $('#homeBtn').addEventListener('click', () => { hideResult(); Sound.click(); renderHome(); go('home'); });
+
+  $$('[data-open-settings]').forEach(b => b.addEventListener('click', () => { Sound.click(); haptic(8); openSheet(); }));
+  $('#closeSheet').addEventListener('click', closeSheet);
+  $('#sheetBackdrop').addEventListener('click', closeSheet);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+
+  $('#soundToggle').addEventListener('click', () => {
+    App.settings.sound = !App.settings.sound;
+    renderSettings(); persist(); Sound.click();
+  });
+  $('#vibeToggle').addEventListener('click', () => {
+    App.settings.vibration = !App.settings.vibration;
+    renderSettings(); persist(); haptic(20);
+  });
+  $('#resetScores').addEventListener('click', resetScores);
+}
+
+init();
+</script>
 </body>
 </html>
