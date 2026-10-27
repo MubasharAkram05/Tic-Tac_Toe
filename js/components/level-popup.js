@@ -1,8 +1,9 @@
 /**
- * Simple level start popup: level number, chapter name, best stars, a timer
- * badge (when the move timer is on), one twist badge ("Blocked",
- * "Puzzle: win in 3", "Mixed: win in 3") and a big Play button. The first
- * time a twist shows up, Play opens its short tutorial first. The current
+ * Simple level start popup: level number, small twist icons under the
+ * title (up to 2, 3 on bosses), chapter name, best stars, a timer badge
+ * (when the move timer is on), a "Puzzle: win in 3" badge on puzzles and a
+ * big Play button. The first time a twist shows up, Play opens its short
+ * tutorial first. The current
  * level can also be skipped with diamonds (once per chapter, 1 star).
  * Board size, rules, AI skill and rewards stay in config and are not shown here.
  */
@@ -16,7 +17,8 @@ import { needText } from '../services/economy.js';
 import { sound } from '../services/audio.js';
 import { haptic } from '../services/haptics.js';
 import { createModal } from './modal.js';
-import { withTwistTutorial } from './twist-tutorial.js';
+import { withTwistTutorials } from './twist-tutorial.js';
+import { TWIST_INFO, twistIcon } from '../config/level-twists.js';
 import { confirmSpend } from './confirm-sheet.js';
 import { showToast } from './toast.js';
 import { navigate } from '../router.js';
@@ -43,6 +45,7 @@ function ensureModal() {
       <button class="icon-btn close-x" data-act="close" aria-label="Close"><i data-lucide="x"></i></button>
       <div class="lm-boss" hidden><i data-lucide="crown"></i>Boss</div>
       <h2 id="lmTitle">Level 1</h2>
+      <div class="lm-twists" hidden></div>
       <p class="lm-chapter"></p>
       <div class="lm-stars" aria-label=""></div>
       <div class="lm-badges">
@@ -63,7 +66,7 @@ function ensureModal() {
     if (b.dataset.act === 'play') {
       haptic(15);
       const n = current;
-      withTwistTutorial(getLevel(n).twist, () => navigate('#/game', { state: campaignConfig(n) }));
+      withTwistTutorials(getLevel(n).twists, () => navigate('#/game', { state: campaignConfig(n) }));
     }
     if (b.dataset.act === 'skip') askSkip(current);
   });
@@ -106,19 +109,19 @@ export function openLevelPopup(n) {
   $('.lm-skip-msg', m.el).textContent = usedHere ? blocked : need;
   const twist = $('.lm-twist', m.el), label = twistLabel(lv);
   twist.hidden = !label;
-  if (label) twist.innerHTML = `<i data-lucide="${TWIST_ICONS[lv.twist]}"></i><span>${label}</span>`;
+  if (label) twist.innerHTML = `<i data-lucide="puzzle"></i><span>${label}</span>`;
+  const icons = $('.lm-twists', m.el);
+  icons.hidden = !lv.twists.length;
+  icons.innerHTML = lv.twists.map(id => `<span class="lm-tw" title="${TWIST_INFO[id].name}" aria-label="${TWIST_INFO[id].name}"><i data-lucide="${twistIcon(id, lv.layout)}"></i></span>`).join('');
   renderIcons(m.el);
   m.open();
 }
 
-/** Lucide icon for each twist (also used on the levels map). */
-export const TWIST_ICONS = { blocked: 'ban', puzzle: 'puzzle', mixed: 'layers' };
-
-/** Badge text for a level's twist, '' for a normal level. */
+/** "Puzzle: win in 3" for puzzle levels, '' otherwise. */
 export function twistLabel(lv) {
-  if (lv.twist === 'blocked') return 'Blocked';
   const n = lv.layout && lv.layout.puzzleMoves;
-  if (lv.twist === 'puzzle') return `Puzzle: win in ${n}`;
-  if (lv.twist === 'mixed') return `Mixed: win in ${n}`;
-  return '';
+  return n ? `Puzzle: win in ${n}` : '';
 }
+
+/** Short spoken list of a level's twists ("Gravity, Ice cells"), '' for none. */
+export const twistNames = lv => lv.twists.map(id => TWIST_INFO[id].name).join(', ');

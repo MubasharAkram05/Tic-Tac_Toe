@@ -13,12 +13,13 @@ import { $, createScope, renderIcons, replayClass } from '../utils/dom.js';
 import { sizeLabel } from '../utils/format.js';
 import { CHAPTERS, TOTAL_LEVELS, chapterOf, isBoss, getLevel } from '../config/levels.js';
 import { save } from '../services/storage.js';
-import { totalStars, chapterStars } from '../services/progress.js';
+import { totalStars, chapterStars, isUnlocked } from '../services/progress.js';
 import { sound } from '../services/audio.js';
 import { haptic } from '../services/haptics.js';
 import { onEvent } from '../utils/events.js';
 import { showToast } from '../components/toast.js';
-import { openLevelPopup, starSVG, TWIST_ICONS, twistLabel } from '../components/level-popup.js';
+import { openLevelPopup, starSVG, twistNames } from '../components/level-popup.js';
+import { twistIcon } from '../config/level-twists.js';
 
 export const appBar = { title: 'Levels', settings: false }; // the star pill takes the right side
 
@@ -51,7 +52,7 @@ const live = new Map();                  // level -> node element
 
 const amp = () => Math.max(40, Math.min(110, (width - 100) / 2));
 const xOf = n => width / 2 + ZIG[(n - 1) % ZIG.length] * amp();
-const stateOf = n => (save.data.levels[n] ? 'done' : n <= save.data.unlockedLevel ? 'current' : 'locked');
+const stateOf = n => (save.data.levels[n] ? 'done' : isUnlocked(n) ? 'current' : 'locked');
 const place = (el, x, y) => { el.style.left = x + 'px'; el.style.top = y + 'px'; };
 const currentLevel = () => Math.min(save.data.unlockedLevel, TOTAL_LEVELS);
 
@@ -119,7 +120,7 @@ export function unmount() {
 function renderCards() {
   const d = save.data;
   CHAPTERS.forEach(c => {
-    const got = chapterStars(c.index), max = c.count * 3, locked = c.from > d.unlockedLevel;
+    const got = chapterStars(c.index), max = c.count * 3, locked = !isUnlocked(c.from);
     const card = map.querySelector(`.ch-slot[data-ch="${c.index}"] .ch-card`);
     card.classList.toggle('locked', locked);
     card.innerHTML = `
@@ -141,12 +142,12 @@ function makeNode(n) {
   const d = save.data, st = stateOf(n), boss = isBoss(n);
   const stars = st === 'done' ? d.levels[n].stars : 0;
   const label = st === 'locked' ? 'locked' : st === 'done' ? `${stars} of 3 stars` : 'ready to play';
-  const twist = getLevel(n).twist, tw = TWIST_ICONS[twist];
+  const lv = getLevel(n), first = lv.twists[0], tw = first ? twistIcon(first, lv.layout) : '';
   const b = document.createElement('button');
   b.className = `node ${st}${boss ? ' boss' : ''}`;
   b.dataset.level = n;
-  b.setAttribute('aria-label', `Level ${n}${boss ? ', boss' : ''}${tw ? ', ' + twistLabel(getLevel(n)) : ''}, ${label}`);
-  b.innerHTML = (boss ? CROWN_SVG : '') + (tw ? `<span class="node-twist t-${twist}"><i data-lucide="${tw}"></i></span>` : '') +
+  b.setAttribute('aria-label', `Level ${n}${boss ? ', boss' : ''}${tw ? ', ' + twistNames(lv) : ''}, ${label}`);
+  b.innerHTML = (boss ? CROWN_SVG : '') + (tw ? `<span class="node-twist t-${first}${lv.twists.length > 1 ? ' more' : ''}"><i data-lucide="${tw}"></i></span>` : '') +
     (st === 'locked' ? LOCK_SVG : `<span>${n}</span>`) +
     (st === 'done' ? `<span class="node-stars">${[0, 1, 2].map(i => starSVG(i < stars)).join('')}</span>` : '');
   place(b, xOf(n), Y[n]);

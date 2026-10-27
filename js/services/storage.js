@@ -11,6 +11,7 @@
  * Every read / write is wrapped in try/catch. Broken or missing data
  * means a fresh start, never a crash.
  */
+import { DEV } from '../utils/dev.js';
 import { STORAGE_KEYS, SAVE_VERSION, NAME_MAX, DEFAULT_NAMES, BOARD_SIZES } from '../config/constants.js';
 import { TOTAL_LEVELS, CHAPTERS } from '../config/levels.js';
 import { shopIds } from '../config/shop-items.js';
@@ -165,7 +166,7 @@ let data = freshSave();
 
 export const save = {
   get data() { return data; },
-  write() { writeJSON(STORAGE_KEYS.save, data); },
+  write() { writeJSON(DEV ? STORAGE_KEYS.devSave : STORAGE_KEYS.save, data); }, // dev mode: a sandbox save
   replace(next) { data = next; this.write(); },
   reset() { data = freshSave(); this.write(); },
   exportCode,
@@ -224,6 +225,7 @@ function decode(code) {
 /** Loads both keys. Called once from main.js. A v1 save is migrated and written to the v2 key. */
 export function initStorage() {
   loadApp();
+  if (DEV) { data = migrate(readJSON(STORAGE_KEYS.devSave)); return; } // never reads or writes the real save
   const current = readJSON(STORAGE_KEYS.save);
   if (current) { data = migrate(current); return; }
   const legacy = readJSON(STORAGE_KEYS.legacySave);

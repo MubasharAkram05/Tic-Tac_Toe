@@ -1,19 +1,24 @@
 /**
  * Validation for level twist layouts. Pure logic, no DOM.
  *
- * Used by tests/twists.test.js and tools/gen-twist-table.js, never at
+ * Used by the tests (tests/twists/) and tools/gen-twist-table.js, never at
  * runtime on the phone (the game reads the results from config/twist-table.js).
  *
  *   validateBlocked(board, size, k)       -> '' or the reason it fails
  *   validatePreset(board, size, k)        -> '' or the reason it fails
  *   isPuzzleSolvable(board, size, k, N)   -> true if X can force a win within N moves
  *   puzzleLength(board, size, k)          -> smallest such N (1..4), or 0
- *   findLayout(n, level, type)            -> { attempt, layout } or null
+ *   validateLayout(layout, level)         -> '' or the reason it fails (every twist)
+ *   findLayout(n, level, twists)          -> { attempt, layout } or null
  */
 import { BLOCKED, createBoard } from './board.js';
 import { winFrom, lineWindows, other } from './rules.js';
 import { buildLayout, centreArea } from './layout-generator.js';
-import { MAX_ATTEMPTS, PUZZLE_MOVES } from '../config/level-twists.js';
+import {
+  MAX_ATTEMPTS, PUZZLE_MOVES, MIN_SIZE, DIAGONAL_MIN_SIZE, ICE_COUNTS, ICE_MELT, COIN_CELLS, comboAllowed, maxTwists,
+} from '../config/level-twists.js';
+import { createState, lineWindows as ruleWindows } from './twists/index.js';
+import { maxRings } from './twists/shrinking.js';
 import { mulberry32 } from '../utils/seeded-random.js';
 
 /** Share of normal winning lines that must stay open after blocking. */
@@ -227,19 +232,81 @@ export function puzzleLength(board, size, k, max = PUZZLE_MOVES.max, me = 'X') {
 
 /* ---------- Whole layouts ---------- */
 
+/** Cells a falling mark can reach in each column (above the first blocked cell). Ice melts later, so it counts as open. */
+export function reachable(board, size) {
+  const out = new Set();
+  for (let c = 0; c < size; c++) for (let r = 0; r < size; r++) {
+    const i = r * size + c;
+    if (board[i] === BLOCKED) break;
+    out.add(i);
+  }
+  return out;
+}
+
+/** Preset marks with an empty cell under them (not allowed with gravity). */
+export function floatingMarks(board, size) {
+  const out = [];
+  for (let i = 0; i < board.length - size; i++) if ((board[i] === 'X' || board[i] === 'O') && board[i + size] === null) out.push(i);
+  return out;
+}
+
 /**
- * '' if a layout is valid for a level ({ size, winLength }), else the reason.
- * Puzzles must be forced in exactly `puzzleMoves` (not fewer).
- * { solved: true } skips the solver when the caller just measured N.
+ * "Winnable": lines (under the level's rules: direction, wrap) that the
+ * player can still fill - no blocked cell, no machine mark and, with
+ * gravity, only reachable cells. Shrinking is judged on the final area.
+ */
+export function openLinesFor(layout, level, mark = 'X') {
+  const s = createState(level.size, layout), opp = mark === 'X' ? 'O' : 'X';
+  const reach = s.gravity ? reachable(s.board, s.size) : null;
+  const ring = s.shrink ? s.shrink.max : 0, n = s.size;
+  const inside = i => { const r = (i / n) | 0, c = i % n; return r >= ring && c >= ring && r < n - ring && c < n - ring; };
+  const all = ruleWindows(s).filter(w => w.every(inside)); // shrinking: compare within the final area
+  const open = all.filter(w => w.every(i => s.board[i] !== BLOCKED && s.board[i] !== opp && (!reach || reach.has(i))));
+  return { open: open.length, all: all.length };
+}
+
+/**
+ * '' if a layout is valid for a level ({ id, size, winLength, boss }), else the reason.
+ *  - allowed combination and number of twists, board big enough for each
+ *  - cells inside the board, never two things on one cell (coins / ice never on blocked cells)
+ *  - blocked cells: 60% of lines open, centre free, nobody cut off
+ *  - winnable under the active rules (enough open lines for the player)
+ *  - ice: 2-6 cells melting after 4-8 moves; coins: 1-3 coin cells (+1 diamond on bosses)
+ *  - shrinking never leaves less than win length + 2
+ *  - gravity puzzles have no floating marks
+ *  - puzzles: fair, no instant win / loss, forced in exactly `puzzleMoves`
+ * { solved: true } skips the puzzle solver when the caller just measured N.
  */
 export function validateLayout(layout, level, { solved = false } = {}) {
   const { size, winLength: k } = level;
   if (!layout) return 'no layout';
-  const cells = [...layout.blocked, ...layout.preset.map(p => p.i)];
-  if (new Set(cells).size !== cells.length || cells.some(i => i < 0 || i >= size * size)) return 'bad cells';
+  const twists = layout.twists || [];
+  if (!comboAllowed(twists)) return `forbidden combo ${twists.join('+')}`;
+  if (level.id && twists.length > maxTwists(level.id, level.boss) && !(layout.preset.length && twists.length <= 3)) return `too many twists ${twists.length}`;
+  const small = twists.find(id => size < MIN_SIZE[id]);
+  if (small) return `${small} needs ${MIN_SIZE[small]}x${MIN_SIZE[small]}`;
+  if (layout.rule === 'diagonal' && size < DIAGONAL_MIN_SIZE) return 'diagonal rule on a small board';
+  const ice = layout.ice || [], coins = layout.coins || [];
+  const cells = [...layout.blocked, ...layout.preset.map(p => p.i), ...ice.map(c => c.i), ...coins.map(c => c.i)];
+  if (new Set(cells).size !== cells.length || cells.some(i => i < 0 || i >= size * size)) return 'bad cells (overlap or outside)';
+  if (twists.includes('blocked') !== layout.blocked.length > 0) return 'blocked list does not match';
+  if (twists.includes('ice')) {
+    const [lo, hi] = ICE_COUNTS[size];
+    if (ice.length < Math.min(2, lo) || ice.length > hi) return `ice count ${ice.length}`;
+    if (ice.some(c => c.melt < ICE_MELT[0] || c.melt > ICE_MELT[1])) return 'ice melt time';
+  }
+  if (twists.includes('coins')) {
+    const plain = coins.filter(c => c.kind === 'coin').length, gems = coins.filter(c => c.kind === 'diamond').length;
+    if (plain < COIN_CELLS[0] - (gems ? 1 : 0) || plain > COIN_CELLS[1] || gems > (level.boss ? 1 : 0)) return `coin cells ${plain}+${gems}`;
+  }
+  if (layout.shrink && layout.shrink.rings > maxRings(size, k)) return 'shrinks below win length + 2';
+  if (layout.shrink && size - 2 * layout.shrink.rings < k + 2) return 'shrinks below win length + 2';
   const board = createBoard(size, layout);
+  if (layout.gravity && floatingMarks(board, size).length) return 'floating marks with gravity';
   const why = validateBlocked(board, size, k);
   if (why) return why;
+  const { open, all } = openLinesFor(layout, level);
+  if (open < Math.max(4, 0.25 * all)) return `not winnable: ${open}/${all} lines open`;
   if (!layout.preset.length) return layout.puzzleMoves ? 'moves without marks' : '';
   const p = validatePreset(board, size, k);
   if (p) return p;
@@ -272,10 +339,10 @@ export const TARGET_ATTEMPTS = 35;
  * level's target length. Returns { attempt, layout } or null (= play the
  * level without a twist).
  */
-export function findLayout(n, level, type) {
+export function findLayout(n, level, twists) {
   const target = targetMoves(n, level);
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    const layout = buildLayout(n, level, type, attempt);
+    const layout = buildLayout(n, level, twists, attempt);
     if (!layout) continue;
     if (layout.preset.length) {
       const board = createBoard(level.size, layout);

@@ -7,10 +7,15 @@
  * Normal games: the player starts the first round, then the starter
  * alternates every round. Levels decide who starts from their config.
  *
- * Level twists (campaign only): the board can start with blocked cells
- * and preset marks (level.layout). Presets are never in the move history,
- * so undo and "continue" can't remove them. Puzzle levels must be won
- * within level.moveLimit of the player's moves ("Moves left" chip).
+ * Every game is a state from core/twists (createState / applyMove). With
+ * no twists it plays exactly like the classic game; on levels the twists
+ * (level.twists + level.layout) hook into the rules: blocked cells, preset
+ * puzzle marks, coin cells, ice, line rule, wrap, gravity, vanishing marks
+ * and a shrinking board.
+ * Undo and "continue" restore a snapshot taken before each move, so every
+ * twist effect is reversed too (vanished marks, ice, rings, coins).
+ * Preset marks are part of the start state, so undo can never remove them.
+ * Puzzle levels must be won within level.moveLimit of the player's moves.
  *
  * Move timer (when on in Settings): seconds come from config/timers.js:
  * grid x difficulty vs the computer, Medium vs a player, the level's own
@@ -22,13 +27,17 @@ import { sizeLabel, secondsLabel } from '../utils/format.js';
 import { winLength, ZOOM_FROM, PRICES, DIAMOND_PRICES } from '../config/constants.js';
 import { getMoveTime, TIMER_FINAL_SECONDS, EXTRA_TIME_SECONDS } from '../config/timers.js';
 import { getLevel, TOTAL_LEVELS } from '../config/levels.js';
-import { createBoard, isFull } from '../core/board.js';
-import { winFrom, other, isDeadBoard } from '../core/rules.js';
-import { chooseMove } from '../core/ai.js';
+import { other } from '../core/rules.js';
+import { createState, cloneState, applyMove, resolveMove, isDraw } from '../core/twists/index.js';
+import { chooseStateMove } from '../core/twist-ai.js';
+import { collectedBy } from '../core/twists/coin-cells.js';
+import { crossesEdge } from '../core/twists/wrap.js';
+import { shrinksIn } from '../core/twists/shrinking.js';
+import { TWIST_INFO, twistIcon, twistChip } from '../config/level-twists.js';
 import { MoveTimer } from '../core/timer.js';
 import { runAI, cancelAI } from '../services/ai-runner.js';
 import { app, saveApp, save, scoreBook } from '../services/storage.js';
-import { finishLevel, finishNormalGame } from '../services/progress.js';
+import { finishLevel, finishNormalGame, bestStars, isSkipped, isUnlocked } from '../services/progress.js';
 import { useBoost, spendDiamonds, needText } from '../services/economy.js';
 import { sound } from '../services/audio.js';
 import { haptic } from '../services/haptics.js';
@@ -42,7 +51,7 @@ import { confirmSpend } from '../components/confirm-sheet.js';
 import { timerRingHTML, setRing, clearRing } from '../components/timer-ring.js';
 import { fireConfetti } from '../components/confetti.js';
 import { starSVG, campaignConfig, twistLabel } from '../components/level-popup.js';
-import { withTwistTutorial } from '../components/twist-tutorial.js';
+import { withTwistTutorials } from '../components/twist-tutorial.js';
 import { navigate } from '../router.js';
 
 export const appBar = { hidden: true };
@@ -79,8 +88,9 @@ function timerSeconds() {
 const avatarOf = who => $(`.player-card[data-who="${who}"] .avatar`, root);
 const inProgress = () => st && st.history.length > 0 && !st.over;
 const exitRoute = () => (isCampaign() ? '#/levels' : '#/home');
-/** The level's twist layout (blocked cells + preset marks), or null. */
+/** The level's twist layout, or null (normal games and twist-free levels). */
 const layout = () => (isCampaign() && level ? level.layout : null);
+const twists = () => (isCampaign() && level ? level.twists : []);
 const isPuzzle = () => !!(layout() && layout().puzzleMoves);
 
 /* =========================================================================
@@ -149,6 +159,7 @@ function template() {
           <span class="rule-chip"></span>
           <span class="time-chip" hidden><i data-lucide="clock"></i><span></span></span>
           <span class="moves-chip" hidden></span>
+          <span class="twist-chips"></span>
           <button class="time-plus" data-act="extra-time" hidden aria-label="Add ${EXTRA_TIME_SECONDS} seconds for ${DIAMOND_PRICES.extraTime} diamond">+${EXTRA_TIME_SECONDS}s<span class="gem-cost"><i data-lucide="gem"></i>${DIAMOND_PRICES.extraTime}</span></button>
         </div>
       </div>
@@ -185,6 +196,7 @@ function onClick(e) {
   if (act === 'hint') hint();
   if (act === 'restart') { sound.click(); haptic(12); startRound(); }
   if (act === 'extra-time') askExtraTime();
+  if (act === 'twist') { sound.click(); showToast(twistExplain(b.dataset.id), twistIcon(b.dataset.id, layout())); }
 }
 
 /* =========================================================================
@@ -196,19 +208,23 @@ function startRound() {
   resultModal.close();
   levelResultModal.close();
   st = {
-    round: st.round, board: createBoard(cfg.size, layout()), history: [], over: false, thinking: false, aiToken: (st.aiToken || 0) + 1,
+    round: st.round, game: createState(cfg.size, layout()), snaps: [], history: [], over: false, thinking: false, aiToken: (st.aiToken || 0) + 1,
     usedHelp: false, timedOut: false, hintCell: -1,
+    coinsPay: isCampaign() && (!bestStars(cfg.levelId) || isSkipped(cfg.levelId)), // fixed at the start: a win mid-game must not flip it
     extraTimeUsed: false,   // +10s, once per game
     continued: false,       // diamond continue after a lost level, once per attempt
   };
   view.build(cfg.size);
-  view.paintLayout(layout()); // blocked cells + preset marks fade in
+  view.setGravity(!!st.game.gravity);
+  if (!!st.game.wrap !== !!view.wrap) view.setWrap(!!st.game.wrap);
+  view.sync(st.game, { intro: true }); // twist cells fade in
   $('.rule-chip', root).innerHTML = `${sizeLabel(cfg.size)} · ${winLength(cfg.size)}<span class="rw"> in a row</span>`;
   $('.rule-chip', root).setAttribute('aria-label', `${cfg.size} by ${cfg.size}, ${winLength(cfg.size)} in a row`);
   renderPlayers();
   renderExtras();
   renderTurn();
   renderTimeChip();
+  renderTwistChips();
   if (cfg.size >= ZOOM_FROM && !app.flags.zoomHint) {
     app.flags.zoomHint = true;
     saveApp();
@@ -217,29 +233,49 @@ function startRound() {
   if (isAITurn()) scheduleAI();
 }
 
-function place(i) {
+/** Plays the current mark at `tapped` (gravity may land it lower). Returns false if it can't be played. */
+function place(tapped) {
   view.clearHighlight();
-  const mark = currentMark();
-  st.board[i] = mark;
-  st.history.push(i);
-  view.paint(i, mark, true);
-  view.markLast(i);
+  const mark = currentMark(), before = cloneState(st.game);
+  const res = applyMove(st.game, tapped, mark); // runs every twist hook, then the win check
+  if (!res) return false;
+  st.snaps.push(before);
+  st.history.push(res.cell);
+  const n = cfg.size, dropRows = st.game.gravity ? ((res.cell / n) | 0) - ((tapped / n) | 0) : 0;
+  view.sync(st.game, { placed: res.cell, dropRows: Math.max(0, dropRows), events: res.events });
+  view.markLast(res.cell);
   sound.tap(mark);
   haptic(12);
-  const line = winFrom(st.board, cfg.size, i); // O(k): checks from the last move only
-  if (line) return endGame(mark, line);
-  // Draw: no empty cell left; on twist boards also when nobody can make a line any more
-  if (isFull(st.board) || (layout() && isDeadBoard(st.board, cfg.size))) return endGame(null, null);
+  twistEvents(res.events);
+  if (res.line) return endGame(mark, res.line);
+  if (isDraw(st.game)) return endGame(null, null); // full board, nobody can make a line, or the vanishing move cap
   if (outOfMoves()) return endGame(null, null, 'moves');
   renderTurn();
+  renderTwistChips();
   if (isAITurn()) scheduleAI();
+  return true;
 }
 
 /** Places a mark if this cell can be played right now. Returns true if it did. */
 function tryPlace(i) {
-  if (!st || st.over || st.thinking || st.board[i] || isAITurn()) return false;
-  place(i);
-  return true;
+  if (!st || st.over || st.thinking || isAITurn()) return false;
+  if (resolveMove(st.game, i) < 0) { view.shakeCell(i); return false; }
+  return place(i);
+}
+
+/**
+ * Small effects for twist events. A collected coin is only *pending*: it
+ * goes into the coins chip (no flying to the counter); it is paid, and
+ * flies, on the win screen. Shrinking shakes and warns.
+ */
+function twistEvents(events) {
+  events.forEach(e => {
+    if (e.type === 'coin' && e.mark === p1Mark()) {
+      sound.coin();
+      scope.timeout(() => { const chip = root && $('.twist-chip[data-id="coins"]', root); if (chip) replayClass(chip, 'bump'); }, 0);
+    }
+    if (e.type === 'shrink' && e.cells.length) { haptic([20, 40, 20]); showToast('The board shrinks!', 'shrink'); }
+  });
 }
 
 /** Shows "Thinking...", then asks the AI after a short delay so the last mark finishes drawing. */
@@ -249,11 +285,11 @@ function scheduleAI() {
   const token = ++st.aiToken;
   scope.timeout(() => {
     if (!root || token !== st.aiToken || st.over) return;
-    runAI(st.board, cfg.size, p2Mark(), cfg.difficulty, move => {
+    runAI(st.game, p2Mark(), cfg.difficulty, move => {
       if (!root || token !== st.aiToken || st.over) return;
       st.thinking = false;
-      place(move);
-      view.ensureVisible(move);
+      if (move < 0 || !place(move)) { if (!st.over) endGame(null, null); return; } // no legal move: draw
+      view.ensureVisible(st.history[st.history.length - 1]);
     });
   }, 60);
 }
@@ -274,7 +310,7 @@ function endGame(mark, line, reason) {
     winnerWho = ownerOf(mark);
     s[winnerWho]++;
     outcome = vsAI() && winnerWho === 'p2' ? 'lose' : 'win';
-    view.showWin(line, mark);
+    view.showWin(line, mark, { noLine: st.game.wrap && crossesEdge(line, cfg.size) }); // a wrapped line just glows
   } else {
     s.draw++;
     outcome = 'draw';
@@ -283,6 +319,9 @@ function endGame(mark, line, reason) {
   renderPlayers();
   renderTurn();
   replayClass(winnerWho ? $(`.player-card[data-who="${winnerWho}"] .pscore`, root) : $('.score-draw', root), 'bump');
+  // no win: pending coins from coin cells fade out (a win pays them on the result screen)
+  const pending = outcome !== 'win' && $('.twist-chip[data-id="coins"].pending', root);
+  if (pending) pending.classList.add('lost');
 
   if (outcome === 'win') { sound.win(); haptic([30, 40, 60]); }
   else if (outcome === 'lose') { sound.lose(); haptic(90); }
@@ -291,7 +330,9 @@ function endGame(mark, line, reason) {
   // Progress: campaign rewards right away, stats for the other modes
   let levelResult = null;
   if (isCampaign()) {
-    levelResult = finishLevel(level, { outcome, reason, playerMoves: playerMoves(), usedHelp: st.usedHelp, timedOut: st.timedOut, moveLimit: cfg.moveLimit });
+    // coin cells: only what the player collected, and only paid on a first-clear win (progress.js)
+    const bonus = st.game.coins ? collectedBy(st.game, p1Mark()) : null;
+    levelResult = finishLevel(level, { outcome, reason, playerMoves: playerMoves(), usedHelp: st.usedHelp, timedOut: st.timedOut, moveLimit: cfg.moveLimit, bonus });
   } else {
     const result = cfg.mode === 'friend' ? (winnerWho === 'p1' ? 'win' : winnerWho === 'p2' ? 'lose' : 'draw') : outcome;
     finishNormalGame(cfg.mode, result);
@@ -323,8 +364,7 @@ function undo() {
   st.thinking = false;
   let keep = st.history.length - 1;
   if (vsAI()) while (keep >= 0 && ownerOf(markForMove(keep)) !== 'p1') keep--;
-  st.history.splice(keep).forEach(i => { st.board[i] = null; view.paint(i, null, false); });
-  view.markLast(st.history[st.history.length - 1]);
+  rewindTo(keep);
   sound.click(); haptic(10);
   renderTurn();
 }
@@ -337,8 +377,8 @@ function hint() {
   renderExtras();
   sound.click();
   const len = st.history.length;
-  runAI(st.board.slice(), cfg.size, p1Mark(), 'hard', move => {
-    if (!root || st.history.length !== len || st.over || move === undefined) return;
+  runAI(st.game, p1Mark(), 'hard', move => {
+    if (!root || st.history.length !== len || st.over || move === undefined || move < 0) return;
     view.highlight(move);
     view.ensureVisible(move);
   });
@@ -370,12 +410,25 @@ function continueGame() {
   st.continued = true;
   st.usedHelp = true; // like undo and hint, a continue removes the 3-star chance
   view.clearWin();
-  st.history.splice(-2).forEach(i => { st.board[i] = null; view.paint(i, null, false); });
-  view.markLast(st.history[st.history.length - 1]);
+  rewindTo(st.history.length - 2);
   sound.click(); haptic([10, 30, 10]);
   showToast('Back 2 moves. You got this!', 'rotate-ccw');
   renderTurn();
   if (isAITurn()) scheduleAI();
+}
+
+/**
+ * Goes back to the state before move `keep` (0 = the start). The snapshot
+ * holds everything, so twist effects are reversed too: vanished marks come
+ * back, ice re-freezes, shrunk rings reopen, coins return.
+ */
+function rewindTo(keep) {
+  st.game = st.snaps[keep];
+  st.snaps.length = keep;
+  st.history.length = keep;
+  view.sync(st.game);
+  view.markLast(st.history[st.history.length - 1]);
+  renderTwistChips();
 }
 
 function needCoins(price, what) {
@@ -438,6 +491,39 @@ function onSheetClosed() {
   renderTimeChip();
 }
 
+/**
+ * One small chip per active twist (icon; the line rule also shows
+ * "Straight only"). Tapping a chip explains the twist in one line.
+ * Coin cells show what you collected, shrinking warns "Shrinks in 2".
+ */
+function renderTwistChips() {
+  const box = $('.twist-chips', root), l = layout();
+  const ids = twists().filter(id => id !== 'puzzle'); // the puzzle has its own "Moves left" chip
+  box.innerHTML = ids.map(id => {
+    let text = id === 'lines' ? twistChip(id, l) : '', cls = '';
+    if (id === 'coins') { // pending: shown here, paid only on a first-clear win
+      const got = collectedBy(st.game, p1Mark());
+      text = [got.coins ? `+${got.coins}` : '', got.diamonds ? `+${got.diamonds}◆` : ''].filter(Boolean).join(' ');
+      if (text) cls = coinsPay() ? ' pending' : ' pending no-pay';
+    }
+    if (id === 'shrink') {
+      const left = shrinksIn(st.game);
+      if (left <= st.game.shrink.warn && !st.over) { text = `Shrinks in ${left}`; cls = ' warn'; }
+    }
+    return `<button class="twist-chip${cls}" data-act="twist" data-id="${id}" aria-label="${TWIST_INFO[id].name}: ${escapeHTML(twistExplain(id))}"><i data-lucide="${twistIcon(id, l)}"></i>${text ? `<span>${escapeHTML(text)}</span>` : ''}</button>`;
+  }).join('');
+  renderIcons(box);
+}
+
+/** True if coin cells pay on this level (a first clear; a skipped level still counts). */
+const coinsPay = () => !!(st && st.coinsPay);
+
+/** One-line explanation for a twist chip. */
+function twistExplain(id) {
+  if (id === 'coins' && !coinsPay()) return 'You already cleared this level, so coin cells pay nothing this time.';
+  return TWIST_INFO[id].explain(layout());
+}
+
 /** Puzzle levels: "Moves left: 2" in the top bar. */
 function renderMovesChip() {
   const chip = $('.moves-chip', root);
@@ -486,8 +572,8 @@ function onTimeout() {
   if (!root || st.over || st.thinking || isAITurn()) return;
   showToast("Time's up!", 'timer');
   if (isCampaign()) st.timedOut = true;
-  const move = chooseMove(st.board, cfg.size, currentMark(), 'easy');
-  tryPlace(move);
+  const move = chooseStateMove(st.game, currentMark(), 'easy');
+  if (move < 0 || !tryPlace(move)) endGame(null, null);
 }
 
 /* =========================================================================
@@ -602,9 +688,9 @@ function buildModals() {
     if (act === 'continue') { askContinue(); return; }
     levelResultModal.close();
     if (act === 'next' && n < TOTAL_LEVELS) {
-      const next = Math.min(n + 1, save.data.unlockedLevel);
+      const next = isUnlocked(n + 1) ? n + 1 : save.data.unlockedLevel;
       // a new twist shows its tutorial first; the round starts after "Got it"
-      withTwistTutorial(getLevel(next).twist, () => { if (root) { loadConfig(campaignConfig(next)); startRound(); } });
+      withTwistTutorials(getLevel(next).twists, () => { if (root) { loadConfig(campaignConfig(next)); startRound(); } });
     }
     else if (act === 'retry') startRound();
     else navigate('#/levels');
@@ -676,6 +762,7 @@ function showLevelResult(r) {
     rewards.innerHTML =
       `<div><span>${r.first ? (r.boss ? 'Boss first clear ×3' : 'First clear') : 'Replay'}</span><b>+${r.base} <i data-lucide="coins"></i></b></div>` +
       (r.starCoins ? `<div><span>New stars ×${r.newStars}</span><b>+${r.starCoins} <i data-lucide="coins"></i></b></div>` : '') +
+      (r.cellCoins ? `<div><span>Coin cells</span><b>+${r.cellCoins} <i data-lucide="coins"></i></b></div>` : '') +
       `<div><span>XP${r.levelUp ? ' · Level up!' : ''}</span><b>+${r.xp} XP</b></div>` +
       r.gems.map(g => `<div class="gem-row"><span>${g.label}</span><b>+${g.diamonds} <i data-lucide="gem"></i></b></div>`).join('');
     const next = n < TOTAL_LEVELS ? '<button class="btn3d" data-cm="next" data-autofocus><i data-lucide="play"></i>Next level</button>' : '';
@@ -701,7 +788,7 @@ function showLevelResult(r) {
   m.open();
   if (r.won) {
     scope.timeout(() => {
-      flyCurrency('coins', rewards, r.base + r.starCoins, $('[data-coin-pill]', m.el));
+      flyCurrency('coins', rewards, r.base + r.starCoins + (r.cellCoins || 0), $('[data-coin-pill]', m.el));
       scope.timeout(() => renderCurrency('coins', coinsBefore), 300);
       if (gemTotal) scope.timeout(() => {
         flyCurrency('diamonds', $('.gem-row', rewards) || rewards, gemTotal, $('[data-gem-pill]', m.el));

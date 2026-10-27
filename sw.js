@@ -3,7 +3,7 @@
  * Bump CACHE when files change so players get the new version.
  * Google Fonts are cached at runtime the first time they load.
  */
-const CACHE = 'ttt-v4';
+const CACHE = 'ttt-v6';
 const FONT_CACHE = 'ttt-fonts-v1';
 const APP_FILES = [
   './',
@@ -63,8 +63,20 @@ const APP_FILES = [
   "./js/core/board.js",
   "./js/core/layout-generator.js",
   "./js/core/layout-validator.js",
+  "./js/core/random.js",
   "./js/core/rules.js",
   "./js/core/timer.js",
+  "./js/core/twist-ai.js",
+  "./js/core/twists/blocked.js",
+  "./js/core/twists/coin-cells.js",
+  "./js/core/twists/gravity.js",
+  "./js/core/twists/ice-cells.js",
+  "./js/core/twists/index.js",
+  "./js/core/twists/line-rule.js",
+  "./js/core/twists/preset.js",
+  "./js/core/twists/shrinking.js",
+  "./js/core/twists/vanishing.js",
+  "./js/core/twists/wrap.js",
   "./js/main.js",
   "./js/pages/game.js",
   "./js/pages/home.js",
@@ -82,6 +94,7 @@ const APP_FILES = [
   "./js/services/stats.js",
   "./js/services/storage.js",
   "./js/services/theme.js",
+  "./js/utils/dev.js",
   "./js/utils/dom.js",
   "./js/utils/events.js",
   "./js/utils/format.js",

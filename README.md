@@ -13,7 +13,7 @@ Made by **Sussal Productions**.
 - **AI:** unbeatable minimax on 3x3; alpha-beta search with a threat-aware heuristic on
   bigger boards. 9x9 and up run in a Web Worker, so the screen never freezes
 - **Campaign:** 500 levels in 10 chapters (3x3 up to 12x12), stars, a boss every 10th level,
-  move limits and level twists (blocked cells, puzzle levels, see below). The levels map is
+  move limits and 9 level twists (coins, ice, gravity, wrap and more, see below). The levels map is
   virtualized, so only the nodes near the screen are drawn
 - **Move timer:** on by default in every mode. There is no timer choice in the setup sheets:
   time per move is automatic (see below), and **Settings > Move timer** turns it on or off. Countdown ring around the active
@@ -53,8 +53,10 @@ js/
   router.js           hash router: #/home #/levels #/game #/profile #/shop #/settings
   config/             constants, timers (move times), level generator (500 levels), shop items,
                       level-twists (twist rules), twist-table (generated)
-  core/               pure logic, no DOM: board, rules, ai, ai.worker, timer,
-                      layout-generator, layout-validator
+  core/               pure logic, no DOM: board, rules, ai, twist-ai, ai.worker, timer,
+                      random, layout-generator, layout-validator
+    twists/           rule modules: index (hooks), blocked, preset, coin-cells, ice-cells,
+                      line-rule, shrinking, vanishing, gravity, wrap
   services/           storage, economy, progress, stats, achievements, audio,
                       haptics, theme, ai-runner
   components/         bottom nav, sheet, modal, toast, currency bar (coins + diamonds),
@@ -62,7 +64,8 @@ js/
   pages/              home, levels, game, profile, shop, settings (each has mount / unmount)
   utils/              dom, format, validate, events, seeded-random, icons (bundled Lucide subset)
 tools/                gen-twist-table.js (npm run twists), not deployed
-tests/                rules, ai, levels, timers, timer, storage and twists tests (Node test runner)
+tests/                rules, ai, levels, timers, timer, storage, format (Node test runner)
+  twists/             one file per twist + layouts (all 500 levels) + AI legality
 ```
 
 Rules the code follows:
@@ -90,6 +93,18 @@ Run the tests (Node 18 or newer, no install needed):
 ```bash
 npm test
 ```
+
+### Dev unlock (testing only)
+
+Add `?dev=1` to the URL (for example <http://localhost:5173/?dev=1#/levels>) to open all 500
+levels. A red **DEV** badge shows while it is on.
+
+- Works only on dev hosts: `localhost`, `127.0.0.1`, `*.local`, LAN IPs (`192.168.x.x`,
+  `10.x.x.x`) and Vercel branch previews (`*-git-*.vercel.app`).
+- Never on the live site: `tic-tac-toe-five-silk-91.vercel.app` is blocked by name, and any
+  other domain is off too (allowlist). Rules are in `js/utils/dev.js`, tested in `tests/dev.test.js`.
+- Dev mode uses its own save key (`ttt_save_dev`), so testing never touches real progress.
+  Remove `?dev=1` to go back to your normal save.
 
 ## Move timer
 
@@ -133,46 +148,95 @@ with the chapter's top skill, AI first and x0.7 time.
 
 Twists only exist in Levels mode. vs Computer and vs Player boards never change.
 
-| Twist | What happens |
+| Twist | Icon | What happens | Boards |
+|---|---|---|---|
+| Coin cells | coins | 1-3 cells hold +5 coins (bosses: +1 diamond). Paid only if you win, first clear only | 4x4+ |
+| Vanishing marks | hourglass | Each side keeps 3 / 4 / win length + 2 marks; one more and your oldest fades out. 60 moves = draw | 4x4+ |
+| Blocked cells | ban | Stone tiles nobody can play on; they break lines | 5x5+ |
+| Ice cells | snowflake | 2-6 frozen cells melt after 4-8 moves (a countdown shows on them) | 5x5+ |
+| Line rule | grid / move-diagonal | "Straight only" (rows and columns) or "Diagonal only" (6x6+) | 5x5+ |
+| Gravity | arrow-down-to-line | Your mark drops to the lowest free cell of the column, like Connect Four | 5x5+ |
+| Puzzle | puzzle | X and O marks start on the board (pinned); win within N moves (2-4) | 8x8+ |
+| Wrap-around | repeat | Rows and diagonals continue from the right edge to the left edge (faded ghost columns at the sides) | 8x8+ |
+| Shrinking board | shrink | Every 8 moves the empty outer ring is blocked (warning 2 moves before); stops at win length + 2 | 9x9+ |
+
+### Schedule
+
+| Level | New twist (intro) |
 |---|---|
-| Blocked | Some cells are stone tiles. Nobody can play there, and they break lines |
-| Puzzle | X and O marks start on the board (with a small pin). Win within N of your moves (2-4) or the level fails |
-| Mixed | Blocked cells and puzzle marks on one board |
+| 1-20 | none |
+| 25 | Coin cells |
+| 41 | Vanishing marks |
+| 51 | Blocked cells |
+| 71 | Ice cells |
+| 101 | Line rule |
+| 121 | Gravity |
+| 196 | Puzzles |
+| 261 | Wrap-around |
+| 281 | Shrinking board |
+| 300+ | Mixes of all twists |
 
-| Chapters | Twists |
-|---|---|
-| 1-2 (3x3, 4x4) | none, the learning phase |
-| 3-5 (5x5 to 7x7) | about 30% blocked |
-| 6-10 (8x8 to 12x12) | about 30% blocked, 20% puzzle, 10% mixed |
-| Bosses from chapter 3 | always a twist, with the hardest layouts |
+- The intro level is easy and has only that twist (lowest AI skill, no move limit, you start).
+  Intros never sit on a boss level (every 10th), so 40 / 70 / 100 / 120 / 260 became the next
+  normal level. Shrinking starts at 281 because it needs a 9x9 board.
+- A new twist then shows up in about 20-30% of the next levels; its share drops as more
+  twists arrive (12-20% each near the end).
+- Max 1 twist on normal levels and 2 on bosses before level 300, then 2 and 3.
+- After 3 or 4 twist levels in a row there is always a normal level.
+- Never together: gravity + vanishing, gravity + shrinking, vanishing + puzzle, wrap + shrinking.
+  Puzzles only mix with blocked cells and coin cells, so "win in N" stays exact.
+  All rules live in `js/config/level-twists.js` and the generator follows them.
 
-Blocked cells by grid: 5x5 1-2, 6x6 2-3, 7x7 3-4, 8x8 3-5, 9x9 4-6, 10x10 5-7, 11x11 6-9,
-12x12 7-10. Puzzles start with 4 to 8 marks (X = O, you move first).
+### How it works
 
-How it works:
+- **Rule modules** (`js/core/twists/`): every twist is a small module with optional hooks:
+  `setup(state, layout)`, `isPlayable(state, cell)`, `resolveMove(state, cell)` (gravity),
+  `afterMove(state, move, events)` (vanish, melt, shrink, coins), `getLineCells(state, start, dir)`
+  (wrap, line rule), `allowsDir(state, dir)` (line rule) and `isDraw(state)` (vanishing cap).
+  `index.js` builds a plain, cloneable game state and runs the hooks in a fixed order. With no
+  twists every hook falls back to the classic rules, so normal games play exactly as before.
+- **Undo** keeps a snapshot of the state before each move, so it reverses everything: vanished
+  marks come back, ice re-freezes, rings re-open and coins return.
+- **AI** (`js/core/twist-ai.js`) plays through the same hooks, so it never makes an illegal
+  move: columns with gravity, the vanishing mark counted, the centre preferred while the board
+  shrinks, only valid lines scored, coins as a tiny bonus. Levels with only blocked cells,
+  puzzles or coins keep the classic AI. Same 200ms budget, Web Worker on 9x9+, seeded random
+  numbers in tests (`js/core/random.js`).
+- **Deterministic layouts:** every layout comes from `mulberry32(level + 1000 x attempt)`
+  (`js/core/layout-generator.js`). Boss overrides in `js/config/level-twists.js` win.
+- **Validated offline, not on the phone:** `npm run twists` checks all 500 levels
+  (`js/core/layout-validator.js`) and writes `js/config/twist-table.js` (twists, attempt,
+  puzzle length). The game only rebuilds that attempt. Checks: allowed combo and board size,
+  no overlapping cells (coins / ice never on blocked cells), 60% of lines open, the level is
+  winnable under its rules (gravity: only reachable cells; shrinking: the final area), the
+  board never shrinks below win length + 2, no floating marks with gravity, and puzzles are
+  fair and forced in exactly N moves. A failing layout tries the next seed (50 attempts), then
+  the level plays normally. Today no level needs that fallback (a test checks it). Bosses 250,
+  370 and 500 use hand-crafted layouts (`BOSS_OVERRIDES`); 370 is coins + blocked + shrinking
+  (2 rings). The tests fail if the table is out of date.
+- **UI:** small twist icons in the level popup and on map nodes, chips in the game bar (tap one
+  for a one-line explanation, "Straight only", "Shrinks in 2"), a one-time
+  tutorial with a tiny animated demo per twist ("seen" is saved in `ttt.v3`). Animations stay
+  under 300ms and stop with reduced motion.
+- **Coin cells:** a collected coin is only *pending*: it shows in the coins chip (dashed
+  outline, "+5"), with no flying during the game. A win flies it to the counter on the result
+  screen; a loss or draw fades the pending coins out. On a level you already cleared the chip
+  is muted (coins don't pay again).
+- **Saves:** layouts are not saved. Stars are stored per level number, so if a layout changes
+  in a later update, the player keeps the stars they earned.
 
-- **Deterministic:** every layout comes from `mulberry32(level + 1000 x attempt)`
-  (`js/utils/seeded-random.js`, `js/core/layout-generator.js`). The same level is the same
-  on every device and every replay. Boss overrides in `js/config/level-twists.js` win over
-  generated layouts.
-- **Validated offline, not on the phone:** `npm run twists` runs the full checks for all 500
-  levels and writes `js/config/twist-table.js` (twist type, the first attempt that passed,
-  puzzle length). The game only rebuilds that attempt, so it stays fast.
-  `tests/twists.test.js` fails if the table is out of date.
-- **Checks** (`js/core/layout-validator.js`): at least 60% of the winning lines stay open,
-  the centre area is not blocked, neither side is cut off, no line is won at the start,
-  X = O, the machine has no instant win, and the puzzle is a forced win in exactly N moves.
-  The puzzle check is a threat search (fours and open threes) that must beat every
-  defence. A layout that fails tries the next seed, up to 50 times, then the level plays
-  normally.
-- **Engine:** a blocked cell is `'#'` on the board. The win check stops at it, the AI never
-  plays it and ignores lines through it. On twist boards a game is also a draw when nobody
-  can make a line any more. Preset marks are not in the move history, so undo and
-  "continue" never remove them.
-- **UI:** one twist badge in the level popup, a tiny icon on the map node, a "Moves left"
-  chip on puzzle levels, and a one-time tutorial per twist ("seen" is saved in `ttt.v3`).
-- **Saves:** layouts are not saved. Stars are stored per level number, so if a layout
-  changes in a later update, the player keeps the stars they earned.
+### Adding a new twist
+
+1. Write `js/core/twists/my-twist.js` with an `id` and the hooks it needs (keep its data on the
+   state as plain objects so snapshots and the AI worker can copy it).
+2. Register it in `MODULES` and `ORDER` in `js/core/twists/index.js`.
+3. In `js/config/level-twists.js`: add it to `TWIST_IDS`, `INTRO`, `MIN_SIZE`, `TWIST_INFO`
+   (icon, name, chip, explanation) and `FORBIDDEN` if it clashes with another twist.
+4. Build its layout part in `buildLayout()` (`js/core/layout-generator.js`), add a check in
+   `validateLayout()`, and a letter in `TWIST_CODES` (`js/config/twist-table.js`).
+5. If it changes the rules, teach `js/core/twist-ai.js` about it (and keep it out of the
+   classic set in `needsTwistAI`). Draw it in `BoardView.sync()` and add a tutorial.
+6. Run `npm run twists`, then add `tests/twists/my-twist.test.js` (hooks, undo, AI legality).
 
 ## Coins and diamonds
 
@@ -222,6 +286,7 @@ Two localStorage keys:
 |---|---|
 | `ttt.v3` | settings, home choices, player names, scores per board |
 | `ttt_save_v2` | coins, diamonds, XP, levels and stars, skips, items, stats, achievements, daily streak |
+| `ttt_save_dev` | sandbox save, only used with `?dev=1` on a dev host |
 
 The save has a `version` field (now 2). On first load, an old `ttt_save_v1` save is run
 through `migrate()` in `js/services/storage.js` and written to `ttt_save_v2` (the v1 key

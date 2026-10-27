@@ -5,6 +5,7 @@
 import { winLength, REWARDS } from './constants.js';
 import { getLevelMoveTime } from './timers.js';
 import { generateLayout } from '../core/layout-generator.js';
+import { introOf } from './level-twists.js';
 
 // [first level, last level, board size, win length, chapter name]
 const TABLE = [
@@ -50,8 +51,9 @@ const round2 = x => Math.round(x * 100) / 100;
  *   last normal level (see config/timers.js)
  * - some levels have a hard move limit
  * Boss levels (every 10th): the chapter's top skill, AI first, x0.7 time.
- * Twists (chapter 3+, see config/level-twists.js): `twist` is 'none' |
- * 'blocked' | 'puzzle' | 'mixed' and `layout` the cells it starts with.
+ * Twists (from level 25, see config/level-twists.js): `twists` lists the
+ * active twist ids and `layout` how the board starts. The first level of
+ * a twist (its intro) is easy: lowest AI skill, no move limit, you start.
  * Puzzle levels: the player starts and must win within `puzzleMoves`.
  * Levels never show these numbers to the player; they live in config only.
  */
@@ -78,9 +80,15 @@ export function getLevel(n) {
     reward: (REWARDS.firstClearBase + Math.floor(n / REWARDS.firstClearDivisor)) * (boss ? REWARDS.bossMultiplier : 1),
   };
   level.timeLimit = getLevelMoveTime(level);               // seconds per move (when the timer is on)
-  const { type, layout } = generateLayout(n, level);
-  level.twist = type;
+  const { twists, layout } = generateLayout(n, level);
+  level.twists = twists;                                   // [] for a normal level
   level.layout = layout;                                   // null for a normal level
+  level.intro = introOf(n);                                // twist this level introduces, or null
+  if (level.intro) {
+    level.aiSkill = SKILL.min;
+    level.moveLimit = 0;
+    level.firstMove = 'player';
+  }
   if (layout && layout.puzzleMoves) {
     level.firstMove = 'player';                            // puzzles: you move first...
     level.moveLimit = layout.puzzleMoves;                  // ...and must win within N of your moves
