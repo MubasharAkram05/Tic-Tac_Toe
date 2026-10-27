@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "npx --yes serve -l 5173 .",
-    "test": "node --test"
+    "test": "node --test",
+    "twists": "node tools/gen-twist-table.js"
   },
   "license": "UNLICENSED"
 }

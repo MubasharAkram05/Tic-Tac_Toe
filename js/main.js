@@ -7,7 +7,7 @@ import { startAutoTheme, applyCosmetics } from './services/theme.js';
 import { trackKeyboard, closeTopSheet } from './components/bottom-sheet.js';
 import { closeTopModal } from './components/modal.js';
 import { initToasts } from './components/toast.js';
-import { initCoinCounter } from './components/coin-counter.js';
+import { initCurrencyBar } from './components/currency-bar.js';
 import { sound } from './services/audio.js';
 import { haptic } from './services/haptics.js';
 import { $, renderIcons } from './utils/dom.js';
@@ -19,10 +19,10 @@ applyCosmetics();
 trackKeyboard();
 initToasts();
 renderIcons(document);
-initCoinCounter();
+initCurrencyBar();
 startRouter();
 
-// Any element with data-go="#/route" navigates there (coin pills, settings buttons, nav tabs)
+// Any element with data-go="#/route" navigates there (coin / diamond pills, settings buttons, nav tabs)
 document.addEventListener('click', e => {
   const link = e.target.closest('[data-go]');
   if (!link) return;

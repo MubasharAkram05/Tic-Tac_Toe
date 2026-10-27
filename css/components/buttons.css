@@ -28,6 +28,9 @@
 .btn3d.danger:active { box-shadow: 0 1px 0 var(--bedge); }
 .btn3d.gold { --c1: #ffd34d; --c2: var(--gold-2); --bedge: #b45309; color: #3b2300; box-shadow: 0 5px 0 var(--bedge); }
 .btn3d.gold:active { box-shadow: 0 1px 0 var(--bedge); }
+.btn3d.gem { --c1: #38bdf8; --c2: var(--gem-2); --bedge: var(--gem-edge); color: #fff; box-shadow: 0 5px 0 var(--bedge), 0 0 14px rgba(34, 211, 238, .3); }
+.btn3d.gem:active { box-shadow: 0 1px 0 var(--bedge); }
+.btn3d.gem .gem-cost svg.lucide { color: #e0f2fe; }
 .btn3d:disabled { opacity: .45; filter: grayscale(.4); pointer-events: none; }
 .btn3d.big { min-height: 60px; font-size: 20px; border-radius: 20px; width: 100%; }
 .btn3d.big svg.lucide { width: 24px; height: 24px; fill: currentColor; }
@@ -52,8 +55,8 @@
 .mode-btn svg.lucide { width: 30px; height: 30px; }
 .mode-btn b { font-size: 20px; font-weight: 700; letter-spacing: 1px; color: var(--text); }
 
-/* Coin + star pills */
-.coin-pill, .star-pill {
+/* Coin, diamond + star pills */
+.coin-pill, .gem-pill, .star-pill {
   display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px 0 8px;
   border-radius: 99px; font-weight: 700; font-size: 17px; white-space: nowrap;
   background: var(--glass-strong); border: 1px solid var(--glass-border); box-shadow: 0 3px 0 var(--edge);
@@ -61,9 +64,22 @@
 .coin-pill svg.lucide { width: 24px; height: 24px; color: var(--gold); filter: drop-shadow(0 0 4px var(--gold-glow)); }
 .star-pill svg { width: 22px; height: 22px; }
 .star-pill { padding: 0 12px 0 8px; font-size: 16px; }
-.coin-pill.bump { animation: bump 260ms var(--ease); }
+.coin-pill.bump, .gem-pill.bump { animation: bump 260ms var(--ease); }
+.gem-pill { padding: 0 12px 0 8px; gap: 5px; border-color: rgba(34, 211, 238, .45); box-shadow: 0 3px 0 var(--edge), 0 0 12px rgba(34, 211, 238, .25); }
+.gem-pill svg.lucide { width: 22px; height: 22px; color: var(--gem); filter: drop-shadow(0 0 5px var(--gem-glow)); }
+.currency-bar { display: flex; justify-content: center; gap: 8px; }
+/* Compact pills (game bar): small, read-only, no shadow */
+.coin-pill.mini, .gem-pill.mini {
+  min-height: 20px; padding: 0 7px 0 4px; gap: 3px; font-size: 12px; line-height: 1;
+  box-shadow: none; font-variant-numeric: tabular-nums;
+}
+.coin-pill.mini svg.lucide, .gem-pill.mini svg.lucide { width: 13px; height: 13px; }
 .flying-coin { position: fixed; z-index: 65; width: 22px; height: 22px; pointer-events: none; }
 .flying-coin svg { width: 100%; height: 100%; }
+.flying-coin.gem { filter: drop-shadow(0 0 6px var(--gem-glow)); }
+/* Small diamond price tag inside buttons ("◆ 2") */
+.gem-cost { display: inline-flex; align-items: center; gap: 2px; margin-left: 4px; font-size: .85em; font-weight: 700; }
+.gem-cost svg.lucide { width: 1em; height: 1em; color: var(--gem); }
 .star-on { fill: var(--gold); stroke: #b45309; stroke-width: 1; }
 .star-off { fill: var(--track); stroke: none; }
 

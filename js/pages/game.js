@@ -1,24 +1,35 @@
 /**
  * Game page. Plays one game from a config object:
- *   { mode: 'computer' | 'friend' | 'campaign', size, p1Mark, difficulty, timer,
+ *   { mode: 'computer' | 'friend' | 'campaign', size, p1Mark, difficulty,
  *     // campaign levels:
  *     levelId, winLength, aiSkill, firstMove: 'player' | 'ai', moveLimit, timeLimit }
  *
  * Normal games: the player starts the first round, then the starter
  * alternates every round. Levels decide who starts from their config.
+ *
+ * Level twists (campaign only): the board can start with blocked cells
+ * and preset marks (level.layout). Presets are never in the move history,
+ * so undo and "continue" can't remove them. Puzzle levels must be won
+ * within level.moveLimit of the player's moves ("Moves left" chip).
+ *
+ * Move timer (when on in Settings): seconds come from config/timers.js:
+ * grid x difficulty vs the computer, Medium vs a player, the level's own
+ * time in the campaign. Diamonds buy +10s once per game and a "continue"
+ * after losing a level.
  */
 import { $, createScope, renderIcons, escapeHTML, replayClass } from '../utils/dom.js';
-import { ruleLabel } from '../utils/format.js';
-import { winLength, ZOOM_FROM, PRICES, TIMER_FINAL_SECONDS } from '../config/constants.js';
+import { sizeLabel, secondsLabel } from '../utils/format.js';
+import { winLength, ZOOM_FROM, PRICES, DIAMOND_PRICES } from '../config/constants.js';
+import { getMoveTime, TIMER_FINAL_SECONDS, EXTRA_TIME_SECONDS } from '../config/timers.js';
 import { getLevel, TOTAL_LEVELS } from '../config/levels.js';
-import { createBoard } from '../core/board.js';
-import { winFrom, other } from '../core/rules.js';
+import { createBoard, isFull } from '../core/board.js';
+import { winFrom, other, isDeadBoard } from '../core/rules.js';
 import { chooseMove } from '../core/ai.js';
 import { MoveTimer } from '../core/timer.js';
 import { runAI, cancelAI } from '../services/ai-runner.js';
 import { app, saveApp, save, scoreBook } from '../services/storage.js';
 import { finishLevel, finishNormalGame } from '../services/progress.js';
-import { useBoost } from '../services/economy.js';
+import { useBoost, spendDiamonds, needText } from '../services/economy.js';
 import { sound } from '../services/audio.js';
 import { haptic } from '../services/haptics.js';
 import { onEvent } from '../utils/events.js';
@@ -26,10 +37,12 @@ import { BoardView, miniMark } from '../components/board-view.js';
 import { createModal } from '../components/modal.js';
 import { anySheetOpen } from '../components/bottom-sheet.js';
 import { showToast } from '../components/toast.js';
-import { renderCoins, flyCoins } from '../components/coin-counter.js';
+import { currencyBarHTML, currencyPillHTML, renderCurrency, flyCurrency, showAmount } from '../components/currency-bar.js';
+import { confirmSpend } from '../components/confirm-sheet.js';
 import { timerRingHTML, setRing, clearRing } from '../components/timer-ring.js';
 import { fireConfetti } from '../components/confetti.js';
-import { starSVG, campaignConfig } from '../components/level-popup.js';
+import { starSVG, campaignConfig, twistLabel } from '../components/level-popup.js';
+import { withTwistTutorial } from '../components/twist-tutorial.js';
 import { navigate } from '../router.js';
 
 export const appBar = { hidden: true };
@@ -57,10 +70,18 @@ const nameOf = who => {
 };
 const playerMoves = () => st.history.filter((_, n) => ownerOf(markForMove(n)) === 'p1').length;
 const scores = () => scoreBook(cfg.mode, isCampaign() ? 'L' + cfg.levelId : cfg.size);
-const timerSeconds = () => (isCampaign() ? cfg.timeLimit : cfg.timer) || 0;
+/** Seconds per move, 0 when the timer is off. */
+function timerSeconds() {
+  if (!app.settings.timerOn) return 0;
+  if (isCampaign()) return cfg.timeLimit;
+  return getMoveTime(cfg.size, cfg.mode === 'friend' ? 'medium' : cfg.difficulty);
+}
 const avatarOf = who => $(`.player-card[data-who="${who}"] .avatar`, root);
 const inProgress = () => st && st.history.length > 0 && !st.over;
 const exitRoute = () => (isCampaign() ? '#/levels' : '#/home');
+/** The level's twist layout (blocked cells + preset marks), or null. */
+const layout = () => (isCampaign() && level ? level.layout : null);
+const isPuzzle = () => !!(layout() && layout().puzzleMoves);
 
 /* =========================================================================
    Mount / unmount
@@ -78,7 +99,8 @@ export function mount(el, params, config) {
   scope.on(el, 'click', onClick);
   // Timer pauses in the background and while a sheet (settings) is open
   scope.on(document, 'visibilitychange', () => (document.hidden ? pauseTimer() : resumeTimer()));
-  scope.add(onEvent('sheet', ({ open }) => (open ? pauseTimer() : resumeTimer())));
+  scope.add(onEvent('sheet', ({ open }) => (open ? pauseTimer() : onSheetClosed())));
+  scope.add(onEvent('diamonds', () => { if (root) renderTimeChip(); }));
   scope.add(onEvent('progress', () => { if (root && isCampaign()) renderExtras(); }));
 
   loadConfig(config);
@@ -117,12 +139,23 @@ function loadConfig(config) {
 function template() {
   return `
     <header class="game-bar">
-      <button class="icon-btn" data-act="back" aria-label="Back"><i data-lucide="arrow-left"></i></button>
+      <div class="gb-side">
+        <button class="icon-btn" data-act="back" aria-label="Back"><i data-lucide="arrow-left"></i></button>
+        ${currencyPillHTML('coins', false, 'mini')}
+      </div>
       <div class="game-bar-center">
         <div class="turn-pill glass" aria-live="polite"></div>
-        <span class="rule-chip"></span>
+        <div class="chip-row">
+          <span class="rule-chip"></span>
+          <span class="time-chip" hidden><i data-lucide="clock"></i><span></span></span>
+          <span class="moves-chip" hidden></span>
+          <button class="time-plus" data-act="extra-time" hidden aria-label="Add ${EXTRA_TIME_SECONDS} seconds for ${DIAMOND_PRICES.extraTime} diamond">+${EXTRA_TIME_SECONDS}s<span class="gem-cost"><i data-lucide="gem"></i>${DIAMOND_PRICES.extraTime}</span></button>
+        </div>
       </div>
-      <button class="icon-btn" data-go="#/settings" aria-label="Settings"><i data-lucide="settings"></i></button>
+      <div class="gb-side">
+        <button class="icon-btn" data-go="#/settings" aria-label="Settings"><i data-lucide="settings"></i></button>
+        ${currencyPillHTML('diamonds', false, 'mini')}
+      </div>
     </header>
     <div class="players">
       ${['p1', 'p2'].map(who => `
@@ -151,6 +184,7 @@ function onClick(e) {
   if (act === 'undo') undo();
   if (act === 'hint') hint();
   if (act === 'restart') { sound.click(); haptic(12); startRound(); }
+  if (act === 'extra-time') askExtraTime();
 }
 
 /* =========================================================================
@@ -161,13 +195,20 @@ function startRound() {
   stopTimer();
   resultModal.close();
   levelResultModal.close();
-  st = { round: st.round, board: createBoard(cfg.size), history: [], over: false, thinking: false, aiToken: (st.aiToken || 0) + 1, usedHelp: false, timedOut: false, hintCell: -1 };
+  st = {
+    round: st.round, board: createBoard(cfg.size, layout()), history: [], over: false, thinking: false, aiToken: (st.aiToken || 0) + 1,
+    usedHelp: false, timedOut: false, hintCell: -1,
+    extraTimeUsed: false,   // +10s, once per game
+    continued: false,       // diamond continue after a lost level, once per attempt
+  };
   view.build(cfg.size);
-  $('.rule-chip', root).textContent = ruleLabel(cfg.size);
+  view.paintLayout(layout()); // blocked cells + preset marks fade in
+  $('.rule-chip', root).innerHTML = `${sizeLabel(cfg.size)} · ${winLength(cfg.size)}<span class="rw"> in a row</span>`;
   $('.rule-chip', root).setAttribute('aria-label', `${cfg.size} by ${cfg.size}, ${winLength(cfg.size)} in a row`);
   renderPlayers();
   renderExtras();
   renderTurn();
+  renderTimeChip();
   if (cfg.size >= ZOOM_FROM && !app.flags.zoomHint) {
     app.flags.zoomHint = true;
     saveApp();
@@ -187,7 +228,8 @@ function place(i) {
   haptic(12);
   const line = winFrom(st.board, cfg.size, i); // O(k): checks from the last move only
   if (line) return endGame(mark, line);
-  if (st.history.length === st.board.length) return endGame(null, null);
+  // Draw: no empty cell left; on twist boards also when nobody can make a line any more
+  if (isFull(st.board) || (layout() && isDeadBoard(st.board, cfg.size))) return endGame(null, null);
   if (outOfMoves()) return endGame(null, null, 'moves');
   renderTurn();
   if (isAITurn()) scheduleAI();
@@ -302,6 +344,40 @@ function hint() {
   });
 }
 
+/* ---------- Continue after losing a level (diamonds, once per attempt) ---------- */
+const canContinue = r => isCampaign() && !r.won && r.reason !== 'moves' && !st.continued && st.history.length >= 2;
+
+function askContinue() {
+  confirmSpend({
+    title: 'Continue?',
+    text: 'Takes back the last 2 moves so you can keep playing. Once per try, and no 3rd star.',
+    price: DIAMOND_PRICES.continue, currency: 'diamonds', confirmLabel: 'Continue',
+    onConfirm: () => {
+      if (!root || !st.over || st.continued) return;
+      if (!spendDiamonds(DIAMOND_PRICES.continue)) { showToast(needText(DIAMOND_PRICES.continue, 'diamonds'), 'gem'); return; }
+      continueGame();
+    },
+  });
+}
+
+/** Rewinds the last 2 moves of a lost level and picks the game back up. */
+function continueGame() {
+  levelResultModal.close();
+  cancelAI();
+  st.aiToken++;
+  st.over = false;
+  st.thinking = false;
+  st.continued = true;
+  st.usedHelp = true; // like undo and hint, a continue removes the 3-star chance
+  view.clearWin();
+  st.history.splice(-2).forEach(i => { st.board[i] = null; view.paint(i, null, false); });
+  view.markLast(st.history[st.history.length - 1]);
+  sound.click(); haptic([10, 30, 10]);
+  showToast('Back 2 moves. You got this!', 'rotate-ccw');
+  renderTurn();
+  if (isAITurn()) scheduleAI();
+}
+
 function needCoins(price, what) {
   showToast(`Need ${price - save.data.coins} more coins for ${what}`, 'coins');
   sound.error(); haptic(40);
@@ -336,17 +412,72 @@ function startTimer(secs) {
   });
   timer.start();
   if (document.hidden || anySheetOpen()) timer.pause();
+  renderTimeChip();
 }
 
 function stopTimer() {
   if (timer) timer.stop();
   timer = null;
   timerMove = -1;
-  if (root) ['p1', 'p2'].forEach(w => clearRing(avatarOf(w)));
+  if (root) {
+    ['p1', 'p2'].forEach(w => clearRing(avatarOf(w)));
+    renderTimeChip();
+  }
 }
 function pauseTimer() { if (timer) timer.pause(); }
 function resumeTimer() {
   if (timer && !document.hidden && !anySheetOpen() && !(leaveModal && leaveModal.isOpen())) timer.resume();
+}
+
+/** After Settings (or any sheet) closes: the timer may have been switched on or off. */
+function onSheetClosed() {
+  if (!root || !st || st.over) return;
+  if (!timerSeconds()) stopTimer();
+  else if (!timer) syncTimer();
+  resumeTimer();
+  renderTimeChip();
+}
+
+/** Puzzle levels: "Moves left: 2" in the top bar. */
+function renderMovesChip() {
+  const chip = $('.moves-chip', root);
+  chip.hidden = !isPuzzle();
+  if (!isPuzzle()) return;
+  const left = Math.max(0, cfg.moveLimit - playerMoves());
+  chip.textContent = `Moves left: ${left}`;
+  chip.classList.toggle('last', left <= 1 && !st.over);
+}
+
+/** Clock chip with the per-move time, plus the "+10s" diamond button while your timer runs. */
+function renderTimeChip() {
+  if (!root || !st) return;
+  const secs = timerSeconds(), chip = $('.time-chip', root), plus = $('[data-act="extra-time"]', root);
+  chip.hidden = !secs;
+  if (secs) {
+    chip.querySelector('span').textContent = secondsLabel(secs);
+    chip.setAttribute('aria-label', `${secs} seconds per move`);
+  }
+  plus.hidden = !timer || st.over || st.extraTimeUsed;
+}
+
+/** +10s on the current move for 1 diamond, once per game. The sheet pauses the timer while it is open. */
+function askExtraTime() {
+  if (!timer || st.over || st.extraTimeUsed) return;
+  const move = st.history.length;
+  confirmSpend({
+    title: `+${EXTRA_TIME_SECONDS} seconds?`,
+    text: 'Adds time to this move. You can use it once per game.',
+    price: DIAMOND_PRICES.extraTime, currency: 'diamonds', confirmLabel: `Add ${EXTRA_TIME_SECONDS}s`,
+    onConfirm: () => {
+      // the move must still be the same one, with its timer running
+      if (!root || !timer || st.over || st.history.length !== move || st.extraTimeUsed) return;
+      if (!spendDiamonds(DIAMOND_PRICES.extraTime)) { showToast(needText(DIAMOND_PRICES.extraTime, 'diamonds'), 'gem'); return; }
+      st.extraTimeUsed = true;
+      timer.addTime(EXTRA_TIME_SECONDS * 1000);
+      showToast(`+${EXTRA_TIME_SECONDS}s added`, 'timer');
+      renderTimeChip();
+    },
+  });
 }
 
 /** Time's up: a random move is placed for that player. In levels this also costs the 3rd star. */
@@ -396,6 +527,7 @@ function statusText() {
   if (st.thinking) return 'Thinking...';
   if (!isCampaign()) return '';
   const pm = playerMoves();
+  if (isPuzzle()) return `Level ${cfg.levelId} · ${twistLabel(level)}`;
   return `Level ${cfg.levelId} · ${cfg.moveLimit ? `Moves ${pm}/${cfg.moveLimit}` : `Moves ${pm}`}`;
 }
 
@@ -409,6 +541,7 @@ function renderTurn() {
   $('.status-text', root).textContent = statusText();
   view.setLocked(st.thinking || st.over);
   $('[data-act="undo"]', root).disabled = !canUndo();
+  renderMovesChip();
   syncTimer();
 }
 
@@ -453,7 +586,7 @@ function buildModals() {
   levelResultModal = createModal({
     id: 'levelResultModal', labelledBy: 'lrTitle', dismissible: false,
     html: `
-      <div class="cm-top"><span class="coin-pill" data-coin-pill><i data-lucide="coins"></i><span class="coin-amt">0</span></span></div>
+      <div class="cm-top">${currencyBarHTML(false)}</div>
       <div class="cm-stars"></div>
       <div class="result-icon lose cm-fail" hidden><i data-lucide="frown"></i></div>
       <h2 id="lrTitle"></h2>
@@ -466,8 +599,13 @@ function buildModals() {
     if (!b) return;
     sound.click();
     const act = b.dataset.cm, n = cfg.levelId;
+    if (act === 'continue') { askContinue(); return; }
     levelResultModal.close();
-    if (act === 'next' && n < TOTAL_LEVELS) { loadConfig(campaignConfig(Math.min(n + 1, save.data.unlockedLevel))); startRound(); }
+    if (act === 'next' && n < TOTAL_LEVELS) {
+      const next = Math.min(n + 1, save.data.unlockedLevel);
+      // a new twist shows its tutorial first; the round starts after "Got it"
+      withTwistTutorial(getLevel(next).twist, () => { if (root) { loadConfig(campaignConfig(next)); startRound(); } });
+    }
     else if (act === 'retry') startRound();
     else navigate('#/levels');
   });
@@ -524,9 +662,11 @@ function showLevelResult(r) {
   $('.cm-fail', m.el).hidden = r.won;
   starsEl.hidden = !r.won;
   m.card.classList.remove('shake');
-  let coinsBefore = save.data.coins;
+  let coinsBefore = save.data.coins, gemsBefore = save.data.diamonds;
+  const gemTotal = r.won ? r.gems.reduce((t, g) => t + g.diamonds, 0) : 0;
   if (r.won) {
     coinsBefore = r.before;
+    gemsBefore = r.gemsBefore;
     starsEl.innerHTML = [0, 1, 2].map(i => starSVG(i < r.stars, i < r.stars ? `star-pop s${i}` : '')).join('');
     for (let i = 0; i < r.stars; i++) scope.timeout(() => sound.star(i), 250 + i * 220);
     $('#lrTitle').textContent = `Level ${n} clear!`;
@@ -536,7 +676,8 @@ function showLevelResult(r) {
     rewards.innerHTML =
       `<div><span>${r.first ? (r.boss ? 'Boss first clear ×3' : 'First clear') : 'Replay'}</span><b>+${r.base} <i data-lucide="coins"></i></b></div>` +
       (r.starCoins ? `<div><span>New stars ×${r.newStars}</span><b>+${r.starCoins} <i data-lucide="coins"></i></b></div>` : '') +
-      `<div><span>XP${r.levelUp ? ' · Level up!' : ''}</span><b>+${r.xp} XP</b></div>`;
+      `<div><span>XP${r.levelUp ? ' · Level up!' : ''}</span><b>+${r.xp} XP</b></div>` +
+      r.gems.map(g => `<div class="gem-row"><span>${g.label}</span><b>+${g.diamonds} <i data-lucide="gem"></i></b></div>`).join('');
     const next = n < TOTAL_LEVELS ? '<button class="btn3d" data-cm="next" data-autofocus><i data-lucide="play"></i>Next level</button>' : '';
     actions.className = 'modal-actions cm-actions ' + (next ? 'three' : 'two');
     actions.innerHTML = next + '<button class="btn3d ghost" data-cm="retry"><i data-lucide="rotate-ccw"></i>Replay</button><button class="btn3d ghost" data-cm="back"><i data-lucide="map"></i>Levels</button>';
@@ -547,20 +688,28 @@ function showLevelResult(r) {
       : r.reason === 'draw' ? "It's a draw. You need a win to clear the level."
       : 'The machine won this time.';
     rewards.innerHTML = '';
-    actions.className = 'modal-actions cm-actions two';
-    actions.innerHTML = '<button class="btn3d ghost" data-cm="back"><i data-lucide="map"></i>Back</button><button class="btn3d" data-cm="retry" data-autofocus><i data-lucide="rotate-ccw"></i>Retry</button>';
+    const cont = canContinue(r)
+      ? `<button class="btn3d gem" data-cm="continue"><i data-lucide="history"></i>Continue<span class="gem-cost"><i data-lucide="gem"></i>${DIAMOND_PRICES.continue}</span></button>` : '';
+    actions.className = 'modal-actions cm-actions ' + (cont ? 'three' : 'two');
+    actions.innerHTML = cont + '<button class="btn3d ghost" data-cm="back"><i data-lucide="map"></i>Back</button><button class="btn3d" data-cm="retry" data-autofocus><i data-lucide="rotate-ccw"></i>Retry</button>';
     scope.timeout(() => replayClass(m.card, 'shake'), 220);
   }
   renderIcons(m.el);
-  m.el.querySelectorAll('.coin-amt').forEach(a => { a.textContent = coinsBefore; });
+  // The card's counters start at the old totals, then the rewards fly in and count up
+  showAmount('coins', coinsBefore, m.el);
+  showAmount('diamonds', gemsBefore, m.el);
   m.open();
   if (r.won) {
-    const pill = $('[data-coin-pill]', m.el);
     scope.timeout(() => {
-      flyCoins(rewards, r.base + r.starCoins, pill);
-      scope.timeout(() => renderCoins(coinsBefore), 300);
+      flyCurrency('coins', rewards, r.base + r.starCoins, $('[data-coin-pill]', m.el));
+      scope.timeout(() => renderCurrency('coins', coinsBefore), 300);
+      if (gemTotal) scope.timeout(() => {
+        flyCurrency('diamonds', $('.gem-row', rewards) || rewards, gemTotal, $('[data-gem-pill]', m.el));
+        scope.timeout(() => renderCurrency('diamonds', gemsBefore), 300);
+      }, 450);
     }, 900);
   } else {
-    renderCoins();
+    renderCurrency('coins');
+    renderCurrency('diamonds');
   }
 }

@@ -1,8 +1,14 @@
-/* Shop grid and item previews. */
-.shop-page .seg { margin-bottom: 12px; }
-.shop-page .seg button { font-size: 15px; }
+/* Shop: currency tabs, sections, item cards, exchange card. */
+.shop-page .seg { margin-bottom: 14px; }
+.shop-page .seg button { font-size: 16px; gap: 6px; }
+.shop-page .seg button svg.lucide { width: 20px; height: 20px; }
+.shop-body { animation: fadeIn 200ms ease; }
+.shop-section { scroll-margin-top: 8px; }
+.shop-section + .shop-section { margin-top: 18px; }
+.shop-heading { font-size: 17px; font-weight: 600; color: var(--muted); margin: 0 4px 8px; }
 .shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .shop-item { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 10px; border-radius: 20px; text-align: center; min-width: 0; }
+.shop-item.premium { border-color: rgba(34, 211, 238, .5); box-shadow: 0 0 14px rgba(34, 211, 238, .15); }
 .shop-item.equipped { border: 2px solid var(--primary); box-shadow: 0 0 0 2px rgba(124, 92, 255, .25); }
 .si-lock { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--glass-strong); color: var(--muted); }
 .si-lock svg.lucide { width: 14px; height: 14px; }
@@ -15,7 +21,18 @@
 .si-marks { display: flex; gap: 6px; --cell: 40px; --cr: 10px; }
 .si-avatar, .si-boost { width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; color: #fff; }
 .si-avatar { border-radius: 50%; background: linear-gradient(160deg, var(--x), var(--primary-2)); }
+.si-avatar.legendary { background: linear-gradient(160deg, #fde047, #f97316 55%, #db2777); box-shadow: 0 0 0 3px rgba(253, 224, 71, .35), 0 0 16px rgba(249, 115, 22, .45); }
 .si-boost { background: linear-gradient(160deg, var(--gold), var(--gold-2)); }
 .si-avatar svg.lucide, .si-boost svg.lucide { width: 30px; height: 30px; }
+
+/* Exchange: 1 diamond -> 100 coins (one way) */
+.exchange-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px; margin-bottom: 18px; border-radius: 22px; text-align: center; border-color: rgba(34, 211, 238, .5); }
+.ex-rate { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 700; }
+.ex-rate > svg.lucide { width: 22px; height: 22px; color: var(--muted); }
+.ex-gem, .ex-coin { display: inline-flex; align-items: center; gap: 4px; }
+.ex-gem svg.lucide { width: 24px; height: 24px; color: var(--gem); filter: drop-shadow(0 0 5px var(--gem-glow)); }
+.ex-coin svg.lucide { width: 24px; height: 24px; color: var(--gold); }
+.ex-note { color: var(--muted); font-size: 15px; }
+.exchange-card .btn3d { width: 100%; }
 
 @media (min-width: 768px) { .shop-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

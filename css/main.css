@@ -18,3 +18,6 @@
 @import url('pages/game.css');
 @import url('pages/profile.css');
 @import url('pages/shop.css');
+
+/* Level twists go last: they restyle board cells from game.css */
+@import url('components/board-twists.css');

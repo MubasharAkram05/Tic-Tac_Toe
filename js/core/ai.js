@@ -2,11 +2,13 @@
  * AI player. Pure logic, no DOM, so it runs on the main thread, in a Web
  * Worker (ai.worker.js) and in Node tests.
  *
- * Internal board: Int8Array, 0 = empty, 1 = AI, 2 = human.
+ * Internal board: Int8Array, 0 = empty, 1 = AI, 2 = human, 3 = blocked
+ * (level twist: nobody can play there and it breaks lines).
  * Levels: 'easy' | 'medium' | 'hard', or a number 0..1 ("AI skill" = chance
  * of playing the hard move this turn, used by campaign levels).
  */
 import { winLength } from '../config/constants.js';
+import { BLOCKED } from './board.js';
 
 const DIRS = [[0, 1], [1, 0], [1, 1], [1, -1]];
 const WIN = 1e9;
@@ -14,6 +16,7 @@ const DEFENSE = 1.15;     // opponent threats weigh a bit more
 const ROOT_CAP = 18;      // best N candidate moves searched at the root
 const NODE_CAP = 10;      // ...and deeper in the tree (beam pruning)
 const TIME_BUDGET = 200;  // ms, hard cap for the search
+const WALL = 3;          // blocked cell in the internal board
 const geoCache = {};
 
 let g, b, k, size, score, empty, deadline, nodes, aborted;
@@ -68,12 +71,16 @@ function runValue(need, open) {
   return open === 2 ? 4 : 1;
 }
 
-/** Scores every run of player p along one axis. O(axis length). */
+/**
+ * Scores every run of player p along one axis. O(axis length).
+ * Opponent marks and blocked cells both end a segment, so a line that
+ * passes through a blocked cell only counts the part that can still fit k.
+ */
 function axisValue(axis, p) {
   const opp = 3 - p, len = axis.length;
   let s = 0, segStart = 0;
   for (let j = 0; j <= len; j++) {
-    if (j < len && b[axis[j]] !== opp) continue;
+    if (j < len && b[axis[j]] !== opp && b[axis[j]] !== WALL) continue;
     // [segStart, j) holds only p and empty cells; skip it if it can never fit k
     if (j - segStart >= k) {
       let x = segStart;
@@ -127,16 +134,34 @@ function isWin(i, p) {
   return false;
 }
 
-/** Candidate moves: empty cells within the neighbour radius of any mark. */
+/**
+ * Candidate moves: empty cells within the neighbour radius of any X / O
+ * mark (preset marks included). Blocked cells are never candidates and do
+ * not attract moves.
+ */
 function candidates(near) {
   const out = [];
   for (let i = 0; i < g.n; i++) {
     if (b[i]) continue;
     const nb = near[i];
-    for (let j = 0; j < nb.length; j++) if (b[nb[j]]) { out.push(i); break; }
+    for (let j = 0; j < nb.length; j++) if (b[nb[j]] === 1 || b[nb[j]] === 2) { out.push(i); break; }
   }
-  if (!out.length) out.push((size >> 1) * size + (size >> 1)); // empty board: centre
+  if (!out.length) out.push(centreCell()); // no marks yet: the centre (or the free cell closest to it)
   return out;
+}
+
+/** Centre cell, or the free cell closest to it when the centre is blocked. */
+function centreCell() {
+  const c0 = (size >> 1) * size + (size >> 1);
+  if (!b[c0]) return c0;
+  const mid = (size - 1) / 2;
+  let best = -1, bestD = Infinity;
+  for (let i = 0; i < g.n; i++) {
+    if (b[i]) continue;
+    const d = Math.abs(((i / size) | 0) - mid) + Math.abs((i % size) - mid);
+    if (d < bestD) { bestD = d; best = i; }
+  }
+  return best;
 }
 
 /**
@@ -171,7 +196,15 @@ function ordered(moves, p, cap) {
     .map(o => o.m);
 }
 
-const randomOf = arr => arr[(Math.random() * arr.length) | 0];
+/**
+ * Random source for every random choice the AI makes (easy moves, ties,
+ * "AI skill" rolls). Math.random in the game; tests inject a seeded
+ * generator with setRandom() so their results never change between runs.
+ */
+let rand = Math.random;
+export function setRandom(fn) { rand = typeof fn === 'function' ? fn : Math.random; }
+
+const randomOf = arr => arr[(rand() * arr.length) | 0];
 
 /** First cell where p wins right now, or -1. A winning cell always touches p's marks. */
 function findWin(p) {
@@ -296,7 +329,7 @@ function perfect() {
 /** Public entry: returns the cell index the AI plays. */
 export function chooseMove(board, sz, aiMark, level) {
   size = sz; k = winLength(sz); g = geometry(sz);
-  b = Int8Array.from(board, v => (v === aiMark ? 1 : v ? 2 : 0));
+  b = Int8Array.from(board, v => (v === aiMark ? 1 : v === BLOCKED ? WALL : v ? 2 : 0));
   const free = [];
   for (let i = 0; i < g.n; i++) if (!b[i]) free.push(i);
   empty = free.length;
@@ -304,11 +337,11 @@ export function chooseMove(board, sz, aiMark, level) {
   const pool = sz <= 5 ? free : candidates(g.near1);
 
   // Campaign: a number is "AI skill", the chance of playing its best move this turn
-  if (typeof level === 'number') level = Math.random() < level ? 'hard' : 'easy';
+  if (typeof level === 'number') level = rand() < level ? 'hard' : 'easy';
 
   if (level === 'easy') {
     const block = findWin(2);
-    if (block >= 0 && Math.random() < 0.3) return block;
+    if (block >= 0 && rand() < 0.3) return block;
     return randomOf(pool);
   }
 

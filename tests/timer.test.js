@@ -43,3 +43,18 @@ test('expires once and calls onExpire', () => {
   assert.equal(expired, 1);
   assert.equal(timer.remaining, 0);
 });
+
+test('addTime extends the current move and the ring total', () => {
+  const clock = fakeClock();
+  const timer = new MoveTimer({ seconds: 10, now: clock.now, interval: 100000 });
+  timer.start();
+  clock.advance(8000);
+  timer.addTime(10000);
+  assert.equal(timer.remaining, 12000);
+  assert.equal(timer.duration, 12000);
+  clock.advance(2000);
+  assert.equal(timer.remaining, 10000);
+  timer.stop();
+  timer.addTime(5000); // ignored once stopped
+  assert.equal(timer.remaining, 10000);
+});

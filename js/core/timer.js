@@ -4,7 +4,7 @@
  * and after the tab was throttled.
  *
  *   const t = new MoveTimer({ seconds: 20, onTick, onExpire });
- *   t.start(); t.pause(); t.resume(); t.stop();
+ *   t.start(); t.pause(); t.resume(); t.stop(); t.addTime(10000);
  *
  * onTick(remainingMs, fraction) runs every `interval` ms while running.
  * onExpire() runs once when time is up.
@@ -60,6 +60,19 @@ export class MoveTimer {
   stop() {
     this.pause();
     this.done = true;
+  }
+
+  /**
+   * Adds time to the current move (e.g. +10s bought with a diamond). The ring
+   * is measured against the new, longer total, so it jumps back up.
+   */
+  addTime(ms) {
+    if (this.done || !(ms > 0)) return;
+    const wasRunning = this.running;
+    this.pause();
+    this.left += ms;
+    this.duration = Math.max(this.duration, this.left);
+    if (wasRunning) this.resume(); else this.tick();
   }
 
   tick() {

@@ -3,7 +3,7 @@
  * Bump CACHE when files change so players get the new version.
  * Google Fonts are cached at runtime the first time they load.
  */
-const CACHE = 'ttt-v1';
+const CACHE = 'ttt-v4';
 const FONT_CACHE = 'ttt-fonts-v1';
 const APP_FILES = [
   './',
@@ -26,6 +26,7 @@ const APP_FILES = [
   "./css/base/reset.css",
   "./css/base/typography.css",
   "./css/base/variables.css",
+  "./css/components/board-twists.css",
   "./css/components/bottom-nav.css",
   "./css/components/bottom-sheet.css",
   "./css/components/buttons.css",
@@ -40,22 +41,28 @@ const APP_FILES = [
   "./css/pages/levels.css",
   "./css/pages/profile.css",
   "./css/pages/shop.css",
-  "./index.html",
   "./js/components/board-view.js",
   "./js/components/bottom-nav.js",
   "./js/components/bottom-sheet.js",
-  "./js/components/coin-counter.js",
   "./js/components/confetti.js",
+  "./js/components/confirm-sheet.js",
+  "./js/components/currency-bar.js",
   "./js/components/level-popup.js",
   "./js/components/modal.js",
   "./js/components/timer-ring.js",
   "./js/components/toast.js",
+  "./js/components/twist-tutorial.js",
   "./js/config/constants.js",
+  "./js/config/level-twists.js",
   "./js/config/levels.js",
   "./js/config/shop-items.js",
+  "./js/config/timers.js",
+  "./js/config/twist-table.js",
   "./js/core/ai.js",
   "./js/core/ai.worker.js",
   "./js/core/board.js",
+  "./js/core/layout-generator.js",
+  "./js/core/layout-validator.js",
   "./js/core/rules.js",
   "./js/core/timer.js",
   "./js/main.js",
@@ -79,7 +86,9 @@ const APP_FILES = [
   "./js/utils/events.js",
   "./js/utils/format.js",
   "./js/utils/icons.js",
+  "./js/utils/seeded-random.js",
   "./js/utils/validate.js",
+  "./index.html",
   "./manifest.json",
 ];
 

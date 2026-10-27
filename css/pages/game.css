@@ -1,6 +1,8 @@
 /* Game page: top bar, player cards, board, cells, skins, actions. */
-.game-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); flex-shrink: 0; }
-.game-bar-center { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.game-bar { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s2); flex-shrink: 0; }
+/* Back / settings buttons with a compact coins / diamonds pill under each (no width taken from the turn pill) */
+.gb-side { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 46px; }
+.game-bar-center { flex: 1; min-width: 0; align-self: center; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .turn-pill {
   max-width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 40px; padding: 0 14px; border-radius: 99px;
@@ -10,8 +12,21 @@
 .turn-pill .label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .turn-pill.swap { animation: pop 220ms var(--ease); }
 @keyframes pop { 0% { transform: scale(.92); opacity: .5; } 100% { transform: none; opacity: 1; } }
-/* Board size + win rule chip (only shown here) */
-.rule-chip { font-size: 13px; font-weight: 600; color: var(--muted); padding: 1px 10px; border-radius: 99px; background: var(--glass); border: 1px solid var(--glass-border); }
+/* Board size + win rule chip (only shown here), the per-move time chip and "+10s" */
+.chip-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 6px; min-width: 0; max-width: 100%; }
+.time-chip { display: inline-flex; align-items: center; gap: 3px; font-size: 13px; font-weight: 700; padding: 1px 8px; border-radius: 99px; background: var(--glass); border: 1px solid var(--glass-border); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.time-chip svg.lucide { width: 14px; height: 14px; color: var(--t-amber); }
+.time-plus {
+  position: relative; display: inline-flex; align-items: center; font-size: 13px; font-weight: 700; color: #fff;
+  padding: 1px 8px; border-radius: 99px; flex-shrink: 0;
+  background: linear-gradient(160deg, #38bdf8, var(--gem-2)); box-shadow: 0 0 10px var(--gem-glow);
+  transition: transform var(--fast) ease; animation: fadeIn 200ms ease;
+}
+.time-plus::before { content: ''; position: absolute; inset: -12px -4px; } /* 44px tap area */
+.time-plus:active { transform: scale(.92); }
+.time-plus .gem-cost svg.lucide { color: #e0f2fe; }
+@media (max-width: 360px) { .rule-chip .rw { display: none; } } /* "3×3 · 3" on small phones */
+.rule-chip { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; color: var(--muted); padding: 1px 10px; border-radius: 99px; background: var(--glass); border: 1px solid var(--glass-border); }
 
 /* Player cards: fixed grid so long names truncate instead of breaking the layout */
 .players {
@@ -149,3 +164,16 @@
 .price-chip { display: inline-flex; align-items: center; gap: 2px; font-size: 14px; color: var(--gold-2); }
 .price-chip svg.lucide { width: 16px; height: 16px; color: var(--gold); }
 @media (max-width: 360px) { .actions.has-hint .btn3d > svg.lucide:first-child { display: none; } }
+
+/* Diamond X/O skins (animations use transform / stroke colour only, and stop with reduced motion) */
+.cell svg.skin-pulse { animation: skinPulse 1.6s ease-in-out infinite; }
+@keyframes skinPulse { 50% { transform: scale(1.1); } }
+.cell svg.skin-rainbow path, .cell svg.skin-rainbow circle { animation: skinRainbow 4s linear infinite; }
+.cell svg.skin-rainbow.o circle { animation-delay: -2s; }
+@keyframes skinRainbow {
+  0%, 100% { stroke: #f43f5e; } 17% { stroke: #f59e0b; } 33% { stroke: #84cc16; }
+  50% { stroke: #22d3ee; } 67% { stroke: #6366f1; } 83% { stroke: #d946ef; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cell svg.skin-pulse, .cell svg.skin-rainbow path, .cell svg.skin-rainbow circle { animation: none; }
+}

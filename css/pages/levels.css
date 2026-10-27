@@ -1,32 +1,37 @@
-/* Levels page: chapter cards + zig-zag path map. */
+/* Levels page: virtualized zig-zag path map, chapter header cards, jump button. */
 .levels-scroll { position: relative; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding: 4px 0 24px; }
 .levels-scroll::-webkit-scrollbar { display: none; }
 .levels-map { position: relative; }
 
+/* Chapter header cards: fixed slots, so every level has a known position */
+.ch-slot { position: absolute; left: 0; right: 0; height: 140px; padding: 14px 4px 10px; }
 .ch-card {
-  margin: 14px 4px 10px; padding: 12px 14px; border-radius: 22px;
+  height: 100%; padding: 12px 14px; border-radius: 22px;
   display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: center; gap: 4px 12px;
 }
 .ch-art { width: 56px; height: 56px; border-radius: 16px; grid-row: 1; }
 .ch-info { min-width: 0; display: flex; flex-direction: column; }
-.ch-num { font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.ch-num { font-size: 12px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ch-card h3 { font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ch-meta { color: var(--muted); font-size: 15px; }
-.ch-stars { display: flex; align-items: center; gap: 4px; font-weight: 700; }
+.ch-meta { color: var(--muted); font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-stars { display: flex; align-items: center; gap: 4px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .ch-stars svg { width: 20px; height: 20px; }
+.ch-lock { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--glass-strong); color: var(--muted); }
+.ch-lock svg { width: 20px; height: 20px; }
 .ch-bar { grid-column: 1 / -1; height: 6px; margin-top: 6px; border-radius: 99px; background: var(--track); overflow: hidden; }
 .ch-bar i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--gold), var(--gold-2)); }
-.ch-card.locked { opacity: .55; }
-.ch-card.locked .ch-art { filter: grayscale(1); }
+.ch-card.locked .ch-art { filter: grayscale(1); opacity: .6; }
+.ch-card.locked h3, .ch-card.locked .ch-bar { opacity: .6; }
 
-.ch-nodes { position: relative; }
-.ch-path { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
-.ch-path path { fill: none; stroke-width: 6; stroke-linecap: round; stroke: var(--track); stroke-dasharray: 2 12; }
-.ch-path path.done { stroke: var(--gold); stroke-dasharray: none; opacity: .75; }
+/* Path + nodes: only the stretch near the screen is in the DOM */
+.lv-path { position: absolute; left: 0; width: 100%; pointer-events: none; overflow: visible; }
+.lv-path path { fill: none; stroke-width: 6; stroke-linecap: round; stroke: var(--track); stroke-dasharray: 2 12; }
+.lv-path path.done { stroke: var(--gold); stroke-dasharray: none; opacity: .75; }
+.lv-nodes { position: absolute; inset: 0; pointer-events: none; }
 
 .node {
   position: absolute; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%;
-  display: grid; place-items: center; font-weight: 700; font-size: 20px; color: #fff;
+  display: grid; place-items: center; font-weight: 700; font-size: 20px; color: #fff; pointer-events: auto;
   background: linear-gradient(160deg, #8f73ff, var(--primary-2)); box-shadow: 0 5px 0 var(--primary-edge);
   transition: transform var(--fast) ease;
 }
@@ -44,4 +49,19 @@
 .node-stars { position: absolute; bottom: -14px; display: flex; gap: 1px; }
 .node-stars svg { width: 18px; height: 18px; }
 .node.shake { animation: shake 300ms ease; }
-.skel { position: absolute; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; background: var(--glass-strong); overflow: hidden; }
+
+/* Floating "Jump to current level" button (above the bottom nav) */
+.jump-fab {
+  position: absolute; z-index: 5; right: 16px; bottom: calc(env(safe-area-inset-bottom) + var(--nav-h) + 22px);
+  display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 16px 0 12px; border-radius: 99px;
+  font-size: 16px; font-weight: 700; color: #fff; background: linear-gradient(160deg, #8f73ff, var(--primary-2));
+  box-shadow: 0 5px 0 var(--primary-edge), 0 10px 24px rgba(60, 30, 180, .35);
+  animation: fabIn 220ms var(--ease); transition: transform var(--fast) ease;
+}
+.jump-fab:active { transform: translateY(3px); }
+.jump-fab svg.lucide { width: 22px; height: 22px; }
+.jump-fab[hidden] { display: none; }
+@keyframes fabIn { from { opacity: 0; transform: translateY(12px) scale(.9); } }
+@media (prefers-reduced-motion: reduce) { .jump-fab { animation: none; } }
+
+@media (max-width: 360px) { .ch-meta { font-size: 14px; } .ch-card { gap: 4px 10px; padding: 12px; } }
