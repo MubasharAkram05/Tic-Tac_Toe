@@ -9,6 +9,7 @@
  */
 import { winLength } from '../config/constants.js';
 import { BLOCKED } from './board.js';
+import { random, setRandom } from './random.js';
 
 const DIRS = [[0, 1], [1, 0], [1, 1], [1, -1]];
 const WIN = 1e9;
@@ -198,11 +199,11 @@ function ordered(moves, p, cap) {
 
 /**
  * Random source for every random choice the AI makes (easy moves, ties,
- * "AI skill" rolls). Math.random in the game; tests inject a seeded
- * generator with setRandom() so their results never change between runs.
+ * "AI skill" rolls): core/random.js. Tests call setRandom() with a seeded
+ * generator so their results never change between runs.
  */
-let rand = Math.random;
-export function setRandom(fn) { rand = typeof fn === 'function' ? fn : Math.random; }
+const rand = random;
+export { setRandom };
 
 const randomOf = arr => arr[(rand() * arr.length) | 0];
 

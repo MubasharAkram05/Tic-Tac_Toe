@@ -94,11 +94,20 @@ export function payChapterBonuses({ silent = false } = {}) {
 }
 
 /**
+ * Coin cells pay only on a win, and only on the first clear (no farming on
+ * replays). `bonus` = what the player collected: { coins, diamonds }.
+ */
+export function coinCellReward(bonus, won, first) {
+  if (!bonus || !won || !first) return { coins: 0, diamonds: 0 };
+  return { coins: bonus.coins || 0, diamonds: bonus.diamonds || 0 };
+}
+
+/**
  * Records the end of a level and pays rewards. Returns what happened so the
  * result screen can show it.
  *   outcome: 'win' | 'lose' | 'draw', reason: 'moves' when out of moves
  */
-export function finishLevel(level, { outcome, reason, playerMoves, usedHelp, timedOut, moveLimit }) {
+export function finishLevel(level, { outcome, reason, playerMoves, usedHelp, timedOut, moveLimit, bonus = null }) {
   const d = save.data, n = level.id, won = outcome === 'win';
   recordGame('campaign', won ? 'win' : outcome === 'draw' && reason !== 'moves' ? 'draw' : 'lose');
   if (!won) {
@@ -118,9 +127,14 @@ export function finishLevel(level, { outcome, reason, playerMoves, usedHelp, tim
   const before = d.coins, gemsBefore = d.diamonds;
   d.levels[n] = { stars: Math.max(bestStars(n), stars), completed: true };
   if (n === d.unlockedLevel && n < TOTAL_LEVELS) d.unlockedLevel = n + 1;
-  addCoins(base + starCoins, { silent: true });
-  // Diamonds: boss first clear, chapter bonuses, level ups
+  const cells = coinCellReward(bonus, true, first);       // coin cells: first clear only
+  addCoins(base + starCoins + cells.coins, { silent: true });
+  // Diamonds: boss first clear, chapter bonuses, level ups, a diamond cell
   const gems = [];
+  if (cells.diamonds) {
+    addDiamonds(cells.diamonds, { silent: true });
+    gems.push({ label: 'Diamond cell', diamonds: cells.diamonds });
+  }
   if (first && level.boss) {
     const g = bossDiamonds(level);
     addDiamonds(g, { silent: true });
@@ -135,7 +149,7 @@ export function finishLevel(level, { outcome, reason, playerMoves, usedHelp, tim
   checkAchievements();
   emit('progress');
   return {
-    won: true, stars, newStars, base, starCoins, xp, first, before, gemsBefore, gems, levelUp: levelUps > 0,
+    won: true, stars, newStars, base, starCoins, cellCoins: cells.coins, xp, first, before, gemsBefore, gems, levelUp: levelUps > 0,
     playerMoves, limit, usedHelp, timedOut, boss: isBoss(n),
   };
 }

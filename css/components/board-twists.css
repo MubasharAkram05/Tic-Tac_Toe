@@ -67,3 +67,118 @@
   .cell.twist-in, .tt-demo .tt-move svg, .moves-chip.last { animation: none; }
 }
 .twist-card .btn3d.big svg.lucide { fill: none; }
+
+/* ===== New twists (coins, ice, vanishing, shrinking, gravity, wrap, line rule) ===== */
+.cell .tw-icon { width: 46%; height: 46%; pointer-events: none; }
+.cell .tw-icon path, .cell .tw-icon circle { stroke-width: 2; filter: none; transform: none; }
+
+/* Ice: frosty glass with a snowflake and the moves left before it melts */
+.cell.ice {
+  cursor: not-allowed;
+  background: linear-gradient(150deg, rgba(224, 242, 254, .95), rgba(125, 211, 252, .55));
+  border-color: rgba(255, 255, 255, .9);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .6), inset 0 -4px 10px rgba(14, 116, 144, .25);
+}
+.cell.ice:active { transform: none; }
+.cell.ice .ice-ic path { stroke: #0e7490; fill: none; stroke-width: 1.8; }
+.ice-n {
+  position: absolute; right: 6%; bottom: 4%; font-size: max(10px, calc(var(--cell) * .28)); font-weight: 700; line-height: 1;
+  color: #0c4a6e; font-variant-numeric: tabular-nums;
+}
+.cell.melted { animation: melt 280ms ease-out; }
+.cell.melted::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(135deg, transparent 46%, rgba(14, 116, 144, .55) 48%, transparent 52%), linear-gradient(60deg, transparent 56%, rgba(14, 116, 144, .4) 58%, transparent 61%), rgba(186, 230, 253, .6);
+  animation: crackFade 280ms ease-out forwards;
+}
+@keyframes melt { 40% { transform: scale(.96); } }
+@keyframes crackFade { 60% { opacity: 1; } to { opacity: 0; } }
+
+/* Coin cells: a coin (or a diamond) waiting on an empty cell */
+.cell.coin .coin-ic circle:first-child { stroke-width: 2; }
+.cell.coin .tw-icon { animation: coinBob 1.8s ease-in-out infinite; }
+.cell.diamond .tw-icon { filter: drop-shadow(0 0 6px var(--gem-glow)); }
+@keyframes coinBob { 50% { transform: translateY(-6%); } }
+
+/* Vanishing marks: the mark that disappears next is half see-through and blinks softly */
+.cell.fading svg { opacity: .5; animation: fadeBlink 1.4s ease-in-out infinite; }
+@keyframes fadeBlink { 50% { opacity: .25; } }
+.cell.vanished { animation: vanishPoof 260ms ease-out; }
+@keyframes vanishPoof { from { box-shadow: inset 0 0 0 3px var(--accent), 0 0 14px var(--accent); } }
+
+/* Shrinking board: the ring that closes next blinks red; closed cells are red-brown stones */
+.cell.ring-warn { animation: ringWarn 700ms ease-in-out infinite; }
+@keyframes ringWarn { 50% { box-shadow: inset 0 0 0 2px var(--t-red), 0 0 10px rgba(239, 68, 68, .55); background: rgba(239, 68, 68, .18); } }
+.cell.blocked.shrunk { background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, .12), transparent 55%), linear-gradient(150deg, #5b3a44, #2a1b24); }
+.cell.blocked.shrink-in { animation: shrinkIn 280ms var(--ease); }
+@keyframes shrinkIn { from { opacity: 0; transform: scale(1.12); } to { opacity: 1; transform: scale(.94); } }
+
+/* Gravity: the column under the finger lights up; a mark drops into place */
+.cell.col-hl:not(.filled) { background: var(--cell-active); box-shadow: inset 0 0 0 2px rgba(124, 92, 255, .45); }
+.cell.drop svg, .cell.drop .emoji-mark { animation: dropIn 220ms cubic-bezier(.5, 0, .75, 0) both; }
+@keyframes dropIn { from { transform: translateY(calc(var(--drop, 1) * -1 * (var(--cell) + var(--gap)))); } }
+
+/* Wrap-around: faded copies of the last column (left) and the first column (right) */
+.wrap-ghost {
+  position: absolute; top: 50%; width: var(--ghost-w); height: var(--ghost-h); transform: translateY(-50%);
+  display: grid; grid-template-rows: repeat(var(--ghost-n), 1fr); gap: var(--ghost-gap);
+  opacity: .38; pointer-events: none; transition: opacity var(--med) ease;
+}
+.wrap-ghost.left { left: calc(50% - var(--ghost-off) - var(--ghost-w)); }
+.wrap-ghost.right { left: calc(50% + var(--ghost-off)); }
+.wrap-ghost i { display: grid; place-items: center; border-radius: 6px; background: var(--glass); border: 1px dashed var(--glass-border); min-height: 0; }
+.wrap-ghost i.b { background: #3b3f5c; }
+.wrap-ghost i svg { width: 80%; height: 80%; overflow: visible; }
+.wrap-ghost i path, .wrap-ghost i circle { fill: none; stroke-width: 13; stroke-linecap: round; }
+.wrap-ghost i.x path { stroke: var(--mark-x, var(--x)); }
+.wrap-ghost i.o circle { stroke: var(--mark-o, var(--o)); }
+.board-area.zoomed .wrap-ghost { opacity: 0; }
+
+/* Game top bar: one chip per active twist (tap = one-line explanation) */
+.twist-chips { display: contents; }
+.twist-chip {
+  position: relative; display: inline-flex; align-items: center; gap: 3px; min-height: 22px; padding: 1px 7px;
+  border-radius: 99px; font-size: 12px; font-weight: 700; flex-shrink: 0;
+  background: var(--glass); border: 1px solid var(--glass-border); color: var(--text);
+  transition: transform var(--fast) ease;
+}
+.twist-chip::before { content: ''; position: absolute; inset: -11px -2px; } /* 44px tap area */
+.twist-chip:active { transform: scale(.92); }
+.twist-chip svg.lucide { width: 14px; height: 14px; color: var(--primary); }
+.twist-chip.warn { color: #fff; background: linear-gradient(160deg, #fb7185, #e11d48); border-color: transparent; animation: pulse 1s ease-in-out infinite; }
+.twist-chip.warn svg.lucide { color: #fff; }
+
+/* Level popup: small twist icons under the title */
+.lm-twists { display: flex; justify-content: center; gap: 6px; margin: 2px 0 2px; }
+.lm-tw { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: var(--glass); border: 1px solid var(--glass-border); }
+.lm-tw svg.lucide { width: 17px; height: 17px; color: var(--primary); }
+.lm-twists[hidden] { display: none; }
+/* Map node: a small "+" dot when the level has more than one twist */
+.node-twist.more::after { content: ''; position: absolute; right: -2px; bottom: -2px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); border: 1px solid var(--sheet); }
+
+/* Tutorial demos for the new twists */
+.tt-demo { grid-template-columns: repeat(var(--cols, 3), var(--cell)); }
+.tt-demo .tt-drop svg { animation: ttDrop 2.4s ease-in infinite; }
+@keyframes ttDrop { 0%, 20% { transform: translateY(calc(-1 * (var(--cell) + 6px))); opacity: 0; } 30% { opacity: 1; } 45%, 85% { transform: none; opacity: 1; } 100% { opacity: 0; } }
+.tt-demo .tt-coin { position: relative; }
+.tt-demo .tt-coin .tw-icon { animation: ttCoin 2.4s ease-in-out infinite; }
+.tt-demo .tt-coin .tt-on { position: absolute; inset: 0; display: grid; place-items: center; animation: ttMove 2.4s ease-in-out infinite; }
+.tt-demo .tt-coin .tt-on svg { width: 70%; height: 70%; }
+@keyframes ttCoin { 0%, 35% { opacity: 1; transform: none; } 45%, 85% { opacity: 0; transform: translateY(-40%) scale(.6); } 100% { opacity: 1; } }
+.tt-demo .cell.x path { stroke: var(--x); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cell.melted, .cell.melted::before, .cell.coin .tw-icon, .cell.fading svg, .cell.vanished, .cell.ring-warn,
+  .cell.blocked.shrink-in, .cell.drop svg, .twist-chip.warn, .tt-demo .tt-drop svg, .tt-demo .tt-coin .tw-icon, .tt-demo .tt-coin .tt-on { animation: none; }
+  .cell.ring-warn { box-shadow: inset 0 0 0 2px var(--t-red); }
+  .cell.melted::before { display: none; }
+}
+/* Tutorial demo cells need an edge on the white card */
+.tt-demo .cell:not(.blocked):not(.ice) { background: rgba(124, 92, 255, .07); border-color: rgba(124, 92, 255, .2); box-shadow: none; }
+:root[data-theme="light"] .cell.blocked.shrunk { background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, .2), transparent 55%), linear-gradient(150deg, #9a6270, #6b3e4b); }
+/* Coin / diamond tokens keep their own fill (cells strip fills from marks) */
+.cell .coin-ic circle:first-child { fill: #f5b301; stroke: #b45309; stroke-width: 2; }
+.cell .coin-ic circle:last-child { fill: none; stroke: rgba(255, 255, 255, .7); stroke-width: 2; }
+.cell .gem-ic path:first-child { fill: #38bdf8; stroke: #0369a1; stroke-width: 1.6; }
+.cell .gem-ic path:last-child { fill: none; stroke: rgba(255, 255, 255, .7); stroke-width: 1.2; }
+.cell.coin .tw-icon { width: 52%; height: 52%; }

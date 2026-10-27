@@ -5,16 +5,32 @@
  * choice comes from mulberry32(level + SEED_STEP * attempt).
  *
  * Layout format:
- *   { blocked: [cellIndex, ...], preset: [{ i: cellIndex, m: 'X' | 'O' }], puzzleMoves: N | null }
+ *   {
+ *     twists: ['blocked', 'coins', ...],          active twist ids (core/twists)
+ *     blocked: [cell, ...],                        blocked cells
+ *     preset: [{ i, m: 'X' | 'O' }],               puzzle marks
+ *     puzzleMoves: N | null,                       puzzle goal (win in N)
+ *     coins: [{ i, kind: 'coin' | 'diamond', amount }],
+ *     ice: [{ i, melt }],                          frozen until `melt` moves were played
+ *     rule: 'straight' | 'diagonal' | null,        line rule
+ *     shrink: { every, warn, rings } | null,       shrinking board
+ *     vanish: { limit, cap } | null,               vanishing marks
+ *     gravity: true | undefined, wrap: true | undefined
+ *   }
  *
- * At runtime nothing is validated (to keep the phone fast): the twist type,
+ * At runtime nothing is validated (to keep the phone fast): the twists,
  * the attempt that passed validation and the puzzle length come from
- * config/twist-table.js, which tools/gen-twist-table.js writes and
- * tests/twists.test.js checks for all 500 levels.
+ * config/twist-table.js, which tools/gen-twist-table.js writes and the
+ * tests in tests/twists/ check for all 500 levels.
  */
 import { mulberry32, randInt, pick, shuffle } from '../utils/seeded-random.js';
-import { BLOCKED_COUNTS, PRESET_COUNTS, SEED_STEP, overrideLayout } from '../config/level-twists.js';
-import { TWIST_TABLE, TYPE_CODES } from '../config/twist-table.js';
+import {
+  BLOCKED_COUNTS, PRESET_COUNTS, ICE_COUNTS, ICE_MELT, COIN_CELLS, COIN_VALUE, DIAMOND_VALUE, SHRINK,
+  DIAGONAL_MIN_SIZE, SEED_STEP, TWIST_IDS, introOf, overrideLayout,
+} from '../config/level-twists.js';
+import { TWIST_TABLE, TWIST_CODES } from '../config/twist-table.js';
+import { maxRings } from './twists/shrinking.js';
+import { limitFor, MOVE_CAP } from './twists/vanishing.js';
 
 const DIRS = [[0, 1], [1, 0], [1, 1], [1, -1]];
 
@@ -27,13 +43,17 @@ export function centreArea(size) {
   return out;
 }
 
-/** Blocked cells: spread out (no two touching), never in the centre area. */
-function placeBlocked(rnd, size, count) {
+/**
+ * Blocked cells: spread out (no two touching), never in the centre area.
+ * With gravity they only go in the bottom three rows (a raised floor), so
+ * no column is cut off high up.
+ */
+function placeBlocked(rnd, size, count, gravity = false) {
   const centre = new Set(centreArea(size)), taken = new Set(), out = [];
   const touches = i => out.some(j => Math.abs(((i / size) | 0) - ((j / size) | 0)) <= 1 && Math.abs((i % size) - (j % size)) <= 1);
   for (const i of shuffle(rnd, [...Array(size * size).keys()])) {
     if (out.length >= count) break;
-    if (centre.has(i) || taken.has(i) || touches(i)) continue;
+    if (centre.has(i) || taken.has(i) || touches(i) || (gravity && ((i / size) | 0) < size - 3)) continue;
     out.push(i);
     taken.add(i);
   }
@@ -128,52 +148,86 @@ function placePreset(rnd, size, k, total, board) {
   return null;
 }
 
+/** Free cells (not blocked, preset, ice or coin yet), optionally inside the area left after `ring` rings close. */
+function freeCells(size, used, ring = 0) {
+  const out = [];
+  for (let i = 0; i < size * size; i++) {
+    const r = (i / size) | 0, c = i % size;
+    if (!used.has(i) && r >= ring && c >= ring && r < size - ring && c < size - ring) out.push(i);
+  }
+  return out;
+}
+
 /**
  * Raw layout for one attempt (no validation). `level` needs
- * { size, winLength, boss }. Returns null when the marks don't fit.
+ * { size, winLength, boss }; `twists` the planned ids. Intro levels (the
+ * first level of a twist) get the gentlest version of it. Returns null
+ * when something doesn't fit.
  */
-export function buildLayout(n, level, type, attempt = 0) {
-  if (type === 'none') return null;
+export function buildLayout(n, level, twists, attempt = 0) {
+  if (!twists.length) return null;
   const rnd = mulberry32(n + SEED_STEP * attempt);
-  const { size, winLength: k, boss } = level;
-  const board = Array(size * size).fill(null);
-  let blocked = [];
-  if (type === 'blocked' || type === 'mixed') {
+  const { size, winLength: k, boss } = level, intro = !!introOf(n);
+  const has = id => twists.includes(id);
+  const board = Array(size * size).fill(null), used = new Set();
+  const layout = { twists: TWIST_IDS.filter(has), blocked: [], preset: [], puzzleMoves: null, coins: [], ice: [], rule: null, shrink: null, vanish: null };
+
+  if (has('blocked')) {
     let [lo, hi] = BLOCKED_COUNTS[size];
-    if (type === 'mixed') hi = Math.ceil((lo + hi) / 2); // leave room for the marks
-    blocked = placeBlocked(rnd, size, boss ? hi : randInt(rnd, lo, hi));
-    blocked.forEach(i => { board[i] = '#'; });
+    if (has('puzzle')) hi = Math.ceil((lo + hi) / 2); // leave room for the marks
+    layout.blocked = placeBlocked(rnd, size, intro ? lo : boss ? hi : randInt(rnd, lo, hi), has('gravity'));
+    layout.blocked.forEach(i => { board[i] = '#'; used.add(i); });
   }
-  let preset = [];
-  if (type === 'puzzle' || type === 'mixed') {
+  if (has('puzzle')) {
     const [lo, hi] = PRESET_COUNTS[size];
     const total = boss ? hi : lo + 2 * randInt(rnd, 0, (hi - lo) / 2);
-    preset = placePreset(rnd, size, k, total, board);
-    if (!preset) return null;
+    layout.preset = placePreset(rnd, size, k, total, board);
+    if (!layout.preset) return null;
+    layout.preset.forEach(p => { board[p.i] = p.m; used.add(p.i); });
   }
-  return { blocked, preset, puzzleMoves: null };
+  if (has('shrink')) {
+    layout.shrink = { every: SHRINK.every, warn: SHRINK.warn, rings: boss ? maxRings(size, k) : 1 };
+  }
+  const safeRing = layout.shrink ? layout.shrink.rings : 0; // coins / ice stay inside the final area
+  if (has('ice')) {
+    const [lo, hi] = ICE_COUNTS[size], count = intro ? 2 : randInt(rnd, lo, hi);
+    const cells = shuffle(rnd, freeCells(size, used, safeRing)).slice(0, count);
+    if (cells.length < count) return null;
+    layout.ice = cells.sort((a, b) => a - b).map(i => ({ i, melt: intro ? 6 : randInt(rnd, ICE_MELT[0], ICE_MELT[1]) })); // intro: long enough to notice
+    cells.forEach(i => used.add(i));
+  }
+  if (has('coins')) {
+    const count = intro ? 2 : randInt(rnd, COIN_CELLS[0], COIN_CELLS[1]);
+    const cells = shuffle(rnd, freeCells(size, used, safeRing)).slice(0, count + (boss ? 1 : 0));
+    if (cells.length < count) return null;
+    layout.coins = cells.map((i, j) => (boss && j === 0 ? { i, kind: 'diamond', amount: DIAMOND_VALUE } : { i, kind: 'coin', amount: COIN_VALUE }))
+      .sort((a, b) => a.i - b.i);
+    cells.forEach(i => used.add(i));
+  }
+  if (has('lines')) layout.rule = !intro && size >= DIAGONAL_MIN_SIZE && rnd() < 0.35 ? 'diagonal' : 'straight';
+  if (has('vanish')) layout.vanish = { limit: limitFor(size, k), cap: MOVE_CAP };
+  if (has('gravity')) layout.gravity = true;
+  if (has('wrap')) layout.wrap = true;
+  return layout;
 }
 
 /**
  * The layout a level plays with: a hand-crafted boss override, else the
- * attempt saved in the twist table. Returns { type, layout } (layout null
- * for a normal level).
+ * attempt saved in the twist table. Returns { twists, layout } (layout
+ * null for a normal level).
  */
 export function generateLayout(n, level) {
   const o = overrideLayout(n);
   if (o && o.size === level.size) {
-    const layout = { blocked: o.blocked, preset: o.preset, puzzleMoves: o.puzzleMoves };
-    return { type: typeOfLayout(layout), layout };
+    const { size, ...layout } = o;
+    return { twists: layout.twists, layout };
   }
   const entry = TWIST_TABLE[n];
-  if (!entry) return { type: 'none', layout: null };
-  const [code, attempt, moves = null] = entry;
-  const type = TYPE_CODES[code];
-  const layout = buildLayout(n, level, type, attempt);
-  if (!layout) return { type: 'none', layout: null }; // table out of date: play it as a normal level
+  if (!entry) return { twists: [], layout: null };
+  const [codes, attempt, moves = null] = entry;
+  const twists = [...codes].map(c => TWIST_CODES[c]);
+  const layout = buildLayout(n, level, twists, attempt);
+  if (!layout) return { twists: [], layout: null }; // table out of date: play it as a normal level
   layout.puzzleMoves = layout.preset.length ? moves : null;
-  return { type, layout };
+  return { twists: layout.twists, layout };
 }
-
-/** Twist type of a layout. */
-export const typeOfLayout = l => (!l ? 'none' : l.preset.length && l.blocked.length ? 'mixed' : l.preset.length ? 'puzzle' : l.blocked.length ? 'blocked' : 'none');

@@ -1,7 +1,11 @@
 /**
  * Board view: builds the cell grid, sizes it to the screen, draws marks,
- * the win line and the last-move ring. Level twists: blocked cells (stone
- * tiles) and preset marks (with a pin dot) via paintLayout(). Boards 9x9 and up get pinch zoom,
+ * the win line and the last-move ring. sync(state) draws a whole game
+ * state from core/twists: marks, blocked / shrunk stones, preset pins,
+ * ice with its countdown, coin cells, the fading next-to-vanish mark and
+ * the red ring before the board shrinks. Only changed cells are touched.
+ * Wrap levels show faded "ghost" copies of the edge columns; gravity
+ * levels light up the column under your finger. Boards 9x9 and up get pinch zoom,
  * one-finger pan and double-tap reset, all snapped to whole cells.
  *
  *   const view = new BoardView({ area, onCellTap });
@@ -10,6 +14,9 @@
 import { BOARD_GAPS, ZOOM_FROM, MAX_ZOOM } from '../config/constants.js';
 import { save } from '../services/storage.js';
 import { clamp } from '../utils/validate.js';
+import { meltsIn } from '../core/twists/ice-cells.js';
+import { nextToVanish } from '../core/twists/vanishing.js';
+import { shrinksIn, nextRing, ringCells } from '../core/twists/shrinking.js';
 
 /* ---------- Marks (X / O) and skins ---------- */
 export function markSVG(mark, cls = '') {
@@ -28,6 +35,11 @@ function pixelSVG(mark) {
 
 /** Lucide "ban" icon for blocked cells. */
 const BAN_SVG = '<svg viewBox="0 0 24 24" class="ban" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>';
+/** Lucide "snowflake" for ice cells. */
+const ICE_SVG = '<svg viewBox="0 0 24 24" class="tw-icon ice-ic" aria-hidden="true"><path d="M2 12h20M12 2v20m8-6-4-4 4-4M4 8l4 4-4 4M16 4l-4 4-4-4M8 20l4-4 4 4"/></svg>';
+/** Coin / diamond tokens for coin cells (same art as the counters). */
+const COIN_TOKEN = '<svg viewBox="0 0 24 24" class="tw-icon coin-ic" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#f5b301" stroke="#b45309" stroke-width="2"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2"/></svg>';
+const GEM_TOKEN = '<svg viewBox="0 0 24 24" class="tw-icon gem-ic" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z" fill="#38bdf8" stroke="#0369a1" stroke-width="1.6" stroke-linejoin="round"/><path d="M2 9h20M9 3l3 6 3-6M12 9v12" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.2"/></svg>';
 
 /** Mark drawn with a given X/O skin. */
 export function skinMark(skin, mark) {
@@ -75,10 +87,102 @@ export class BoardView {
     void this.board.offsetWidth; // restart the fade-in
     this.board.classList.add('enter');
     this.lastWin = null;
+    this.sigs = [];
     this.layout();
   }
 
   cellEl(i) { return this.board.children[i]; }
+
+  /**
+   * Draws a twist game state (core/twists). Cells whose look didn't change
+   * are left alone, so animations don't restart.
+   *   placed:   the cell just played (its mark draws in)
+   *   dropRows: rows a gravity mark fell (short drop animation)
+   *   events:   afterMove events (vanish / melt / shrink) for their animations
+   *   intro:    level start: twist cells fade in one after another
+   */
+  sync(s, { placed = -1, dropRows = 0, events = [], intro = false } = {}) {
+    const n = this.size, preset = new Set(s.preset || []);
+    const fading = s.vanish ? new Set(nextToVanish(s)) : null;
+    const closed = s.shrink ? new Set(s.shrink.closed) : null;
+    const warn = s.shrink && shrinksIn(s) <= s.shrink.warn ? new Set(ringCells(n, nextRing(s))) : null;
+    const ev = type => new Set(events.filter(e => e.type === type).flatMap(e => e.cells || [e.cell]));
+    const vanished = ev('vanish'), melted = ev('melt'), shrunk = ev('shrink');
+    let stagger = 0;
+    for (let i = 0; i < n * n; i++) {
+      const cell = this.cellEl(i);
+      if (!cell) continue;
+      const v = s.board[i], ice = s.ice ? meltsIn(s, i) : 0, coin = s.coins && s.coins[i];
+      const sig = [v, ice, coin ? coin.kind : '', preset.has(i), fading && fading.has(i), warn && warn.has(i) && v === null, closed && closed.has(i)].join('|');
+      if (sig === this.sigs[i] && i !== placed) continue;
+      this.sigs[i] = sig;
+      const where = `Row ${Math.floor(i / n) + 1}, column ${(i % n) + 1}`;
+      let cls = 'cell', html = '', label = 'empty';
+      if (v === 'X' || v === 'O') {
+        cls += ` filled ${v.toLowerCase()}${i === placed ? '' : ' instant'}${preset.has(i) ? ' preset' : ''}${fading && fading.has(i) ? ' fading' : ''}`;
+        if (i === placed && dropRows > 0) cls += ' drop';
+        html = cellMark(v);
+        label = preset.has(i) ? `${v}, given at the start` : fading && fading.has(i) ? `${v}, vanishes next` : v;
+      } else if (v) {
+        cls += ` filled blocked${closed && closed.has(i) ? ' shrunk' : ''}${shrunk.has(i) ? ' shrink-in' : ''}`;
+        html = BAN_SVG;
+        label = 'blocked';
+      } else if (ice) {
+        cls += ' filled ice';
+        html = `${ICE_SVG}<b class="ice-n">${ice}</b>`;
+        label = `frozen, melts in ${ice} moves`;
+      } else {
+        if (coin) { cls += ` coin ${coin.kind}`; html = coin.kind === 'diamond' ? GEM_TOKEN : COIN_TOKEN; label = coin.kind === 'diamond' ? 'diamond cell' : 'coin cell'; }
+        if (warn && warn.has(i)) cls += ' ring-warn';
+        if (melted.has(i)) cls += ' melted';
+        if (vanished.has(i)) cls += ' vanished';
+      }
+      const special = v === 'X' || v === 'O' ? preset.has(i) : !!(v || ice || coin);
+      if (intro && special) { cls += ' twist-in'; cell.style.animationDelay = `${Math.min(stagger++ * 30, 400)}ms`; }
+      else cell.style.animationDelay = '';
+      cell.className = cls;
+      if (i === placed && dropRows > 0) cell.style.setProperty('--drop', dropRows);
+      cell.innerHTML = html;
+      cell.setAttribute('aria-label', `${where}, ${label}`);
+    }
+    if (this.wrap) this.renderGhosts(s);
+  }
+
+  /* ---------- Wrap-around: faded copies of the edge columns ---------- */
+  setWrap(on) {
+    this.wrap = on;
+    this.area.querySelectorAll('.wrap-ghost').forEach(g => g.remove());
+    if (on) {
+      ['left', 'right'].forEach(side => {
+        const g = document.createElement('div');
+        g.className = `wrap-ghost ${side}`;
+        g.setAttribute('aria-hidden', 'true');
+        this.area.appendChild(g);
+      });
+    }
+    this.layout();
+  }
+
+  /** Left ghost = the last column, right ghost = the first column (rows continue across the edge). */
+  renderGhosts(s) {
+    const n = this.size;
+    const strip = (col) => Array.from({ length: n }, (_, r) => {
+      const m = s.board[r * n + col];
+      return `<i class="${m === 'X' || m === 'O' ? m.toLowerCase() : m ? 'b' : ''}">${m === 'X' || m === 'O' ? markSVG(m) : ''}</i>`;
+    }).join('');
+    const [left, right] = this.area.querySelectorAll('.wrap-ghost');
+    if (!left) return;
+    left.innerHTML = strip(n - 1);
+    right.innerHTML = strip(0);
+  }
+
+  /* ---------- Gravity: light up the column under the finger ---------- */
+  setGravity(on) { this.gravity = on; }
+  highlightColumn(col) {
+    this.board.querySelectorAll('.cell.col-hl').forEach(c => c.classList.remove('col-hl'));
+    if (col < 0) return;
+    for (let r = 0; r < this.size; r++) { const c = this.cellEl(r * this.size + col); if (c) c.classList.add('col-hl'); }
+  }
 
   paint(i, mark, animate) {
     const cell = this.cellEl(i), n = this.size;
@@ -135,10 +239,11 @@ export class BoardView {
   clearHighlight() { const c = this.board.querySelector('.cell.hint'); if (c) c.classList.remove('hint'); }
 
   /** Win: glow on winning cells, others fade, line draws across. */
-  showWin(line, mark) {
-    this.lastWin = { line, mark };
+  showWin(line, mark, { noLine = false } = {}) {
     line.forEach(i => this.cellEl(i).classList.add('win'));
     this.board.classList.add('done');
+    if (noLine) return; // a wrapped line crosses the edge: the cells glow, no straight line
+    this.lastWin = { line, mark };
     this.drawWinLine(true);
   }
 
@@ -186,8 +291,9 @@ export class BoardView {
     if (!this.board.children.length) return;
     const W = this.area.clientWidth, H = this.area.clientHeight;
     if (!W || !H) return;
-    const avail = Math.min(W, H);
     let gap = BOARD_GAPS[n] || 3;
+    const ghost = this.wrap ? Math.max(10, Math.round(Math.min(W, H) / n * 0.42)) : 0; // wrap: room for the ghost columns
+    const avail = Math.min(W - 2 * (ghost + gap), H);
     const cell = clamp(Math.floor((avail - (n - 1) * gap) / n), 8, 140);
     if (cell < 140) gap += Math.floor((avail - n * cell - (n - 1) * gap) / (n - 1));
     const step = cell + gap, bw = n * cell + (n - 1) * gap;
@@ -202,6 +308,13 @@ export class BoardView {
     this.board.style.setProperty('--cell', cell + 'px');
     this.board.style.setProperty('--gap', gap + 'px');
     this.vp.classList.toggle('zoomable', v.zoomable);
+    if (this.wrap) {
+      this.area.style.setProperty('--ghost-w', ghost + 'px');
+      this.area.style.setProperty('--ghost-off', (bw / 2 + gap) + 'px');
+      this.area.style.setProperty('--ghost-h', bw + 'px');
+      this.area.style.setProperty('--ghost-n', n);
+      this.area.style.setProperty('--ghost-gap', gap + 'px');
+    }
     this.resetView(false);
     this.drawWinLine(false);
   }
@@ -210,6 +323,7 @@ export class BoardView {
     const v = this.view;
     this.board.classList.toggle('smooth', !!smooth);
     this.board.style.transform = v.s === 1 && !v.tx && !v.ty ? '' : `translate(${v.tx}px, ${v.ty}px) scale(${v.s})`;
+    this.area.classList.toggle('zoomed', v.s > 1); // wrap ghosts only make sense at normal zoom
   }
   resetView(smooth) {
     Object.assign(this.view, { s: 1, tx: 0, ty: 0, m: this.size });
@@ -274,6 +388,12 @@ export class BoardView {
 
   wireEvents() {
     const G = this.gesture, v = this.view, vp = this.vp;
+    // gravity: the tapped column lights up while the finger is down
+    this.listen(vp, 'pointerdown', e => {
+      const c = this.gravity && e.target.closest('.cell');
+      if (c) this.highlightColumn(+c.dataset.i % this.size);
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => this.listen(vp, t, () => { if (this.gravity) this.highlightColumn(-1); }));
     this.listen(vp, 'pointerdown', e => {
       if (!G.pts.size) Object.assign(G, { moved: false, pinched: false, suppress: false, origin: { x: e.clientX, y: e.clientY } });
       G.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -323,7 +443,7 @@ export class BoardView {
     this.listen(this.area, 'click', e => {
       if (G.suppress) return;
       const cell = e.target.closest('.cell');
-      if (cell && cell.classList.contains('blocked')) { this.shakeCell(+cell.dataset.i); return; } // nobody can play here
+      if (cell && (cell.classList.contains('blocked') || cell.classList.contains('ice')) && !this.gravity) { this.shakeCell(+cell.dataset.i); return; } // nobody can play here
       if (cell && this.onCellTap(+cell.dataset.i)) { this.lastTap = null; return; }
       if (!v.zoomable) return;
       const now = performance.now(), lt = this.lastTap;

@@ -38,7 +38,8 @@ test('AI skill rises from 40% to 90% (85% on 3x3) and is never perfect', () => {
   });
   CHAPTERS.forEach(c => {
     assert.equal(getLevel(c.from).aiSkill, 0.4);
-    for (let n = c.from + 1; n <= c.to; n++) if (!isBoss(n) && !isBoss(n - 1)) assert.ok(getLevel(n).aiSkill >= getLevel(n - 1).aiSkill);
+    // intro levels (the first level of a twist) are easy on purpose, so skip them
+    for (let n = c.from + 1; n <= c.to; n++) if (!isBoss(n) && !isBoss(n - 1) && !getLevel(n).intro && !getLevel(n - 1).intro) assert.ok(getLevel(n).aiSkill >= getLevel(n - 1).aiSkill);
   });
 });
 

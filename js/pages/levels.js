@@ -18,7 +18,8 @@ import { sound } from '../services/audio.js';
 import { haptic } from '../services/haptics.js';
 import { onEvent } from '../utils/events.js';
 import { showToast } from '../components/toast.js';
-import { openLevelPopup, starSVG, TWIST_ICONS, twistLabel } from '../components/level-popup.js';
+import { openLevelPopup, starSVG, twistNames } from '../components/level-popup.js';
+import { twistIcon } from '../config/level-twists.js';
 
 export const appBar = { title: 'Levels', settings: false }; // the star pill takes the right side
 
@@ -141,12 +142,12 @@ function makeNode(n) {
   const d = save.data, st = stateOf(n), boss = isBoss(n);
   const stars = st === 'done' ? d.levels[n].stars : 0;
   const label = st === 'locked' ? 'locked' : st === 'done' ? `${stars} of 3 stars` : 'ready to play';
-  const twist = getLevel(n).twist, tw = TWIST_ICONS[twist];
+  const lv = getLevel(n), first = lv.twists[0], tw = first ? twistIcon(first, lv.layout) : '';
   const b = document.createElement('button');
   b.className = `node ${st}${boss ? ' boss' : ''}`;
   b.dataset.level = n;
-  b.setAttribute('aria-label', `Level ${n}${boss ? ', boss' : ''}${tw ? ', ' + twistLabel(getLevel(n)) : ''}, ${label}`);
-  b.innerHTML = (boss ? CROWN_SVG : '') + (tw ? `<span class="node-twist t-${twist}"><i data-lucide="${tw}"></i></span>` : '') +
+  b.setAttribute('aria-label', `Level ${n}${boss ? ', boss' : ''}${tw ? ', ' + twistNames(lv) : ''}, ${label}`);
+  b.innerHTML = (boss ? CROWN_SVG : '') + (tw ? `<span class="node-twist t-${first}${lv.twists.length > 1 ? ' more' : ''}"><i data-lucide="${tw}"></i></span>` : '') +
     (st === 'locked' ? LOCK_SVG : `<span>${n}</span>`) +
     (st === 'done' ? `<span class="node-stars">${[0, 1, 2].map(i => starSVG(i < stars)).join('')}</span>` : '');
   place(b, xOf(n), Y[n]);

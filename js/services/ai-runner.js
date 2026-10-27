@@ -1,9 +1,12 @@
 /**
- * Runs the AI: on the main thread for small boards, in a module Web Worker
- * for 9x9 and up so the UI never freezes. Falls back to the main thread if
- * a worker can't be created.
+ * Runs the AI for a game state (core/twists): on the main thread for small
+ * boards, in a module Web Worker for 9x9 and up so the UI never freezes.
+ * Falls back to the main thread if a worker can't be created.
+ * Classic games and twist levels go through the same call; the AI picks
+ * the right engine (core/twist-ai.js).
  */
-import { chooseMove } from '../core/ai.js';
+import { chooseStateMove } from '../core/twist-ai.js';
+import { cloneState } from '../core/twists/index.js';
 
 let worker = null, broken = false, seq = 0, pending = null;
 
@@ -16,7 +19,7 @@ function getWorker() {
     };
     worker.onerror = () => {
       broken = true; worker = null;
-      if (pending) { const p = pending; pending = null; p.cb(chooseMove(...p.args)); }
+      if (pending) { const p = pending; pending = null; p.cb(chooseStateMove(...p.args)); }
     };
   } catch (err) {
     broken = true; worker = null;
@@ -24,15 +27,16 @@ function getWorker() {
   return worker;
 }
 
-/** Calls cb(move) once the AI has decided. */
-export function runAI(board, size, aiMark, level, cb) {
-  if (size >= 9 && getWorker()) {
+/** Calls cb(cell) once the AI has decided where `aiMark` plays. */
+export function runAI(state, aiMark, level, cb) {
+  const snap = cloneState(state); // the game may change while the worker thinks
+  if (state.size >= 9 && getWorker()) {
     const id = ++seq;
-    pending = { id, cb, args: [board.slice(), size, aiMark, level] };
-    worker.postMessage({ id, board: board.slice(), size, ai: aiMark, level });
+    pending = { id, cb, args: [snap, aiMark, level] };
+    worker.postMessage({ id, state: snap, ai: aiMark, level });
     return;
   }
-  cb(chooseMove(board, size, aiMark, level));
+  cb(chooseStateMove(snap, aiMark, level));
 }
 
 /** Drops the answer of a running search (e.g. after undo or leaving the game). */
