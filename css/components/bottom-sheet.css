@@ -102,3 +102,13 @@ button.set-row:active { transform: scale(.98); background: var(--glass-strong); 
 .confirm-price svg.lucide { width: 18px; height: 18px; color: var(--gem); }
 .confirm-sheet.coins .confirm-price svg.lucide { color: var(--gold); }
 .confirm-msg { color: var(--danger); font-size: 15px; min-height: 20px; }
+
+/* Setup sheets (vs Computer / vs Player): tighter spacing so they fit a 375x667 screen without scrolling */
+#cpuSheet .sheet-grab, #pvpSheet .sheet-grab { padding-bottom: 4px; }
+#cpuSheet .sheet-handle, #pvpSheet .sheet-handle { margin-bottom: 6px; }
+#cpuSheet .sheet-body, #pvpSheet .sheet-body { padding-top: 2px; padding-bottom: 4px; }
+#cpuSheet .form-row, #pvpSheet .form-row { margin-bottom: 10px; }
+#cpuSheet .form-row .lbl, #pvpSheet .form-row .lbl { margin-bottom: 4px; }
+#cpuSheet .text-input, #pvpSheet .text-input { min-height: 48px; }
+#cpuSheet .field-meta, #pvpSheet .field-meta { min-height: 18px; margin-top: 2px; }
+#cpuSheet .sheet-foot, #pvpSheet .sheet-foot { padding-top: 10px; padding-bottom: calc(env(safe-area-inset-bottom) + 12px); }

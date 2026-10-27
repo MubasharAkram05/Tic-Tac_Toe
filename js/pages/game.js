@@ -37,7 +37,7 @@ import { BoardView, miniMark } from '../components/board-view.js';
 import { createModal } from '../components/modal.js';
 import { anySheetOpen } from '../components/bottom-sheet.js';
 import { showToast } from '../components/toast.js';
-import { currencyBarHTML, renderCurrency, flyCurrency, showAmount } from '../components/currency-bar.js';
+import { currencyBarHTML, currencyPillHTML, renderCurrency, flyCurrency, showAmount } from '../components/currency-bar.js';
 import { confirmSpend } from '../components/confirm-sheet.js';
 import { timerRingHTML, setRing, clearRing } from '../components/timer-ring.js';
 import { fireConfetti } from '../components/confetti.js';
@@ -139,7 +139,10 @@ function loadConfig(config) {
 function template() {
   return `
     <header class="game-bar">
-      <button class="icon-btn" data-act="back" aria-label="Back"><i data-lucide="arrow-left"></i></button>
+      <div class="gb-side">
+        <button class="icon-btn" data-act="back" aria-label="Back"><i data-lucide="arrow-left"></i></button>
+        ${currencyPillHTML('coins', false, 'mini')}
+      </div>
       <div class="game-bar-center">
         <div class="turn-pill glass" aria-live="polite"></div>
         <div class="chip-row">
@@ -149,7 +152,10 @@ function template() {
           <button class="time-plus" data-act="extra-time" hidden aria-label="Add ${EXTRA_TIME_SECONDS} seconds for ${DIAMOND_PRICES.extraTime} diamond">+${EXTRA_TIME_SECONDS}s<span class="gem-cost"><i data-lucide="gem"></i>${DIAMOND_PRICES.extraTime}</span></button>
         </div>
       </div>
-      <button class="icon-btn" data-go="#/settings" aria-label="Settings"><i data-lucide="settings"></i></button>
+      <div class="gb-side">
+        <button class="icon-btn" data-go="#/settings" aria-label="Settings"><i data-lucide="settings"></i></button>
+        ${currencyPillHTML('diamonds', false, 'mini')}
+      </div>
     </header>
     <div class="players">
       ${['p1', 'p2'].map(who => `

@@ -1,12 +1,14 @@
 /**
- * Currency counters in the top bar (and in the level result card):
- * coins ([data-coin-pill]) and diamonds ([data-gem-pill]). Numbers count up
+ * Currency counters in the top bar, the game bar and the level result card:
+ * coins ([data-coin-pill]) and diamonds ([data-gem-pill]). Both always show,
+ * even at 0. Numbers use compactNumber() (9,850 / 12.3k / 1.2M), count up
  * when they change, and small coins / diamonds can fly into a counter.
  */
 import { $$, replayClass, reduceMotion } from '../utils/dom.js';
 import { onEvent } from '../utils/events.js';
 import { save } from '../services/storage.js';
 import { sound } from '../services/audio.js';
+import { compactNumber } from '../utils/format.js';
 
 const ICON_SVG = {
   coins: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#f5b301" stroke="#b45309" stroke-width="2"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2"/></svg>',
@@ -18,11 +20,11 @@ const raf = { coins: 0, diamonds: 0 };
 
 const value = kind => save.data[kind];
 
-/** Pill HTML. As a button it opens the right shop tab. */
-export function currencyPillHTML(kind, asButton = true) {
+/** Pill HTML. As a button it opens the right shop tab. `extra` adds a class (e.g. 'mini' in the game bar). */
+export function currencyPillHTML(kind, asButton = true, extra = '') {
   const coin = kind === 'coins';
-  const attrs = coin ? 'class="coin-pill" data-coin-pill' : 'class="gem-pill" data-gem-pill';
-  const inner = `<i data-lucide="${coin ? 'coins' : 'gem'}"></i><span class="${coin ? 'coin-amt' : 'gem-amt'}">${value(kind)}</span>`;
+  const attrs = `class="${coin ? 'coin-pill' : 'gem-pill'}${extra ? ' ' + extra : ''}" ${coin ? 'data-coin-pill' : 'data-gem-pill'} title="${coin ? 'Coins' : 'Diamonds'}"`;
+  const inner = `<i data-lucide="${coin ? 'coins' : 'gem'}"></i><span class="${coin ? 'coin-amt' : 'gem-amt'}">${compactNumber(value(kind))}</span>`;
   return asButton
     ? `<button ${attrs} data-go="#/shop?tab=${kind}" aria-label="${coin ? 'Coins' : 'Diamonds'}, open shop">${inner}</button>`
     : `<span ${attrs}>${inner}</span>`;
@@ -36,14 +38,14 @@ export function renderCurrency(kind, from) {
   const to = value(kind), amounts = () => $$(`${PILL[kind]} ${AMOUNT[kind]}`);
   cancelAnimationFrame(raf[kind]);
   if (from === undefined || from === to || reduceMotion()) {
-    amounts().forEach(el => { el.textContent = to; });
+    amounts().forEach(el => { el.textContent = compactNumber(to); });
     return;
   }
   const t0 = performance.now(), dur = 650;
   const step = now => {
     const k = Math.min(1, (now - t0) / dur);
     const shown = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
-    amounts().forEach(el => { el.textContent = shown; });
+    amounts().forEach(el => { el.textContent = compactNumber(shown); });
     if (k < 1) raf[kind] = requestAnimationFrame(step);
     else $$(PILL[kind]).forEach(p => replayClass(p, 'bump'));
   };
@@ -52,7 +54,7 @@ export function renderCurrency(kind, from) {
 
 /** Shows a fixed number on every counter of one kind (e.g. the "before" value of a reward). */
 export function showAmount(kind, n, root = document) {
-  root.querySelectorAll(`${PILL[kind]} ${AMOUNT[kind]}`).forEach(el => { el.textContent = n; });
+  root.querySelectorAll(`${PILL[kind]} ${AMOUNT[kind]}`).forEach(el => { el.textContent = compactNumber(n); });
 }
 
 /** Small coins or diamonds fly from one element into a visible counter. */

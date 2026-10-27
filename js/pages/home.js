@@ -3,10 +3,9 @@
  * mode buttons and the vs Computer / vs Player setup sheets.
  */
 import { $, $$, createScope, renderIcons, setSeg, segHTML, nameFieldHTML, setFieldState, reduceMotion } from '../utils/dom.js';
-import { sizeLabel, timerLabel, secondsLabel } from '../utils/format.js';
+import { sizeLabel } from '../utils/format.js';
 import { nameError, clamp } from '../utils/validate.js';
 import { BOARD_SIZES, NAME_MAX, winLength } from '../config/constants.js';
-import { getMoveTime } from '../config/timers.js';
 import { getLevel, chapterOf } from '../config/levels.js';
 import { app, saveApp, save } from '../services/storage.js';
 import { dailyStatus, claimDaily, addCoins, addDiamonds } from '../services/economy.js';
@@ -237,15 +236,10 @@ function wireSwipe() {
   scope.on(stage, 'pointercancel', end);
 }
 
-/* ---------- Setup sheets: name(s), difficulty, mark, timer, Start ---------- */
+/* ---------- Setup sheets: name(s), difficulty, mark, Start ----------
+ * No timer choice here: the move timer is on by default (Settings can turn
+ * it off) and the game page works out the time per move from config/timers.js. */
 const markSeg = (group, label) => segHTML({ group, key: 'p1Mark', label, options: [{ val: 'X', label: miniMark('X'), aria: 'X' }, { val: 'O', label: miniMark('O'), aria: 'O' }] });
-const timerSeg = group => segHTML({ group, key: 'timerOn', label: 'Move timer', options: [true, false].map(on => ({ val: String(on), label: timerLabel(on) })) });
-/** "15s per move" next to the timer label (vs Player always uses the Medium time). */
-function renderTimerHint(sheetId) {
-  const el = $(`#${sheetId} .timer-hint`);
-  const secs = getMoveTime(app.prefs.size, sheetId === 'pvpSheet' ? 'medium' : app.choices.cpu.difficulty);
-  el.textContent = app.settings.timerOn ? `${secondsLabel(secs)} per move` : '';
-}
 
 function buildSheets() {
   cpuSheet = createSheet({
@@ -254,8 +248,7 @@ function buildSheets() {
       ${nameFieldHTML({ id: 'cpuName', field: 'solo', label: 'Your name', hint: '(optional)', placeholder: 'You', max: NAME_MAX })}
       <div class="form-row"><div class="lbl">Difficulty</div>
         ${segHTML({ group: 'cpu', key: 'difficulty', label: 'Difficulty', options: [{ val: 'easy', label: 'Easy' }, { val: 'medium', label: 'Medium' }, { val: 'hard', label: 'Hard' }] })}</div>
-      <div class="form-row"><div class="lbl">Play as</div>${markSeg('cpu', 'Play as')}</div>
-      <div class="form-row"><div class="lbl">Move timer <small class="timer-hint"></small></div>${timerSeg('cpu')}</div>`,
+      <div class="form-row"><div class="lbl">Play as</div>${markSeg('cpu', 'Play as')}</div>`,
     foot: '<button type="submit" class="btn3d big" data-start><i data-lucide="play"></i>Start</button>',
   });
   pvpSheet = createSheet({
@@ -263,8 +256,7 @@ function buildSheets() {
     body: `
       ${nameFieldHTML({ id: 'p1Name', field: 'p1', label: '<span class="fmark" data-for="p1"></span>Player 1 name', enterkey: 'next', max: NAME_MAX })}
       ${nameFieldHTML({ id: 'p2Name', field: 'p2', label: '<span class="fmark" data-for="p2"></span>Player 2 name', max: NAME_MAX })}
-      <div class="form-row"><div class="lbl">Player 1 is</div>${markSeg('pvp', 'Player 1 is')}</div>
-      <div class="form-row"><div class="lbl">Move timer <small class="timer-hint"></small></div>${timerSeg('pvp')}</div>`,
+      <div class="form-row"><div class="lbl">Player 1 is</div>${markSeg('pvp', 'Player 1 is')}</div>`,
     foot: '<button type="submit" class="btn3d big" data-start><i data-lucide="play"></i>Start</button>',
   });
 
@@ -274,11 +266,9 @@ function buildSheets() {
       if (!btn) return;
       const seg = btn.parentElement, group = seg.dataset.group, key = seg.dataset.key;
       const val = btn.dataset.val;
-      if (key === 'timerOn') app.settings.timerOn = val === 'true'; // one shared timer setting
-      else app.choices[group][key] = val;
+      app.choices[group][key] = val;
       setSeg(seg, val);
       if (group === 'pvp' && key === 'p1Mark') renderPvpMarks();
-      renderTimerHint(sheet.el.id);
       saveApp(); sound.click(); haptic(8);
     });
   });
@@ -341,8 +331,6 @@ function openCpuSheet() {
   cpuSheet.setTitle(`vs Computer · ${sizeLabel(app.prefs.size)}`);
   setSeg($('#cpuSheet .seg[data-key="difficulty"]'), c.difficulty);
   setSeg($('#cpuSheet .seg[data-key="p1Mark"]'), c.p1Mark);
-  setSeg($('#cpuSheet .seg[data-key="timerOn"]'), String(app.settings.timerOn));
-  renderTimerHint('cpuSheet');
   $('#cpuName').value = app.names.solo === 'You' ? '' : app.names.solo;
   validateCpu();
   cpuSheet.open();
@@ -352,8 +340,6 @@ function openPvpSheet() {
   const c = app.choices.pvp;
   pvpSheet.setTitle(`vs Player · ${sizeLabel(app.prefs.size)}`);
   setSeg($('#pvpSheet .seg[data-key="p1Mark"]'), c.p1Mark);
-  setSeg($('#pvpSheet .seg[data-key="timerOn"]'), String(app.settings.timerOn));
-  renderTimerHint('pvpSheet');
   $('#p1Name').value = app.names.p1;
   $('#p2Name').value = app.names.p2;
   renderPvpMarks();

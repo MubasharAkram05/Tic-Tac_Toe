@@ -3,7 +3,7 @@
  * Bump CACHE when files change so players get the new version.
  * Google Fonts are cached at runtime the first time they load.
  */
-const CACHE = 'ttt-v3';
+const CACHE = 'ttt-v4';
 const FONT_CACHE = 'ttt-fonts-v1';
 const APP_FILES = [
   './',

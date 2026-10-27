@@ -10,6 +10,18 @@ export const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 export const timerLabel = on => (on ? 'On' : 'Off');
 export const secondsLabel = s => `${s}s`;
 
+/**
+ * Short money numbers for the coin / diamond pills:
+ *   9850 -> "9,850", 12345 -> "12.3k", 1200000 -> "1.2M" (no trailing ".0").
+ */
+export function compactNumber(n) {
+  n = Math.max(0, Math.round(+n || 0));
+  if (n < 10000) return n.toLocaleString('en-US');
+  const [div, unit] = n < 1e6 ? [1e3, 'k'] : [1e6, 'M'];
+  const v = Math.floor((n / div) * 10) / 10; // round down so 9,999,999 never shows "10M" early
+  return (v % 1 ? v.toFixed(1) : String(v)) + unit;
+}
+
 /** Local date as YYYY-MM-DD (used by the daily reward). */
 export const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 

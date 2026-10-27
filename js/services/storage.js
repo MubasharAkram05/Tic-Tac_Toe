@@ -35,16 +35,17 @@ export const app = {
   },
   names: { ...DEFAULT_NAMES },
   scores: { computer: {}, friend: {}, campaign: {} },   // scores[mode][size or "L<level>"] = { p1, p2, draw }
-  flags: { zoomHint: false, twists: {} },   // twists: which level-twist tutorials were seen
+  flags: { zoomHint: false, twists: {}, timerReset: false }, // twists: tutorials seen; timerReset: see loadApp
 };
 
 function loadApp() {
   const s = readJSON(STORAGE_KEYS.settings) || {};
   Object.assign(app.settings, s.settings);
-  // Older versions saved timer seconds (0 / 10 / 20 / 30, default 0 = off). The timer
-  // is now on by default with automatic times, so the old value is dropped.
-  if (typeof app.settings.timerOn !== 'boolean') app.settings.timerOn = true;
+  // Older versions saved a timer choice from the setup sheets (Off / 10s / 20s / 30s, or
+  // On / Off). The sheets no longer have one: the timer is on by default with automatic
+  // times, so it is switched On for everyone once. After that only Settings changes it.
   delete app.settings.timer;
+  if (typeof app.settings.timerOn !== 'boolean') app.settings.timerOn = true;
   Object.assign(app.prefs, s.prefs);
   if (!BOARD_SIZES.includes(app.prefs.size)) app.prefs.size = 3;
   if (s.choices) {
@@ -53,6 +54,11 @@ function loadApp() {
   }
   Object.assign(app.names, s.names);
   Object.assign(app.flags, s.flags);
+  if (!app.flags.timerReset) {
+    app.settings.timerOn = true;
+    app.flags.timerReset = true;
+    saveApp();
+  }
   if (s.scores) {
     app.scores = { computer: s.scores.computer || {}, friend: s.scores.friend || {}, campaign: s.scores.campaign || {} };
   }

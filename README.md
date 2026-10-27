@@ -15,11 +15,13 @@ Made by **Sussal Productions**.
 - **Campaign:** 500 levels in 10 chapters (3x3 up to 12x12), stars, a boss every 10th level,
   move limits and level twists (blocked cells, puzzle levels, see below). The levels map is
   virtualized, so only the nodes near the screen are drawn
-- **Move timer:** on by default in every mode (turn it off in Settings). Time per move
-  depends on the board size and difficulty (see below). Countdown ring around the active
+- **Move timer:** on by default in every mode. There is no timer choice in the setup sheets:
+  time per move is automatic (see below), and **Settings > Move timer** turns it on or off. Countdown ring around the active
   player, green / amber / red, pulse + tick in the last 5 seconds. A timeout plays a random
   move. It pauses in the background, while settings are open and while the AI thinks
 - **Fair starts:** the player starts the first round, then the starter alternates
+- **Top bar:** coins and diamonds always show (also at 0), and in a compact form in the game
+  bar. Under 10,000 the number is shown in full (9,850), from 10,000 it is short (12.3k, 1.2M)
 - **Coins:** level rewards, daily login streak, hints, undos, board themes, X/O skins, avatars
 - **Diamonds:** a rare premium currency (see below), shown next to coins in the top bar
 - **Shop:** two tabs, Coins and Diamonds. Diamond buys are confirmed in a small bottom sheet
