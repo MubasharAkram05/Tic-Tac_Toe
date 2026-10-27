@@ -11,7 +11,7 @@ import { createBoard } from '../../js/core/board.js';
 import { createState, winFrom } from '../../js/core/twists/index.js';
 import { maxRings } from '../../js/core/twists/shrinking.js';
 import { mulberry32 } from '../../js/utils/seeded-random.js';
-import { tableEntries, baseLevel } from '../../tools/twist-plan.js';
+import { tableEntries, baseLevel, planFor } from '../../tools/twist-plan.js';
 
 const all = Array.from({ length: TOTAL_LEVELS }, (_, i) => getLevel(i + 1));
 
@@ -123,6 +123,15 @@ test('hand-crafted boss overrides win over generated layouts', () => {
     assert.deepEqual(l.layout.preset, o.preset);
     assert.equal(validateLayout(l.layout, l), '', `override ${n}`);
   }
+});
+
+test('no twist level falls back to a plain board; level 370 is hand-crafted', () => {
+  for (let n = 1; n <= TOTAL_LEVELS; n++)
+    if (planFor(n).length && !BOSS_OVERRIDES[n]) assert.ok(TWIST_TABLE[n], `level ${n} has no layout`);
+  const l = getLevel(370);
+  assert.ok(BOSS_OVERRIDES[370] && l.boss);
+  assert.deepEqual([...l.twists].sort(), ['blocked', 'coins', 'shrink']);
+  assert.equal(l.layout.shrink.rings, 2);
 });
 
 test('validators reject bad layouts', () => {

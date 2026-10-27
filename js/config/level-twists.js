@@ -148,6 +148,7 @@ export function planAllTwists(total, levelAt) {
  * same validation (see tests/twists/). Grid rows use:
  *   '.' empty   '#' blocked   'x' player mark   'o' machine mark
  *   '$' coin cell (+5 coins)   '*' diamond cell (+1 diamond)
+ * Rule twists are added as fields: shrink: { rings }, rule, gravity, wrap.
  */
 export const BOSS_OVERRIDES = {
   // Chapter 6 boss, 8x8: a broken ring
@@ -162,6 +163,24 @@ export const BOSS_OVERRIDES = {
       '.#....#.',
       '........',
     ],
+  },
+  // Chapter 9 boss, 11x11: the board shrinks twice (to 7x7) around four pillars,
+  // with the prizes waiting in the middle
+  370: {
+    grid: [
+      '...........',
+      '...........',
+      '...........',
+      '...#...#...',
+      '...........',
+      '....$*$....',
+      '...........',
+      '...#...#...',
+      '...........',
+      '...........',
+      '...........',
+    ],
+    shrink: { rings: 2 },
   },
   // Final boss, 12x12: walls + a fork puzzle (the empty pivot makes two threats at once)
   500: {
@@ -196,8 +215,15 @@ export function overrideLayout(n) {
     if (ch === '$') coins.push({ i, kind: 'coin', amount: COIN_VALUE });
     if (ch === '*') coins.push({ i, kind: 'diamond', amount: DIAMOND_VALUE });
   }));
-  const twists = TWIST_IDS.filter(id => (id === 'blocked' && blocked.length) || (id === 'puzzle' && preset.length) || (id === 'coins' && coins.length));
-  return { size, twists, blocked, preset, coins, puzzleMoves: preset.length ? o.puzzleMoves : null };
+  const extra = {
+    shrink: o.shrink ? { every: SHRINK.every, warn: SHRINK.warn, ...o.shrink } : null,
+    rule: o.rule || null,
+    ...(o.gravity ? { gravity: true } : {}),
+    ...(o.wrap ? { wrap: true } : {}),
+  };
+  const on = { blocked: blocked.length, puzzle: preset.length, coins: coins.length, shrink: o.shrink, lines: o.rule, gravity: o.gravity, wrap: o.wrap };
+  const twists = TWIST_IDS.filter(id => on[id]);
+  return { size, twists, blocked, preset, coins, ice: [], vanish: null, ...extra, puzzleMoves: preset.length ? o.puzzleMoves : null };
 }
 
 /**

@@ -68,5 +68,5 @@ export const TITLES = [
  * localStorage keys. "settings" must not change. Progress moved to
  * "ttt_save_v2"; the old "ttt_save_v1" key is read once and migrated.
  */
-export const STORAGE_KEYS = { settings: 'ttt.v3', save: 'ttt_save_v2', legacySave: 'ttt_save_v1' };
+export const STORAGE_KEYS = { settings: 'ttt.v3', save: 'ttt_save_v2', legacySave: 'ttt_save_v1', devSave: 'ttt_save_dev' };
 export const SAVE_VERSION = 2;

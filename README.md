@@ -94,6 +94,18 @@ Run the tests (Node 18 or newer, no install needed):
 npm test
 ```
 
+### Dev unlock (testing only)
+
+Add `?dev=1` to the URL (for example <http://localhost:5173/?dev=1#/levels>) to open all 500
+levels. A red **DEV** badge shows while it is on.
+
+- Works only on dev hosts: `localhost`, `127.0.0.1`, `*.local`, LAN IPs (`192.168.x.x`,
+  `10.x.x.x`) and Vercel branch previews (`*-git-*.vercel.app`).
+- Never on the live site: `tic-tac-toe-five-silk-91.vercel.app` is blocked by name, and any
+  other domain is off too (allowlist). Rules are in `js/utils/dev.js`, tested in `tests/dev.test.js`.
+- Dev mode uses its own save key (`ttt_save_dev`), so testing never touches real progress.
+  Remove `?dev=1` to go back to your normal save.
+
 ## Move timer
 
 All numbers live in `js/config/timers.js`. Time per move = base time x multiplier,
@@ -199,11 +211,17 @@ Twists only exist in Levels mode. vs Computer and vs Player boards never change.
   winnable under its rules (gravity: only reachable cells; shrinking: the final area), the
   board never shrinks below win length + 2, no floating marks with gravity, and puzzles are
   fair and forced in exactly N moves. A failing layout tries the next seed (50 attempts), then
-  the level plays normally. The tests fail if the table is out of date.
+  the level plays normally. Today no level needs that fallback (a test checks it). Bosses 250,
+  370 and 500 use hand-crafted layouts (`BOSS_OVERRIDES`); 370 is coins + blocked + shrinking
+  (2 rings). The tests fail if the table is out of date.
 - **UI:** small twist icons in the level popup and on map nodes, chips in the game bar (tap one
-  for a one-line explanation, "Straight only", "Shrinks in 2", coins collected), a one-time
+  for a one-line explanation, "Straight only", "Shrinks in 2"), a one-time
   tutorial with a tiny animated demo per twist ("seen" is saved in `ttt.v3`). Animations stay
   under 300ms and stop with reduced motion.
+- **Coin cells:** a collected coin is only *pending*: it shows in the coins chip (dashed
+  outline, "+5"), with no flying during the game. A win flies it to the counter on the result
+  screen; a loss or draw fades the pending coins out. On a level you already cleared the chip
+  is muted (coins don't pay again).
 - **Saves:** layouts are not saved. Stars are stored per level number, so if a layout changes
   in a later update, the player keeps the stars they earned.
 
@@ -268,6 +286,7 @@ Two localStorage keys:
 |---|---|
 | `ttt.v3` | settings, home choices, player names, scores per board |
 | `ttt_save_v2` | coins, diamonds, XP, levels and stars, skips, items, stats, achievements, daily streak |
+| `ttt_save_dev` | sandbox save, only used with `?dev=1` on a dev host |
 
 The save has a `version` field (now 2). On first load, an old `ttt_save_v1` save is run
 through `migrate()` in `js/services/storage.js` and written to `ttt_save_v2` (the v1 key

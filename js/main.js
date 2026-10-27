@@ -12,6 +12,7 @@ import { sound } from './services/audio.js';
 import { haptic } from './services/haptics.js';
 import { $, renderIcons } from './utils/dom.js';
 import { startRouter, navigate, goBack } from './router.js';
+import { DEV } from './utils/dev.js';
 
 initStorage();
 startAutoTheme();
@@ -20,6 +21,8 @@ trackKeyboard();
 initToasts();
 renderIcons(document);
 initCurrencyBar();
+// ?dev=1 on a dev host: all levels open, sandbox save. A badge makes it obvious.
+if (DEV) document.body.insertAdjacentHTML('beforeend', '<div class="dev-badge" role="status" aria-label="Dev mode: all levels unlocked, progress saved separately">DEV</div>');
 startRouter();
 
 // Any element with data-go="#/route" navigates there (coin / diamond pills, settings buttons, nav tabs)

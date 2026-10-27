@@ -13,7 +13,7 @@ import { $, createScope, renderIcons, replayClass } from '../utils/dom.js';
 import { sizeLabel } from '../utils/format.js';
 import { CHAPTERS, TOTAL_LEVELS, chapterOf, isBoss, getLevel } from '../config/levels.js';
 import { save } from '../services/storage.js';
-import { totalStars, chapterStars } from '../services/progress.js';
+import { totalStars, chapterStars, isUnlocked } from '../services/progress.js';
 import { sound } from '../services/audio.js';
 import { haptic } from '../services/haptics.js';
 import { onEvent } from '../utils/events.js';
@@ -52,7 +52,7 @@ const live = new Map();                  // level -> node element
 
 const amp = () => Math.max(40, Math.min(110, (width - 100) / 2));
 const xOf = n => width / 2 + ZIG[(n - 1) % ZIG.length] * amp();
-const stateOf = n => (save.data.levels[n] ? 'done' : n <= save.data.unlockedLevel ? 'current' : 'locked');
+const stateOf = n => (save.data.levels[n] ? 'done' : isUnlocked(n) ? 'current' : 'locked');
 const place = (el, x, y) => { el.style.left = x + 'px'; el.style.top = y + 'px'; };
 const currentLevel = () => Math.min(save.data.unlockedLevel, TOTAL_LEVELS);
 
@@ -120,7 +120,7 @@ export function unmount() {
 function renderCards() {
   const d = save.data;
   CHAPTERS.forEach(c => {
-    const got = chapterStars(c.index), max = c.count * 3, locked = c.from > d.unlockedLevel;
+    const got = chapterStars(c.index), max = c.count * 3, locked = !isUnlocked(c.from);
     const card = map.querySelector(`.ch-slot[data-ch="${c.index}"] .ch-card`);
     card.classList.toggle('locked', locked);
     card.innerHTML = `

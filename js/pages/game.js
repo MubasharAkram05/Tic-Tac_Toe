@@ -37,7 +37,7 @@ import { TWIST_INFO, twistIcon, twistChip } from '../config/level-twists.js';
 import { MoveTimer } from '../core/timer.js';
 import { runAI, cancelAI } from '../services/ai-runner.js';
 import { app, saveApp, save, scoreBook } from '../services/storage.js';
-import { finishLevel, finishNormalGame } from '../services/progress.js';
+import { finishLevel, finishNormalGame, bestStars, isSkipped, isUnlocked } from '../services/progress.js';
 import { useBoost, spendDiamonds, needText } from '../services/economy.js';
 import { sound } from '../services/audio.js';
 import { haptic } from '../services/haptics.js';
@@ -196,7 +196,7 @@ function onClick(e) {
   if (act === 'hint') hint();
   if (act === 'restart') { sound.click(); haptic(12); startRound(); }
   if (act === 'extra-time') askExtraTime();
-  if (act === 'twist') { sound.click(); showToast(TWIST_INFO[b.dataset.id].explain(layout()), twistIcon(b.dataset.id, layout())); }
+  if (act === 'twist') { sound.click(); showToast(twistExplain(b.dataset.id), twistIcon(b.dataset.id, layout())); }
 }
 
 /* =========================================================================
@@ -210,6 +210,7 @@ function startRound() {
   st = {
     round: st.round, game: createState(cfg.size, layout()), snaps: [], history: [], over: false, thinking: false, aiToken: (st.aiToken || 0) + 1,
     usedHelp: false, timedOut: false, hintCell: -1,
+    coinsPay: isCampaign() && (!bestStars(cfg.levelId) || isSkipped(cfg.levelId)), // fixed at the start: a win mid-game must not flip it
     extraTimeUsed: false,   // +10s, once per game
     continued: false,       // diamond continue after a lost level, once per attempt
   };
@@ -262,13 +263,16 @@ function tryPlace(i) {
   return place(i);
 }
 
-/** Small effects for twist events: coins fly to the counter, sounds for vanish / melt / shrink. */
+/**
+ * Small effects for twist events. A collected coin is only *pending*: it
+ * goes into the coins chip (no flying to the counter); it is paid, and
+ * flies, on the win screen. Shrinking shakes and warns.
+ */
 function twistEvents(events) {
   events.forEach(e => {
     if (e.type === 'coin' && e.mark === p1Mark()) {
-      const kind = e.kind === 'diamond' ? 'diamonds' : 'coins';
-      flyCurrency(kind, view.cellEl(e.cell), e.amount, $(`.game-bar [data-${kind === 'coins' ? 'coin' : 'gem'}-pill]`, root));
       sound.coin();
+      scope.timeout(() => { const chip = root && $('.twist-chip[data-id="coins"]', root); if (chip) replayClass(chip, 'bump'); }, 0);
     }
     if (e.type === 'shrink' && e.cells.length) { haptic([20, 40, 20]); showToast('The board shrinks!', 'shrink'); }
   });
@@ -315,6 +319,9 @@ function endGame(mark, line, reason) {
   renderPlayers();
   renderTurn();
   replayClass(winnerWho ? $(`.player-card[data-who="${winnerWho}"] .pscore`, root) : $('.score-draw', root), 'bump');
+  // no win: pending coins from coin cells fade out (a win pays them on the result screen)
+  const pending = outcome !== 'win' && $('.twist-chip[data-id="coins"].pending', root);
+  if (pending) pending.classList.add('lost');
 
   if (outcome === 'win') { sound.win(); haptic([30, 40, 60]); }
   else if (outcome === 'lose') { sound.lose(); haptic(90); }
@@ -494,17 +501,27 @@ function renderTwistChips() {
   const ids = twists().filter(id => id !== 'puzzle'); // the puzzle has its own "Moves left" chip
   box.innerHTML = ids.map(id => {
     let text = id === 'lines' ? twistChip(id, l) : '', cls = '';
-    if (id === 'coins') {
+    if (id === 'coins') { // pending: shown here, paid only on a first-clear win
       const got = collectedBy(st.game, p1Mark());
-      if (got.coins || got.diamonds) text = `+${got.coins || got.diamonds}`;
+      text = [got.coins ? `+${got.coins}` : '', got.diamonds ? `+${got.diamonds}◆` : ''].filter(Boolean).join(' ');
+      if (text) cls = coinsPay() ? ' pending' : ' pending no-pay';
     }
     if (id === 'shrink') {
       const left = shrinksIn(st.game);
       if (left <= st.game.shrink.warn && !st.over) { text = `Shrinks in ${left}`; cls = ' warn'; }
     }
-    return `<button class="twist-chip${cls}" data-act="twist" data-id="${id}" aria-label="${TWIST_INFO[id].name}: ${escapeHTML(TWIST_INFO[id].explain(l))}"><i data-lucide="${twistIcon(id, l)}"></i>${text ? `<span>${escapeHTML(text)}</span>` : ''}</button>`;
+    return `<button class="twist-chip${cls}" data-act="twist" data-id="${id}" aria-label="${TWIST_INFO[id].name}: ${escapeHTML(twistExplain(id))}"><i data-lucide="${twistIcon(id, l)}"></i>${text ? `<span>${escapeHTML(text)}</span>` : ''}</button>`;
   }).join('');
   renderIcons(box);
+}
+
+/** True if coin cells pay on this level (a first clear; a skipped level still counts). */
+const coinsPay = () => !!(st && st.coinsPay);
+
+/** One-line explanation for a twist chip. */
+function twistExplain(id) {
+  if (id === 'coins' && !coinsPay()) return 'You already cleared this level, so coin cells pay nothing this time.';
+  return TWIST_INFO[id].explain(layout());
 }
 
 /** Puzzle levels: "Moves left: 2" in the top bar. */
@@ -671,7 +688,7 @@ function buildModals() {
     if (act === 'continue') { askContinue(); return; }
     levelResultModal.close();
     if (act === 'next' && n < TOTAL_LEVELS) {
-      const next = Math.min(n + 1, save.data.unlockedLevel);
+      const next = isUnlocked(n + 1) ? n + 1 : save.data.unlockedLevel;
       // a new twist shows its tutorial first; the round starts after "Got it"
       withTwistTutorials(getLevel(next).twists, () => { if (root) { loadConfig(campaignConfig(next)); startRound(); } });
     }

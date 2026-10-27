@@ -182,3 +182,16 @@
 .cell .gem-ic path:first-child { fill: #38bdf8; stroke: #0369a1; stroke-width: 1.6; }
 .cell .gem-ic path:last-child { fill: none; stroke: rgba(255, 255, 255, .7); stroke-width: 1.2; }
 .cell.coin .tw-icon { width: 52%; height: 52%; }
+
+/* Coin cells: collected coins wait in the chip (outlined, dashed) until a win pays them */
+.twist-chip.pending { border-style: dashed; border-color: var(--gold); color: var(--gold-2); background: transparent; }
+.twist-chip.pending svg.lucide { color: var(--gold); }
+.twist-chip.pending.no-pay { border-color: var(--glass-border); color: var(--muted); text-decoration: line-through; }
+.twist-chip.pending.no-pay svg.lucide { color: var(--muted); }
+.twist-chip.bump { animation: bump 260ms var(--ease); }
+.twist-chip.lost { animation: pendingLost 300ms ease forwards; }
+@keyframes pendingLost { to { opacity: 0; transform: translateY(-6px) scale(.9); } }
+@media (prefers-reduced-motion: reduce) { .twist-chip.lost { animation: none; opacity: 0; } }
+
+/* Dev mode badge (?dev=1 on a dev host only) */
+.dev-badge { position: fixed; left: 8px; bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 9999; pointer-events: none; padding: 2px 8px; border-radius: 999px; font: 700 12px/1.6 Fredoka, system-ui, sans-serif; letter-spacing: .08em; color: #fff; background: #dc2626; box-shadow: 0 2px 8px rgba(0,0,0,.25); opacity: .9; }

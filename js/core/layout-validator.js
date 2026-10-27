@@ -260,8 +260,8 @@ export function openLinesFor(layout, level, mark = 'X') {
   const reach = s.gravity ? reachable(s.board, s.size) : null;
   const ring = s.shrink ? s.shrink.max : 0, n = s.size;
   const inside = i => { const r = (i / n) | 0, c = i % n; return r >= ring && c >= ring && r < n - ring && c < n - ring; };
-  const all = ruleWindows(s);
-  const open = all.filter(w => w.every(i => s.board[i] !== BLOCKED && s.board[i] !== opp && (!reach || reach.has(i)) && inside(i)));
+  const all = ruleWindows(s).filter(w => w.every(inside)); // shrinking: compare within the final area
+  const open = all.filter(w => w.every(i => s.board[i] !== BLOCKED && s.board[i] !== opp && (!reach || reach.has(i))));
   return { open: open.length, all: all.length };
 }
 

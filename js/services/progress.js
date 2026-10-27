@@ -3,6 +3,7 @@
  * coin + diamond rewards for levels and chapters.
  */
 import { save } from './storage.js';
+import { DEV } from '../utils/dev.js';
 import { REWARDS, XP, TITLES, DIAMOND_REWARDS, DIAMOND_PRICES } from '../config/constants.js';
 import { CHAPTERS, TOTAL_LEVELS, isBoss, chapterOf } from '../config/levels.js';
 import { addCoins, addDiamonds, spendDiamonds } from './economy.js';
@@ -33,7 +34,7 @@ export function addXP(n, { silent = false } = {}) {
 }
 
 export const bestStars = n => (save.data.levels[n] ? save.data.levels[n].stars : 0);
-export const isUnlocked = n => n <= save.data.unlockedLevel;
+export const isUnlocked = n => DEV || n <= save.data.unlockedLevel; // ?dev=1 on a dev host opens all levels
 export const isSkipped = n => !!(save.data.levels[n] && save.data.levels[n].skipped);
 export const campaignDone = () => !!save.data.levels[TOTAL_LEVELS];
 export const highestLevel = () => (campaignDone() ? TOTAL_LEVELS : save.data.unlockedLevel);
