@@ -13,6 +13,9 @@ export const secondsLabel = s => `${s}s`;
 /**
  * Short money numbers for the coin / diamond pills:
  *   9850 -> "9,850", 12345 -> "12.3k", 1200000 -> "1.2M" (no trailing ".0").
+ * The unit is picked from the value first (>= 1,000,000 -> M, >= 10,000 -> k),
+ * then the number is rounded down inside that unit, so it never shows more
+ * than you have: 999,999 -> "999.9k", 9,999,999 -> "9.9M".
  */
 export function compactNumber(n) {
   n = Math.max(0, Math.round(+n || 0));

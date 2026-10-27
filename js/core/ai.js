@@ -196,7 +196,15 @@ function ordered(moves, p, cap) {
     .map(o => o.m);
 }
 
-const randomOf = arr => arr[(Math.random() * arr.length) | 0];
+/**
+ * Random source for every random choice the AI makes (easy moves, ties,
+ * "AI skill" rolls). Math.random in the game; tests inject a seeded
+ * generator with setRandom() so their results never change between runs.
+ */
+let rand = Math.random;
+export function setRandom(fn) { rand = typeof fn === 'function' ? fn : Math.random; }
+
+const randomOf = arr => arr[(rand() * arr.length) | 0];
 
 /** First cell where p wins right now, or -1. A winning cell always touches p's marks. */
 function findWin(p) {
@@ -329,11 +337,11 @@ export function chooseMove(board, sz, aiMark, level) {
   const pool = sz <= 5 ? free : candidates(g.near1);
 
   // Campaign: a number is "AI skill", the chance of playing its best move this turn
-  if (typeof level === 'number') level = Math.random() < level ? 'hard' : 'easy';
+  if (typeof level === 'number') level = rand() < level ? 'hard' : 'easy';
 
   if (level === 'easy') {
     const block = findWin(2);
-    if (block >= 0 && Math.random() < 0.3) return block;
+    if (block >= 0 && rand() < 0.3) return block;
     return randomOf(pool);
   }
 
