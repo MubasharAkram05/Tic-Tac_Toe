@@ -1,0 +1,58 @@
+/* Centered popups: result, level start, leave confirm, level result. */
+.modal { display: grid; place-items: center; padding: 16px; }
+.modal-card {
+  position: relative; width: min(100%, 370px); max-height: calc(100dvh - 32px); overflow-y: auto;
+  padding: var(--s5) var(--s5) var(--s4); border-radius: 28px; text-align: center;
+  background: var(--sheet); border: 1px solid var(--glass-border); box-shadow: var(--shadow);
+  transform: scale(.9) translateY(12px); transition: transform var(--med) var(--ease);
+}
+.overlay.open .modal-card { transform: none; }
+.modal-card.shake { animation: shake 300ms ease; }
+.modal-card h2 { font-size: 30px; font-weight: 700; overflow-wrap: anywhere; }
+.modal-card .result-sub { margin: 6px 0 var(--s5); color: var(--muted); }
+.modal-actions { display: grid; gap: var(--s4); }
+.modal-actions.two { grid-template-columns: 1fr 1fr; gap: var(--s3); }
+.modal-actions.two .btn3d { padding: 0 12px; }
+.modal-actions.three { grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-actions.three .btn3d:first-child { grid-column: 1 / -1; }
+.close-x { position: absolute; top: 12px; right: 12px; }
+
+.result-icon {
+  width: 84px; height: 84px; margin: 0 auto var(--s3); border-radius: 26px;
+  display: grid; place-items: center; color: #fff;
+  background: linear-gradient(160deg, var(--accent), #f97316);
+  box-shadow: 0 6px 0 #b45309, 0 14px 26px rgba(249, 115, 22, .3);
+}
+.result-icon svg.lucide { width: 44px; height: 44px; }
+.result-icon.lose { background: linear-gradient(160deg, #94a3b8, #475569); box-shadow: 0 6px 0 #334155; }
+.result-icon.draw { background: linear-gradient(160deg, #a78bfa, var(--primary-2)); box-shadow: 0 6px 0 var(--primary-edge); }
+.result-icon.warn { width: 64px; height: 64px; border-radius: 20px; background: linear-gradient(160deg, #fb7185, #e11d48); box-shadow: 0 6px 0 #9f1239; }
+.result-icon.warn svg.lucide { width: 32px; height: 32px; }
+
+/* Simple level start card */
+.level-card { width: min(100%, 320px); padding-top: 28px; }
+.level-card h2 { font-size: 40px; line-height: 1.1; }
+.lm-chapter { color: var(--muted); margin: 4px 0 14px; }
+.lm-boss { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px; padding: 4px 12px; border-radius: 99px; font-weight: 700; font-size: 14px; color: #fff; background: linear-gradient(160deg, #fb7185, #c026d3); }
+.lm-boss svg.lucide { width: 18px; height: 18px; }
+.lm-stars { display: flex; justify-content: center; gap: 8px; margin-bottom: 14px; }
+.lm-stars svg { width: 44px; height: 44px; }
+.lm-stars svg:nth-child(2) { transform: translateY(-6px); }
+.lm-timer { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; margin-bottom: 16px; border-radius: 99px; font-weight: 600; background: var(--glass); border: 1px solid var(--glass-border); }
+.lm-timer svg.lucide { width: 18px; height: 18px; color: var(--t-amber); }
+.level-card .btn3d.big { margin-top: 4px; }
+
+/* Level result */
+.cm-top { display: flex; justify-content: center; margin-bottom: 10px; }
+.cm-stars { display: flex; justify-content: center; gap: 6px; margin: 4px 0 8px; }
+.cm-stars svg { width: 56px; height: 56px; }
+.cm-stars svg:nth-child(2) { transform: translateY(-10px); }
+.cm-stars .star-pop { animation: starPop 260ms var(--ease) both; }
+.cm-stars .star-pop.s0 { animation-delay: 250ms; }
+.cm-stars .star-pop.s1 { animation-delay: 470ms; }
+.cm-stars .star-pop.s2 { animation-delay: 690ms; }
+@keyframes starPop { from { transform: scale(.2) rotate(-30deg); opacity: 0; } }
+.cm-rewards { display: grid; gap: 6px; margin: 0 0 16px; text-align: left; }
+.cm-rewards div { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 12px; background: var(--glass); font-weight: 500; }
+.cm-rewards b { display: inline-flex; align-items: center; gap: 4px; }
+.cm-rewards svg.lucide { width: 18px; height: 18px; color: var(--gold); }

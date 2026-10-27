@@ -1,0 +1,20 @@
+/* Entry stylesheet: imports every CSS file in order. */
+@import url('base/variables.css');
+@import url('base/reset.css');
+@import url('base/typography.css');
+@import url('base/layout.css');
+
+@import url('components/buttons.css');
+@import url('components/cards.css');
+@import url('components/segmented.css');
+@import url('components/bottom-nav.css');
+@import url('components/bottom-sheet.css');
+@import url('components/modal.css');
+@import url('components/timer.css');
+@import url('components/toast.css');
+
+@import url('pages/home.css');
+@import url('pages/levels.css');
+@import url('pages/game.css');
+@import url('pages/profile.css');
+@import url('pages/shop.css');

@@ -1,0 +1,74 @@
+/* Buttons: icon buttons, 3D press buttons, neon mode buttons, pills. */
+.icon-btn {
+  width: 46px; height: 46px; border-radius: 15px; flex-shrink: 0;
+  display: grid; place-items: center;
+  background: var(--glass-strong); border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 0 var(--edge);
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease, opacity var(--fast) ease;
+}
+.icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--edge); }
+.icon-btn:disabled { opacity: .35; pointer-events: none; }
+.icon-btn.plain { width: 44px; height: 44px; background: transparent; border: 0; box-shadow: none; }
+.icon-btn.plain svg.lucide { width: 18px; height: 18px; }
+
+/* 3D press-down button */
+.btn3d {
+  --c1: #8f73ff; --c2: var(--primary-2); --bedge: var(--primary-edge);
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
+  min-height: 52px; padding: 0 var(--s5); border-radius: var(--radius);
+  font-weight: 600; font-size: 17px; color: #fff;
+  background: linear-gradient(180deg, var(--c1), var(--c2));
+  box-shadow: 0 6px 0 var(--bedge), 0 12px 22px rgba(60, 30, 180, .25);
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease, opacity var(--fast) ease, filter var(--fast) ease;
+}
+.btn3d:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--bedge), 0 4px 10px rgba(60, 30, 180, .2); }
+.btn3d.ghost { --c1: var(--glass-strong); --c2: var(--glass); --bedge: var(--edge); color: var(--text); border: 1px solid var(--glass-border); box-shadow: 0 6px 0 var(--bedge); }
+.btn3d.ghost:active { box-shadow: 0 1px 0 var(--bedge); }
+.btn3d.danger { --c1: #fb7185; --c2: #e11d48; --bedge: #9f1239; box-shadow: 0 6px 0 var(--bedge); }
+.btn3d.danger:active { box-shadow: 0 1px 0 var(--bedge); }
+.btn3d.gold { --c1: #ffd34d; --c2: var(--gold-2); --bedge: #b45309; color: #3b2300; box-shadow: 0 5px 0 var(--bedge); }
+.btn3d.gold:active { box-shadow: 0 1px 0 var(--bedge); }
+.btn3d:disabled { opacity: .45; filter: grayscale(.4); pointer-events: none; }
+.btn3d.big { min-height: 60px; font-size: 20px; border-radius: 20px; width: 100%; }
+.btn3d.big svg.lucide { width: 24px; height: 24px; fill: currentColor; }
+.btn3d.small { min-height: 44px; padding: 0 16px; font-size: 16px; border-radius: 14px; }
+.btn3d.wide { width: 100%; }
+.two-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.two-btns .btn3d { padding: 0 10px; }
+
+.link-btn { min-height: 44px; padding: 0 4px; color: var(--primary); font-weight: 600; text-decoration: underline; }
+
+/* Neon mode buttons on home */
+.mode-btn {
+  --nc: var(--neon-cyan); --ng: var(--neon-cyan-glow);
+  width: 100%; height: 64px; border-radius: 20px;
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  background: var(--glass); border: 2px solid var(--nc); color: var(--nc);
+  box-shadow: 0 0 16px var(--ng), inset 0 0 12px var(--ng), 0 5px 0 var(--edge);
+  transition: transform var(--fast) ease, box-shadow var(--fast) ease;
+}
+.mode-btn.pvp { --nc: var(--neon-amber); --ng: var(--neon-amber-glow); }
+.mode-btn:active { transform: translateY(4px); box-shadow: 0 0 10px var(--ng), inset 0 0 10px var(--ng), 0 1px 0 var(--edge); }
+.mode-btn svg.lucide { width: 30px; height: 30px; }
+.mode-btn b { font-size: 20px; font-weight: 700; letter-spacing: 1px; color: var(--text); }
+
+/* Coin + star pills */
+.coin-pill, .star-pill {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px 0 8px;
+  border-radius: 99px; font-weight: 700; font-size: 17px; white-space: nowrap;
+  background: var(--glass-strong); border: 1px solid var(--glass-border); box-shadow: 0 3px 0 var(--edge);
+}
+.coin-pill svg.lucide { width: 24px; height: 24px; color: var(--gold); filter: drop-shadow(0 0 4px var(--gold-glow)); }
+.star-pill svg { width: 22px; height: 22px; }
+.star-pill { padding: 0 12px 0 8px; font-size: 16px; }
+.coin-pill.bump { animation: bump 260ms var(--ease); }
+.flying-coin { position: fixed; z-index: 65; width: 22px; height: 22px; pointer-events: none; }
+.flying-coin svg { width: 100%; height: 100%; }
+.star-on { fill: var(--gold); stroke: #b45309; stroke-width: 1; }
+.star-off { fill: var(--track); stroke: none; }
+
+/* Small X / O marks used in pills, cards and buttons */
+.mini-mark { width: 18px; height: 18px; display: block; flex-shrink: 0; }
+.mini-mark path, .mini-mark circle { fill: none; stroke-width: 15; stroke-linecap: round; }
+.mini-mark.x path { stroke: var(--x); }
+.mini-mark.o circle { stroke: var(--o); }

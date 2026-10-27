@@ -1,0 +1,105 @@
+/* App shell: animated background, top bar, page host + transitions, splash. */
+
+/* Big gradient layer that drifts with transform only (GPU composited, no repaint per frame) */
+.bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--base); }
+.bg::before {
+  content: ''; position: absolute; left: -30%; top: -30%; width: 160%; height: 160%;
+  background: linear-gradient(135deg, var(--g1) 0%, var(--g2) 25%, var(--g3) 50%, var(--g4) 72%, var(--g5) 100%);
+  animation: drift 18s ease-in-out infinite alternate;
+}
+.bg::after { content: ''; position: absolute; inset: 0; background: var(--veil); }
+@keyframes drift {
+  0% { transform: translate3d(-15%, -12%, 0); }
+  50% { transform: translate3d(14%, 6%, 0); }
+  100% { transform: translate3d(-4%, 15%, 0); }
+}
+@media (prefers-reduced-motion: reduce) { .bg::before { animation: none; } }
+
+.app {
+  position: relative; z-index: 1;
+  height: 100vh; height: 100dvh;
+  max-width: 560px; margin: 0 auto;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* Shared top bar */
+.app-bar {
+  flex-shrink: 0; min-height: var(--bar-h);
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--s2);
+  padding: calc(env(safe-area-inset-top) + 8px) 16px 4px;
+}
+.app-bar-left { display: flex; align-items: center; gap: var(--s2); min-width: 0; }
+.app-bar-right { display: flex; align-items: center; justify-content: flex-end; gap: var(--s2); min-width: 0; }
+
+/* Page host: each page is a full-size layer so pages can slide in and out */
+.page-host { position: relative; flex: 1; min-height: 0; }
+.page {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  padding: 0 16px calc(env(safe-area-inset-bottom) + var(--nav-h) + 14px);
+  opacity: 0;
+  transition: opacity var(--med) var(--ease), transform var(--med) var(--ease);
+}
+.page.enter-right { transform: translateX(32px); }
+.page.enter-left { transform: translateX(-32px); }
+.page.enter-fade { transform: scale(.98); }
+.page.active { opacity: 1; transform: none; }
+.page.leave-left { opacity: 0; transform: translateX(-32px); pointer-events: none; }
+.page.leave-right { opacity: 0; transform: translateX(32px); pointer-events: none; }
+.page-game { padding: calc(env(safe-area-inset-top) + 8px) 8px calc(env(safe-area-inset-bottom) + 8px); }
+body[data-route="game"] .page-host { margin-top: 0; }
+
+.page-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 4px 2px 16px; scrollbar-width: none; }
+.page-scroll::-webkit-scrollbar { display: none; }
+
+/* Splash */
+.splash {
+  position: fixed; inset: 0; z-index: 70;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s4);
+  background: var(--base);
+  transition: opacity 280ms ease, visibility 0s linear 280ms;
+}
+.splash.gone { opacity: 0; visibility: hidden; pointer-events: none; }
+.logo { width: 120px; height: 120px; overflow: visible; }
+.logo .grid-line { stroke: var(--muted); stroke-width: 6; stroke-linecap: round; opacity: .55; fill: none; }
+.logo .lx { stroke: var(--x); stroke-width: 11; stroke-linecap: round; fill: none; filter: drop-shadow(0 0 6px var(--x-glow)); }
+.logo .lo { stroke: var(--o); stroke-width: 11; stroke-linecap: round; fill: none; filter: drop-shadow(0 0 6px var(--o-glow)); }
+.logo .draw { stroke-dasharray: 100; stroke-dashoffset: 100; animation: draw 280ms var(--ease) forwards; }
+.logo .d1 { animation-delay: 100ms; }
+.logo .d2 { animation-delay: 180ms; }
+.logo .d3 { animation-delay: 260ms; }
+.logo .d4 { animation-delay: 340ms; }
+.logo .d5 { animation-delay: 520ms; }
+.logo .d6 { animation-delay: 600ms; }
+.logo .d7 { animation-delay: 760ms; }
+.splash-title {
+  font-size: 40px; font-weight: 700; line-height: 1.05;
+  background: linear-gradient(90deg, var(--x), var(--primary), var(--o));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  opacity: 0; transform: translateY(10px);
+  animation: rise 280ms var(--ease) 820ms forwards;
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes rise { to { opacity: 1; transform: none; } }
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes bump { 50% { transform: scale(1.35); } }
+@keyframes shake { 20% { translate: -10px 0; } 40% { translate: 9px 0; } 60% { translate: -6px 0; } 80% { translate: 3px 0; } }
+
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 60; }
+
+/* Skeleton loaders */
+.skel-block { border-radius: var(--radius-lg); background: var(--glass); position: relative; overflow: hidden; }
+.skel-block::after, .skel::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .35), transparent);
+  animation: shimmer 1.1s infinite;
+}
+@keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+@media (min-width: 768px) {
+  .page { padding-left: 24px; padding-right: 24px; }
+  .page-game { padding-left: 8px; padding-right: 8px; }
+  .app-bar { padding-left: 24px; padding-right: 24px; }
+}
+@media (min-width: 1024px) { .app { max-width: 600px; } }

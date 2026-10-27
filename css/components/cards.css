@@ -1,0 +1,28 @@
+/* Glass cards, list rows, empty states. */
+.glass { background: var(--glass); border: 1px solid var(--glass-border); box-shadow: var(--shadow); }
+.card {
+  border-radius: var(--radius-lg); padding: 16px; margin-top: 14px;
+  background: linear-gradient(160deg, var(--glass-strong), var(--glass));
+}
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.card-head h3 { font-size: 18px; font-weight: 600; }
+.card-head small { color: var(--muted); font-weight: 500; font-size: 14px; }
+
+.empty-state {
+  display: flex; align-items: center; gap: 10px; padding: 14px; border-radius: 16px;
+  border: 1px dashed var(--glass-border); color: var(--muted);
+}
+.empty-state svg.lucide { color: var(--primary); }
+.empty-state.slim { margin-bottom: 10px; padding: 10px 12px; }
+
+/* 56px list rows: icon + label + chevron */
+.action-row {
+  width: 100%; min-height: 56px; padding: 6px 4px; display: flex; align-items: center; gap: 12px; text-align: left;
+  border-radius: 14px; transition: background var(--fast) ease, transform var(--fast) ease;
+}
+.action-row + .action-row { border-top: 1px solid var(--glass-border); border-radius: 0; }
+.action-row:active { background: var(--glass); transform: scale(.99); }
+.action-row .ar-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--glass-strong); color: var(--primary); flex-shrink: 0; }
+.action-row .ar-label { flex: 1; font-weight: 500; }
+.action-row > svg.lucide:last-child { color: var(--muted); }
+.action-row.danger .ar-icon, .action-row.danger .ar-label { color: var(--danger); }

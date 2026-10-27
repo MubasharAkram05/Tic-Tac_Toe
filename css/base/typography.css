@@ -1,0 +1,31 @@
+/* Fonts and text styles. Body text is never below 16px. */
+body {
+  font-family: 'Fredoka', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+}
+.page-title { font-size: 20px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; text-align: center; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.title {
+  text-align: center;
+  font-size: 32px; font-weight: 700; letter-spacing: 5px; text-transform: uppercase; line-height: 1.1;
+  background: linear-gradient(90deg, var(--x), var(--primary), var(--o));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.section-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 6px 2px;
+}
+.footer { text-align: center; font-size: 14px; color: var(--muted); padding: 8px 0 4px; }
+.footer b { color: var(--text); font-weight: 600; }
+.muted { color: var(--muted); }
+.noscript { padding: 24px; text-align: center; }
+
+@media (min-width: 768px) {
+  .title { font-size: 38px; }
+}
+
+/* Very small phones (320px): tighter page titles so the top bar never overlaps */
+@media (max-width: 360px) {
+  .page-title { font-size: 17px; letter-spacing: 1.5px; }
+}

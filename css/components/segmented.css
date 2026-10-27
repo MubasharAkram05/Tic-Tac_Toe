@@ -1,0 +1,28 @@
+/* Segmented control: every option is flex: 1, so it always fits its container. */
+.seg {
+  --count: 3; --idx: 0;
+  position: relative; display: flex; width: 100%; max-width: 100%;
+  padding: 4px; border-radius: 16px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+}
+.seg-thumb {
+  position: absolute; top: 4px; bottom: 4px; left: 4px;
+  width: calc((100% - 8px) / var(--count)); border-radius: 12px;
+  background: linear-gradient(180deg, #8f73ff, var(--primary-2));
+  box-shadow: 0 3px 0 var(--primary-edge), 0 6px 14px rgba(91, 61, 245, .3);
+  transform: translateX(calc(var(--idx) * 100%));
+  transition: transform var(--med) var(--ease);
+}
+.seg button {
+  position: relative; z-index: 1; flex: 1 1 0; min-width: 0;
+  min-height: 46px; padding: 4px 4px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600; font-size: 16px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: color var(--med) ease, transform var(--fast) ease;
+}
+.seg button:active { transform: scale(.95); }
+.seg button[aria-checked="true"] { color: #fff; }
+.seg .mini-mark { width: 22px; height: 22px; }
+.seg button[aria-checked="true"] .mini-mark path,
+.seg button[aria-checked="true"] .mini-mark circle { stroke: #fff; }

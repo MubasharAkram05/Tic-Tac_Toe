@@ -1,0 +1,65 @@
+/* Home: continue + daily cards, level carousel, mode buttons. */
+.home-main {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+/* centre the content when it fits, scroll from the top when it doesn't */
+.home-main > :first-child { margin-top: auto; }
+.home-main > :last-child { margin-bottom: auto; }
+
+.home-cards { width: 100%; max-width: 420px; display: grid; gap: 10px; }
+.continue-card, .daily-card {
+  width: 100%; min-height: 60px; padding: 8px 12px; border-radius: 20px; text-align: left;
+  display: flex; align-items: center; gap: 12px;
+  transition: transform var(--fast) ease;
+}
+.continue-card:active { transform: scale(.98); }
+.cc-icon, .dc-icon { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; flex-shrink: 0; color: #fff; }
+.cc-icon { background: linear-gradient(160deg, #8f73ff, var(--primary-2)); }
+.dc-icon { background: linear-gradient(160deg, var(--gold), var(--gold-2)); }
+.cc-text, .dc-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.cc-text small, .dc-text small { color: var(--muted); font-size: 14px; }
+.cc-text b, .dc-text b { font-size: 17px; }
+.daily-card { border: 2px solid var(--gold); box-shadow: 0 0 14px var(--gold-glow); }
+
+/* Level carousel */
+.carousel { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.lv-row { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+.lv-stage { touch-action: pan-y; padding: 6px; } /* horizontal swipes come to JS, vertical still scrolls */
+.lv-preview {
+  width: min(54vw, 30vh, 280px); width: min(54vw, 30dvh, 280px); aspect-ratio: 1;
+  padding: 8px; border-radius: 24px; will-change: transform;
+}
+.lv-preview svg { width: 100%; height: 100%; }
+.pv-cell { fill: var(--cell-a); stroke: var(--cell-border); stroke-width: .4; }
+.pv-x { stroke: var(--x); fill: none; stroke-linecap: round; }
+.pv-o { stroke: var(--o); fill: none; }
+.pv-mark { opacity: 0; transform-box: fill-box; transform-origin: center; animation: pvIn 200ms var(--ease) forwards; }
+@keyframes pvIn { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
+.pv-win { stroke: #fff; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; animation: draw 300ms var(--ease) forwards; }
+.pv-win.x { filter: drop-shadow(0 0 1.5px var(--x)); }
+/* Demo order: marks every 110ms, then the win line */
+.pv-mark.d0 { animation-delay: 120ms; }
+.pv-mark.d1 { animation-delay: 230ms; }
+.pv-mark.d2 { animation-delay: 340ms; }
+.pv-mark.d3 { animation-delay: 450ms; }
+.pv-mark.d4 { animation-delay: 560ms; }
+.pv-mark.d5 { animation-delay: 670ms; }
+.pv-mark.d6 { animation-delay: 780ms; }
+.pv-mark.d7 { animation-delay: 890ms; }
+.pv-mark.d8 { animation-delay: 1000ms; }
+.pv-win.d5 { animation-delay: 730ms; }
+.pv-win.d7 { animation-delay: 950ms; }
+.pv-win.d9 { animation-delay: 1170ms; }
+.arrow { width: 48px; height: 48px; border-radius: 50%; }
+.lv-label { font-size: 20px; font-weight: 600; min-height: 28px; }
+.lv-label span { color: var(--muted); font-weight: 500; }
+.dots { display: flex; justify-content: center; }
+.dot { width: 30px; height: 36px; display: grid; place-items: center; }
+.dot span {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--muted); opacity: .4;
+  transition: transform var(--med) var(--ease), opacity var(--med) ease, background var(--med) ease, box-shadow var(--med) ease;
+}
+.dot[aria-current="true"] span { transform: scale(1.6); opacity: 1; background: var(--primary); box-shadow: 0 0 10px var(--primary); }
+.dot:active span { transform: scale(1.3); }
+
+.modes { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 320px; }

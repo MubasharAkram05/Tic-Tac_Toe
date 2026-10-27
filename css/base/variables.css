@@ -1,0 +1,114 @@
+/* Design tokens: spacing, radius, motion, colours (light / dark) and board themes. */
+:root {
+  --radius-sm: 12px;
+  --radius: 18px;
+  --radius-lg: 26px;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
+  --fast: 120ms;
+  --med: 260ms;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --primary: #7c5cff;
+  --primary-2: #5b3df5;
+  --primary-edge: #3f26b8;
+  --accent: #fbbf24;
+  --danger: #f43f5e;
+  --success: #10b981;
+  --gold: #f5b301;
+  --gold-2: #f08c00;
+  --gold-glow: rgba(245, 179, 1, .45);
+  --nav-h: 64px;
+  --bar-h: 56px;
+  --t-green: #22c55e;
+  --t-amber: #f59e0b;
+  --t-red: #ef4444;
+}
+
+/* Dark theme: deep versions of peach, coral, teal, mint, lavender */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --base: #15132e;
+  --g1: #3b2440; --g2: #47222f; --g3: #0f3944; --g4: #123b32; --g5: #2a2258;
+  --veil: rgba(10, 9, 30, .35);
+  --text: #f4f4ff;
+  --muted: #b3b5dc;
+  --glass: rgba(255, 255, 255, .09);
+  --glass-strong: rgba(255, 255, 255, .15);
+  --glass-border: rgba(255, 255, 255, .16);
+  --t-cell-a: rgba(255, 255, 255, .13);
+  --t-cell-b: rgba(255, 255, 255, .04);
+  --t-cell-border: rgba(255, 255, 255, .14);
+  --t-cell-active: rgba(255, 255, 255, .2);
+  --shadow: 0 10px 30px rgba(0, 0, 0, .3);
+  --edge: rgba(0, 0, 0, .4);
+  --track: rgba(255, 255, 255, .2);
+  --sheet: rgba(30, 26, 66, .98);
+  --input: rgba(255, 255, 255, .08);
+  --x: #22d3ee;
+  --x-glow: rgba(34, 211, 238, .75);
+  --o: #f472b6;
+  --o-glow: rgba(244, 114, 182, .75);
+  --neon-cyan: #22d3ee;
+  --neon-cyan-glow: rgba(34, 211, 238, .45);
+  --neon-amber: #fbbf24;
+  --neon-amber-glow: rgba(251, 146, 60, .45);
+}
+
+/* Light theme: soft pastel peach, coral, teal, mint, lavender */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --base: #fde8dc;
+  --g1: #ffd8be; --g2: #ffaea6; --g3: #94dcd6; --g4: #c6f0d8; --g5: #d9c8f7;
+  --veil: rgba(255, 255, 255, .18);
+  --text: #1e1b4b;
+  --muted: #4c5180;
+  --glass: rgba(255, 255, 255, .55);
+  --glass-strong: rgba(255, 255, 255, .78);
+  --glass-border: rgba(255, 255, 255, .9);
+  --t-cell-a: rgba(255, 255, 255, .85);
+  --t-cell-b: rgba(255, 255, 255, .5);
+  --t-cell-border: rgba(255, 255, 255, .95);
+  --t-cell-active: rgba(255, 255, 255, .98);
+  --shadow: 0 10px 28px rgba(120, 70, 110, .16);
+  --edge: rgba(120, 80, 140, .28);
+  --track: rgba(30, 27, 75, .2);
+  --sheet: rgba(255, 255, 255, .98);
+  --input: rgba(255, 255, 255, .85);
+  --x: #0891b2;
+  --x-glow: rgba(8, 145, 178, .45);
+  --o: #db2777;
+  --o-glow: rgba(219, 39, 119, .4);
+  --neon-cyan: #0891b2;
+  --neon-cyan-glow: rgba(8, 145, 178, .35);
+  --neon-amber: #d97706;
+  --neon-amber-glow: rgba(217, 119, 6, .35);
+}
+
+/* Board themes (shop). Each one only sets variables, so a preview can nest
+   a different theme inside the page without selector clashes. */
+[data-board="classic"] {
+  --cell-a: var(--t-cell-a); --cell-b: var(--t-cell-b); --cell-border: var(--t-cell-border); --cell-active: var(--t-cell-active);
+  --cell-img: linear-gradient(transparent, transparent); --cell-glow: 0 0 0 transparent;
+  --mark-x: var(--x); --mark-o: var(--o);
+}
+[data-board="neon"] {
+  --cell-a: rgba(24, 18, 70, .92); --cell-b: rgba(10, 8, 36, .95); --cell-border: rgba(34, 211, 238, .6); --cell-active: rgba(46, 34, 110, .95);
+  --cell-img: linear-gradient(transparent, transparent); --cell-glow: 0 0 8px rgba(34, 211, 238, .35), inset 0 0 6px rgba(244, 114, 182, .25);
+  --mark-x: #22d3ee; --mark-o: #f472b6;
+}
+[data-board="pastel"] {
+  --cell-a: #ffe1ec; --cell-b: #dff1ff; --cell-border: #ffffff; --cell-active: #fff6fa;
+  --cell-img: linear-gradient(transparent, transparent); --cell-glow: 0 2px 6px rgba(200, 120, 170, .18);
+  --mark-x: #0891b2; --mark-o: #db2777;
+}
+[data-board="wood"] {
+  --cell-a: #dcaa70; --cell-b: #b07a43; --cell-border: rgba(90, 50, 20, .45); --cell-active: #e9bd85;
+  --cell-img: repeating-linear-gradient(100deg, rgba(255, 255, 255, .07) 0 3px, transparent 3px 9px);
+  --cell-glow: inset 0 -2px 0 rgba(70, 35, 10, .25);
+  --mark-x: #0e5a6e; --mark-o: #9d1b4f;
+}
+[data-board="galaxy"] {
+  --cell-a: rgba(64, 32, 128, .95); --cell-b: rgba(14, 10, 44, .97); --cell-border: rgba(167, 139, 250, .5); --cell-active: rgba(92, 52, 168, .97);
+  --cell-img: radial-gradient(1px 1px at 22% 30%, #fff, transparent), radial-gradient(1px 1px at 70% 62%, rgba(255, 255, 255, .8), transparent), radial-gradient(1.5px 1.5px at 45% 80%, rgba(255, 255, 255, .7), transparent);
+  --cell-glow: 0 0 8px rgba(167, 139, 250, .3);
+  --mark-x: #5eead4; --mark-o: #f9a8d4;
+}

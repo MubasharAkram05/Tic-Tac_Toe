@@ -1,0 +1,24 @@
+/* Move timer ring around the active player's avatar. */
+.avatar .timer-ring {
+  position: absolute; inset: -7px; width: calc(100% + 14px); height: calc(100% + 14px);
+  transform: rotate(-90deg); pointer-events: none; opacity: 0;
+  transition: opacity 200ms ease;
+}
+.timer-ring circle { fill: none; stroke-width: 4; }
+.timer-ring .tr-track { stroke: var(--track); }
+.timer-ring .tr-bar { stroke: var(--t-green); stroke-linecap: round; transition: stroke-dashoffset 100ms linear, stroke 200ms ease; }
+.avatar.t-warn .tr-bar { stroke: var(--t-amber); }
+.avatar.t-danger .tr-bar { stroke: var(--t-red); }
+.avatar.timing .timer-ring { opacity: 1; }
+
+/* Seconds left in the centre of the avatar */
+.timer-secs {
+  position: absolute; inset: 0; display: grid; place-items: center; border-radius: inherit;
+  font-size: 18px; font-weight: 700; color: #fff; background: rgba(10, 8, 30, .55);
+  opacity: 0; transition: opacity 200ms ease; font-variant-numeric: tabular-nums;
+}
+.avatar.timing .timer-secs { opacity: 1; }
+.avatar.timing .av { opacity: 0; }
+/* Last seconds: pulse */
+.avatar.t-final { animation: timerPulse 1s ease-in-out infinite; }
+@keyframes timerPulse { 50% { transform: scale(1.1); } }
